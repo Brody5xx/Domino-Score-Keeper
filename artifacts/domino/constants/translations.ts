@@ -47,6 +47,12 @@ const es = {
   languageTitle: "Idioma",
   langEs: "Español",
   langEn: "English",
+  bgTitle: "Fondo",
+  bgScatter: "Caos",
+  bgDiagonal: "Diagonal",
+  bgGrid: "Cuadrícula",
+  bgRadial: "Radial",
+  bgGiant: "Gigante",
 };
 
 const en = {
@@ -86,6 +92,12 @@ const en = {
   languageTitle: "Language",
   langEs: "Español",
   langEn: "English",
+  bgTitle: "Background",
+  bgScatter: "Chaos",
+  bgDiagonal: "Diagonal",
+  bgGrid: "Grid",
+  bgRadial: "Radial",
+  bgGiant: "Giant",
 };
 
 export type Translations = typeof es;

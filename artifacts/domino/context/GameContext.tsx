@@ -32,6 +32,7 @@ interface GameState {
   entries: ScoreEntry[];
   target: number;
   previousGames: PreviousGame[];
+  bgTheme: string;
 }
 
 interface GameContextValue extends GameState {
@@ -46,6 +47,7 @@ interface GameContextValue extends GameState {
   removePlayer: (playerId: string) => void;
   restart: () => void;
   deletePreviousGame: (gameId: string) => void;
+  setBgTheme: (theme: string) => void;
 }
 
 const STORAGE_KEY = "domino_game_v3";
@@ -71,6 +73,7 @@ const defaultState: GameState = {
   entries: [],
   target: 200,
   previousGames: [],
+  bgTheme: "scatter",
 };
 
 export function computeTotals(entries: ScoreEntry[]): Record<string, number> {
@@ -237,6 +240,14 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const setBgTheme = useCallback((theme: string) => {
+    setState((prev) => {
+      const next = { ...prev, bgTheme: theme };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   if (!loaded) return null;
 
   return (
@@ -254,6 +265,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         removePlayer,
         restart,
         deletePreviousGame,
+        setBgTheme,
       }}
     >
       {children}

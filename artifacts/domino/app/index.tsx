@@ -22,6 +22,14 @@ import DominoBackground from "@/components/DominoBackground";
 
 const TARGET_PRESETS = [100, 120, 150, 200];
 
+const BG_THEMES = [
+  { id: "scatter",  icon: "shuffle"    as const, labelKey: "bgScatter"  as const },
+  { id: "diagonal", icon: "trending-up" as const, labelKey: "bgDiagonal" as const },
+  { id: "grid",     icon: "grid"       as const, labelKey: "bgGrid"     as const },
+  { id: "radial",   icon: "disc"       as const, labelKey: "bgRadial"   as const },
+  { id: "giant",    icon: "maximize-2" as const, labelKey: "bgGiant"    as const },
+];
+
 type AddModalState = { playerId: string } | null;
 type EditModalState = { entryId: string; currentPoints: number } | null;
 
@@ -45,6 +53,8 @@ export default function MainScreen() {
     removePlayer,
     restart,
     deletePreviousGame,
+    bgTheme,
+    setBgTheme,
   } = useGame();
 
   const [addModal, setAddModal] = useState<AddModalState>(null);
@@ -620,6 +630,34 @@ export default function MainScreen() {
                 </View>
               </View>
 
+              {/* Background theme picker */}
+              <View style={styles.langSection}>
+                <Text style={styles.langLabel}>{t.bgTitle}</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={styles.bgThemeRow}>
+                    {BG_THEMES.map((theme) => {
+                      const active = bgTheme === theme.id;
+                      return (
+                        <Pressable
+                          key={theme.id}
+                          style={[styles.bgThemeChip, active && styles.bgThemeChipActive]}
+                          onPress={() => { setBgTheme(theme.id); Haptics.selectionAsync(); }}
+                        >
+                          <Feather
+                            name={theme.icon}
+                            size={14}
+                            color={active ? colors.primary : colors.mutedForeground}
+                          />
+                          <Text style={[styles.bgThemeText, active && styles.bgThemeTextActive]}>
+                            {t[theme.labelKey]}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </ScrollView>
+              </View>
+
               {/* Divider */}
               <View style={styles.sectionDivider} />
 
@@ -1145,6 +1183,33 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       color: colors.mutedForeground,
     },
     langChipTextActive: {
+      color: colors.primary,
+    },
+    bgThemeRow: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    bgThemeChip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderRadius: 10,
+      backgroundColor: colors.background,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+    },
+    bgThemeChipActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + "22",
+    },
+    bgThemeText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 13,
+      color: colors.mutedForeground,
+    },
+    bgThemeTextActive: {
       color: colors.primary,
     },
     sectionDivider: {
