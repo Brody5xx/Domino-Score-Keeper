@@ -26,7 +26,7 @@ export default function DominoBackground() {
 
   return (
     <View style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]}>
-      <ImageBackground source={source} style={StyleSheet.absoluteFill} resizeMode="cover">
+      <ImageBackground source={source} style={StyleSheet.absoluteFill} resizeMode="contain">
         <View style={[StyleSheet.absoluteFill, { backgroundColor: overlay }]} />
       </ImageBackground>
     </View>
