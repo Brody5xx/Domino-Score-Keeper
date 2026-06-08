@@ -1,0 +1,1 @@
+- [Domino app backgrounds](domino-backgrounds.md) — photo ImageBackgrounds keyed off bgTheme; normalize persisted theme ids on hydration when renaming them

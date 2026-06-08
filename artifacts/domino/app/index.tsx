@@ -23,11 +23,11 @@ import DominoBackground from "@/components/DominoBackground";
 const TARGET_PRESETS = [100, 120, 150, 200];
 
 const BG_THEMES = [
-  { id: "scatter",  icon: "shuffle"    as const, labelKey: "bgScatter"  as const },
-  { id: "diagonal", icon: "trending-up" as const, labelKey: "bgDiagonal" as const },
-  { id: "grid",     icon: "grid"       as const, labelKey: "bgGrid"     as const },
-  { id: "radial",   icon: "disc"       as const, labelKey: "bgRadial"   as const },
-  { id: "giant",    icon: "maximize-2" as const, labelKey: "bgGiant"    as const },
+  { id: "whiskey", icon: "droplet"       as const, labelKey: "bgWhiskey" as const },
+  { id: "wood",    icon: "grid"          as const, labelKey: "bgWood"    as const },
+  { id: "chain",   icon: "trending-down" as const, labelKey: "bgChain"   as const },
+  { id: "marble",  icon: "hexagon"       as const, labelKey: "bgMarble"  as const },
+  { id: "neon",    icon: "zap"           as const, labelKey: "bgNeon"    as const },
 ];
 
 type AddModalState = { playerId: string } | null;
@@ -783,7 +783,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     playerCard: {
       width: "48%",
-      backgroundColor: colors.card,
+      backgroundColor: "rgba(20,20,30,0.78)",
       borderRadius: 14,
       borderWidth: 2,
       overflow: "hidden",
@@ -841,7 +841,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     historyContainer: {
       flex: 1,
-      backgroundColor: colors.card,
+      backgroundColor: "rgba(20,20,30,0.70)",
       borderRadius: 12,
       padding: 12,
       marginTop: 10,

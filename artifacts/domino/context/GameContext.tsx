@@ -73,8 +73,16 @@ const defaultState: GameState = {
   entries: [],
   target: 200,
   previousGames: [],
-  bgTheme: "scatter",
+  bgTheme: "whiskey",
 };
+
+const BG_THEME_IDS = ["whiskey", "wood", "chain", "marble", "neon"];
+
+function normalizeBgTheme(theme: unknown): string {
+  return typeof theme === "string" && BG_THEME_IDS.includes(theme)
+    ? theme
+    : "whiskey";
+}
 
 export function computeTotals(entries: ScoreEntry[]): Record<string, number> {
   const totals: Record<string, number> = {};
@@ -95,7 +103,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       if (raw) {
         try {
           const parsed = JSON.parse(raw) as GameState;
-          setState({ ...defaultState, ...parsed });
+          setState({
+            ...defaultState,
+            ...parsed,
+            bgTheme: normalizeBgTheme(parsed.bgTheme),
+          });
         } catch {}
       }
       setLoaded(true);
@@ -242,7 +254,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const setBgTheme = useCallback((theme: string) => {
     setState((prev) => {
-      const next = { ...prev, bgTheme: theme };
+      const next = { ...prev, bgTheme: normalizeBgTheme(theme) };
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       return next;
     });
