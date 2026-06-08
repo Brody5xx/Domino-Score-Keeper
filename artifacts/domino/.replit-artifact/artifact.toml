@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/"
+title = "Dominó - Marcador"
+version = "1.0.0"
+id = "artifacts/domino"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/" ]
+localPort = 26133
+
+[services.development]
+run = "pnpm --filter @workspace/domino run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/domino", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/domino", "run", "serve" ]
+
+[services.env]
+PORT = "26133"
+BASE_PATH = "/"
