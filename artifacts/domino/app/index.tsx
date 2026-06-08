@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
+import { PLAYER_COLORS, type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
 import { useLang } from "@/context/LangContext";
 import { useColors } from "@/hooks/useColors";
 
@@ -39,6 +39,7 @@ export default function MainScreen() {
     deleteEntry,
     setTarget,
     setPlayerName,
+    setPlayerColor,
     addPlayer,
     removePlayer,
     restart,
@@ -57,7 +58,7 @@ export default function MainScreen() {
   const [settingsModal, setSettingsModal] = useState(false);
   const [editingName, setEditingName] = useState<{ id: string; value: string } | null>(null);
 
-  const [renameModal, setRenameModal] = useState<{ playerId: string; value: string } | null>(null);
+  const [renameModal, setRenameModal] = useState<{ playerId: string; value: string; color: string } | null>(null);
   const [restartModal, setRestartModal] = useState(false);
   const [historyModal, setHistoryModal] = useState(false);
   const [expandedGame, setExpandedGame] = useState<string | null>(null);
@@ -133,8 +134,14 @@ export default function MainScreen() {
   }
 
   function confirmRename() {
-    if (renameModal && renameModal.value.trim()) {
-      setPlayerName(renameModal.playerId, renameModal.value.trim());
+    if (renameModal) {
+      if (renameModal.value.trim()) {
+        setPlayerName(renameModal.playerId, renameModal.value.trim());
+      }
+      const original = players.find((p) => p.id === renameModal.playerId);
+      if (original && original.color !== renameModal.color) {
+        setPlayerColor(renameModal.playerId, renameModal.color);
+      }
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     setRenameModal(null);
@@ -199,7 +206,7 @@ export default function MainScreen() {
             >
               <Pressable
                 style={[styles.playerHeader, { backgroundColor: player.color + "26" }]}
-                onPress={() => setRenameModal({ playerId: player.id, value: player.name })}
+                onPress={() => setRenameModal({ playerId: player.id, value: player.name, color: player.color })}
               >
                 <Text style={[styles.playerName, { color: player.color }]} numberOfLines={1}>
                   {player.name}
@@ -298,14 +305,14 @@ export default function MainScreen() {
 
       {/* ══ MODALS ══════════════════════════════════════════════════════════════ */}
 
-      {/* Rename player */}
+      {/* Edit player (rename + color) */}
       <Modal visible={renameModal !== null} transparent animationType="fade" onRequestClose={() => setRenameModal(null)}>
         <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === "ios" ? "padding" : "height"}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>{t.renameTitle}</Text>
             <TextInput
               style={[styles.modalInput, styles.renameInput, {
-                borderColor: players.find((pl) => pl.id === renameModal?.playerId)?.color ?? colors.border,
+                borderColor: renameModal?.color ?? colors.border,
               }]}
               placeholder={t.renamePlaceholder}
               placeholderTextColor={colors.mutedForeground}
@@ -317,14 +324,33 @@ export default function MainScreen() {
               maxLength={20}
               returnKeyType="done"
             />
+            <Text style={styles.colorPickerLabel}>{t.pickColor}</Text>
+            <View style={styles.colorGrid}>
+              {PLAYER_COLORS.map((c) => (
+                <Pressable
+                  key={c}
+                  style={[
+                    styles.colorSwatch,
+                    { backgroundColor: c },
+                    renameModal?.color === c && styles.colorSwatchSelected,
+                  ]}
+                  onPress={() => {
+                    setRenameModal((prev) => prev ? { ...prev, color: c } : null);
+                    Haptics.selectionAsync();
+                  }}
+                >
+                  {renameModal?.color === c && (
+                    <Feather name="check" size={14} color="#fff" />
+                  )}
+                </Pressable>
+              ))}
+            </View>
             <View style={styles.modalBtns}>
               <Pressable style={styles.modalCancel} onPress={() => setRenameModal(null)}>
                 <Text style={styles.modalCancelText}>{t.cancel}</Text>
               </Pressable>
               <Pressable
-                style={[styles.modalConfirm, {
-                  backgroundColor: players.find((pl) => pl.id === renameModal?.playerId)?.color ?? colors.primary,
-                }]}
+                style={[styles.modalConfirm, { backgroundColor: renameModal?.color ?? colors.primary }]}
                 onPress={confirmRename}
               >
                 <Text style={styles.modalConfirmText}>{t.save}</Text>
@@ -1005,6 +1031,32 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     renameInput: {
       fontSize: 18,
       borderWidth: 2,
+    },
+    colorPickerLabel: {
+      fontFamily: "Inter_500Medium",
+      fontSize: 12,
+      color: colors.mutedForeground,
+      textTransform: "uppercase",
+      letterSpacing: 0.7,
+      marginBottom: 10,
+    },
+    colorGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      justifyContent: "center",
+      marginBottom: 20,
+    },
+    colorSwatch: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    colorSwatchSelected: {
+      borderWidth: 3,
+      borderColor: "#fff",
     },
     modalBtns: {
       flexDirection: "row",

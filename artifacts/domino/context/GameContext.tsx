@@ -41,6 +41,7 @@ interface GameContextValue extends GameState {
   deleteEntry: (entryId: string) => void;
   setTarget: (target: number) => void;
   setPlayerName: (playerId: string, name: string) => void;
+  setPlayerColor: (playerId: string, color: string) => void;
   addPlayer: () => void;
   removePlayer: (playerId: string) => void;
   restart: () => void;
@@ -145,6 +146,19 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const setPlayerColor = useCallback((playerId: string, color: string) => {
+    setState((prev) => {
+      const next = {
+        ...prev,
+        players: prev.players.map((p) =>
+          p.id === playerId ? { ...p, color } : p
+        ),
+      };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const setPlayerName = useCallback((playerId: string, name: string) => {
     setState((prev) => {
       const next = {
@@ -235,6 +249,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         deleteEntry,
         setTarget,
         setPlayerName,
+        setPlayerColor,
         addPlayer,
         removePlayer,
         restart,
