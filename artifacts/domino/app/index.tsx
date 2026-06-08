@@ -57,6 +57,7 @@ export default function MainScreen() {
   const [settingsModal, setSettingsModal] = useState(false);
   const [editingName, setEditingName] = useState<{ id: string; value: string } | null>(null);
 
+  const [renameModal, setRenameModal] = useState<{ playerId: string; value: string } | null>(null);
   const [restartModal, setRestartModal] = useState(false);
   const [historyModal, setHistoryModal] = useState(false);
   const [expandedGame, setExpandedGame] = useState<string | null>(null);
@@ -131,6 +132,14 @@ export default function MainScreen() {
     setEditingName(null);
   }
 
+  function confirmRename() {
+    if (renameModal && renameModal.value.trim()) {
+      setPlayerName(renameModal.playerId, renameModal.value.trim());
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setRenameModal(null);
+  }
+
   // ── render ─────────────────────────────────────────────────────────────────
 
   const reversedEntries = [...entries].reverse();
@@ -188,16 +197,20 @@ export default function MainScreen() {
                 players.length === 1 && { width: "100%" },
               ]}
             >
-              <View style={[styles.playerHeader, { backgroundColor: player.color + "26" }]}>
+              <Pressable
+                style={[styles.playerHeader, { backgroundColor: player.color + "26" }]}
+                onPress={() => setRenameModal({ playerId: player.id, value: player.name })}
+              >
                 <Text style={[styles.playerName, { color: player.color }]} numberOfLines={1}>
                   {player.name}
                 </Text>
+                <Feather name="edit-2" size={11} color={player.color} style={{ opacity: 0.6 }} />
                 {won && (
                   <View style={[styles.winBadge, { backgroundColor: player.color }]}>
                     <Text style={styles.winBadgeText}>{t.won}</Text>
                   </View>
                 )}
-              </View>
+              </Pressable>
               <Text style={[styles.scoreText, { color: won ? player.color : colors.foreground }]}>
                 {total}
               </Text>
@@ -284,6 +297,42 @@ export default function MainScreen() {
       </View>
 
       {/* ══ MODALS ══════════════════════════════════════════════════════════════ */}
+
+      {/* Rename player */}
+      <Modal visible={renameModal !== null} transparent animationType="fade" onRequestClose={() => setRenameModal(null)}>
+        <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>{t.renameTitle}</Text>
+            <TextInput
+              style={[styles.modalInput, styles.renameInput, {
+                borderColor: players.find((pl) => pl.id === renameModal?.playerId)?.color ?? colors.border,
+              }]}
+              placeholder={t.renamePlaceholder}
+              placeholderTextColor={colors.mutedForeground}
+              value={renameModal?.value ?? ""}
+              onChangeText={(v) => setRenameModal((prev) => prev ? { ...prev, value: v } : null)}
+              onSubmitEditing={confirmRename}
+              autoFocus
+              selectTextOnFocus
+              maxLength={20}
+              returnKeyType="done"
+            />
+            <View style={styles.modalBtns}>
+              <Pressable style={styles.modalCancel} onPress={() => setRenameModal(null)}>
+                <Text style={styles.modalCancelText}>{t.cancel}</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalConfirm, {
+                  backgroundColor: players.find((pl) => pl.id === renameModal?.playerId)?.color ?? colors.primary,
+                }]}
+                onPress={confirmRename}
+              >
+                <Text style={styles.modalConfirmText}>{t.save}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
 
       {/* Add points */}
       <Modal visible={addModal !== null} transparent animationType="fade" onRequestClose={() => setAddModal(null)}>
@@ -952,6 +1001,10 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       color: colors.foreground,
       textAlign: "center",
       marginBottom: 18,
+    },
+    renameInput: {
+      fontSize: 18,
+      borderWidth: 2,
     },
     modalBtns: {
       flexDirection: "row",

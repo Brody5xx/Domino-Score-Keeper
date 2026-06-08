@@ -39,6 +39,9 @@ const es = {
   addPlayer: "Agregar jugador",
   done: "Listo",
   playerCount: (n: number, max: number) => `${n}/${max}`,
+  // Rename
+  renamePlaceholder: "Nombre del jugador",
+  renameTitle: "Cambiar nombre",
   // Language
   languageTitle: "Idioma",
   langEs: "Español",
@@ -76,6 +79,8 @@ const en = {
   addPlayer: "Add player",
   done: "Done",
   playerCount: (n: number, max: number) => `${n}/${max}`,
+  renamePlaceholder: "Player name",
+  renameTitle: "Rename player",
   languageTitle: "Language",
   langEs: "Español",
   langEn: "English",
