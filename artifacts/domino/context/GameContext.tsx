@@ -7,33 +7,67 @@ import React, {
   useState,
 } from "react";
 
-export interface Round {
+export interface Player {
   id: string;
-  home: number;
-  visitor: number;
+  name: string;
+  color: string;
+}
+
+export interface ScoreEntry {
+  id: string;
+  playerId: string;
+  points: number;
 }
 
 interface GameState {
-  homeTotal: number;
-  visitorTotal: number;
+  players: Player[];
+  entries: ScoreEntry[];
   target: number;
-  rounds: Round[];
 }
 
 interface GameContextValue extends GameState {
-  addPoints: (team: "home" | "visitor", points: number) => void;
+  totals: Record<string, number>;
+  addEntry: (playerId: string, points: number) => void;
+  editEntry: (entryId: string, points: number) => void;
+  deleteEntry: (entryId: string) => void;
   setTarget: (target: number) => void;
+  setPlayerName: (playerId: string, name: string) => void;
+  addPlayer: () => void;
+  removePlayer: (playerId: string) => void;
   restart: () => void;
 }
 
-const STORAGE_KEY = "domino_game_state";
+const STORAGE_KEY = "domino_game_v2";
+
+export const PLAYER_COLORS = [
+  "#3B82F6",
+  "#EF4444",
+  "#22C55E",
+  "#F59E0B",
+  "#A855F7",
+  "#EC4899",
+  "#14B8A6",
+  "#F97316",
+];
+
+const defaultPlayers: Player[] = [
+  { id: "p1", name: "Casa", color: PLAYER_COLORS[0] },
+  { id: "p2", name: "Visitante", color: PLAYER_COLORS[1] },
+];
 
 const defaultState: GameState = {
-  homeTotal: 0,
-  visitorTotal: 0,
+  players: defaultPlayers,
+  entries: [],
   target: 200,
-  rounds: [],
 };
+
+function computeTotals(entries: ScoreEntry[]): Record<string, number> {
+  const totals: Record<string, number> = {};
+  for (const e of entries) {
+    totals[e.playerId] = (totals[e.playerId] ?? 0) + e.points;
+  }
+  return totals;
+}
 
 const GameContext = createContext<GameContextValue | null>(null);
 
@@ -53,62 +87,119 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const persist = useCallback((next: GameState) => {
-    setState(next);
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  const totals = computeTotals(state.entries);
+
+  const addEntry = useCallback((playerId: string, points: number) => {
+    setState((prev) => {
+      const entry: ScoreEntry = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 6),
+        playerId,
+        points,
+      };
+      const next = { ...prev, entries: [...prev.entries, entry] };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
   }, []);
 
-  const addPoints = useCallback(
-    (team: "home" | "visitor", points: number) => {
-      setState((prev) => {
-        const lastRound = prev.rounds[prev.rounds.length - 1];
-        let newRounds: Round[];
-        if (lastRound && lastRound.home === 0 && team === "home") {
-          newRounds = prev.rounds.slice(0, -1).concat({
-            ...lastRound,
-            home: points,
-          });
-        } else if (lastRound && lastRound.visitor === 0 && team === "visitor") {
-          newRounds = prev.rounds.slice(0, -1).concat({
-            ...lastRound,
-            visitor: points,
-          });
-        } else {
-          const newRound: Round = {
-            id: Date.now().toString() + Math.random().toString(36).substr(2, 6),
-            home: team === "home" ? points : 0,
-            visitor: team === "visitor" ? points : 0,
-          };
-          newRounds = [...prev.rounds, newRound];
-        }
-        const next: GameState = {
-          ...prev,
-          homeTotal: prev.homeTotal + (team === "home" ? points : 0),
-          visitorTotal: prev.visitorTotal + (team === "visitor" ? points : 0),
-          rounds: newRounds,
-        };
-        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        return next;
-      });
-    },
-    []
-  );
+  const editEntry = useCallback((entryId: string, points: number) => {
+    setState((prev) => {
+      const next = {
+        ...prev,
+        entries: prev.entries.map((e) =>
+          e.id === entryId ? { ...e, points } : e
+        ),
+      };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
 
-  const setTarget = useCallback(
-    (target: number) => {
-      persist({ ...state, target });
-    },
-    [state, persist]
-  );
+  const deleteEntry = useCallback((entryId: string) => {
+    setState((prev) => {
+      const next = {
+        ...prev,
+        entries: prev.entries.filter((e) => e.id !== entryId),
+      };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const setTarget = useCallback((target: number) => {
+    setState((prev) => {
+      const next = { ...prev, target };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const setPlayerName = useCallback((playerId: string, name: string) => {
+    setState((prev) => {
+      const next = {
+        ...prev,
+        players: prev.players.map((p) =>
+          p.id === playerId ? { ...p, name } : p
+        ),
+      };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const addPlayer = useCallback(() => {
+    setState((prev) => {
+      if (prev.players.length >= 8) return prev;
+      const colorIndex = prev.players.length % PLAYER_COLORS.length;
+      const newPlayer: Player = {
+        id: "p" + Date.now(),
+        name: `Jugador ${prev.players.length + 1}`,
+        color: PLAYER_COLORS[colorIndex],
+      };
+      const next = { ...prev, players: [...prev.players, newPlayer] };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const removePlayer = useCallback((playerId: string) => {
+    setState((prev) => {
+      if (prev.players.length <= 2) return prev;
+      const next = {
+        ...prev,
+        players: prev.players.filter((p) => p.id !== playerId),
+        entries: prev.entries.filter((e) => e.playerId !== playerId),
+      };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
 
   const restart = useCallback(() => {
-    persist({ ...defaultState, target: state.target });
-  }, [state.target, persist]);
+    setState((prev) => {
+      const next = { ...prev, entries: [] };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
 
   if (!loaded) return null;
 
   return (
-    <GameContext.Provider value={{ ...state, addPoints, setTarget, restart }}>
+    <GameContext.Provider
+      value={{
+        ...state,
+        totals,
+        addEntry,
+        editEntry,
+        deleteEntry,
+        setTarget,
+        setPlayerName,
+        addPlayer,
+        removePlayer,
+        restart,
+      }}
+    >
       {children}
     </GameContext.Provider>
   );
