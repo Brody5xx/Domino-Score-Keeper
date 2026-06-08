@@ -19,10 +19,19 @@ export interface ScoreEntry {
   points: number;
 }
 
+export interface PreviousGame {
+  id: string;
+  date: number;
+  players: Player[];
+  entries: ScoreEntry[];
+  target: number;
+}
+
 interface GameState {
   players: Player[];
   entries: ScoreEntry[];
   target: number;
+  previousGames: PreviousGame[];
 }
 
 interface GameContextValue extends GameState {
@@ -37,7 +46,7 @@ interface GameContextValue extends GameState {
   restart: () => void;
 }
 
-const STORAGE_KEY = "domino_game_v2";
+const STORAGE_KEY = "domino_game_v3";
 
 export const PLAYER_COLORS = [
   "#3B82F6",
@@ -59,9 +68,10 @@ const defaultState: GameState = {
   players: defaultPlayers,
   entries: [],
   target: 200,
+  previousGames: [],
 };
 
-function computeTotals(entries: ScoreEntry[]): Record<string, number> {
+export function computeTotals(entries: ScoreEntry[]): Record<string, number> {
   const totals: Record<string, number> = {};
   for (const e of entries) {
     totals[e.playerId] = (totals[e.playerId] ?? 0) + e.points;
@@ -80,7 +90,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       if (raw) {
         try {
           const parsed = JSON.parse(raw) as GameState;
-          setState(parsed);
+          setState({ ...defaultState, ...parsed });
         } catch {}
       }
       setLoaded(true);
@@ -177,7 +187,25 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const restart = useCallback(() => {
     setState((prev) => {
-      const next = { ...prev, entries: [] };
+      // Only archive if there are actual entries to save
+      const savedGame: PreviousGame | null =
+        prev.entries.length > 0
+          ? {
+              id: Date.now().toString(),
+              date: Date.now(),
+              players: prev.players,
+              entries: prev.entries,
+              target: prev.target,
+            }
+          : null;
+
+      const next: GameState = {
+        ...prev,
+        entries: [],
+        previousGames: savedGame
+          ? [savedGame, ...prev.previousGames].slice(0, 10)
+          : prev.previousGames,
+      };
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       return next;
     });

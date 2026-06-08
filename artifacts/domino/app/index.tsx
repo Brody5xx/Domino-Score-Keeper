@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useGame } from "@/context/GameContext";
+import { type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
 import { useColors } from "@/hooks/useColors";
 
 const TARGET_PRESETS = [100, 120, 150, 200];
@@ -31,6 +31,7 @@ export default function MainScreen() {
     entries,
     target,
     totals,
+    previousGames,
     addEntry,
     editEntry,
     deleteEntry,
@@ -54,6 +55,8 @@ export default function MainScreen() {
   const [editingName, setEditingName] = useState<{ id: string; value: string } | null>(null);
 
   const [restartModal, setRestartModal] = useState(false);
+  const [historyModal, setHistoryModal] = useState(false);
+  const [expandedGame, setExpandedGame] = useState<string | null>(null);
 
   const styles = makeStyles(colors);
   const topPad = Platform.OS === "web" ? 16 : insets.top;
@@ -234,11 +237,25 @@ export default function MainScreen() {
         )}
       </View>
 
-      {/* ── Restart button ── */}
-      <Pressable style={styles.restartBtn} onPress={() => setRestartModal(true)}>
-        <Feather name="rotate-ccw" size={15} color={colors.destructive} />
-        <Text style={styles.restartText}>Reiniciar</Text>
-      </Pressable>
+      {/* ── Bottom buttons row ── */}
+      <View style={styles.bottomRow}>
+        {previousGames.length > 0 && (
+          <Pressable style={styles.historyBtn} onPress={() => setHistoryModal(true)}>
+            <Feather name="archive" size={15} color={colors.mutedForeground} />
+            <Text style={styles.historyBtnText}>Anteriores</Text>
+            <View style={styles.historyBadge}>
+              <Text style={styles.historyBadgeText}>{previousGames.length}</Text>
+            </View>
+          </Pressable>
+        )}
+        <Pressable
+          style={[styles.restartBtn, previousGames.length > 0 && { flex: 1 }]}
+          onPress={() => setRestartModal(true)}
+        >
+          <Feather name="rotate-ccw" size={15} color={colors.destructive} />
+          <Text style={styles.restartText}>Reiniciar</Text>
+        </Pressable>
+      </View>
 
       {/* ══ MODALS ══════════════════════════════════════════════════════════════ */}
 
@@ -347,6 +364,97 @@ export default function MainScreen() {
                 <Text style={styles.modalConfirmText}>Reiniciar</Text>
               </Pressable>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Previous games */}
+      <Modal visible={historyModal} transparent animationType="slide" onRequestClose={() => setHistoryModal(false)}>
+        <View style={styles.overlay}>
+          <View style={styles.settingsCard}>
+            <View style={styles.settingsHeader}>
+              <Text style={styles.settingsTitleText}>Partidas anteriores</Text>
+              <Pressable onPress={() => setHistoryModal(false)} hitSlop={10}>
+                <Feather name="x" size={22} color={colors.mutedForeground} />
+              </Pressable>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {previousGames.map((game: PreviousGame, gIdx: number) => {
+                const gTotals = computeTotals(game.entries);
+                const isExpanded = expandedGame === game.id;
+                const dateStr = new Date(game.date).toLocaleDateString("es", {
+                  day: "2-digit", month: "short", year: "numeric",
+                  hour: "2-digit", minute: "2-digit",
+                });
+                const winner = [...game.players].sort(
+                  (a, b) => (gTotals[b.id] ?? 0) - (gTotals[a.id] ?? 0)
+                )[0];
+                return (
+                  <View key={game.id} style={styles.prevGameBlock}>
+                    {/* Game header row */}
+                    <Pressable
+                      style={styles.prevGameHeader}
+                      onPress={() => setExpandedGame(isExpanded ? null : game.id)}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.prevGameDate}>{dateStr}</Text>
+                        <Text style={styles.prevGameMeta}>
+                          Meta: {game.target} · {game.entries.length} apuntes
+                        </Text>
+                      </View>
+                      <View style={[styles.prevWinnerBadge, { backgroundColor: winner?.color + "22", borderColor: winner?.color }]}>
+                        <Text style={[styles.prevWinnerText, { color: winner?.color }]}>
+                          🏆 {winner?.name}
+                        </Text>
+                      </View>
+                      <Feather
+                        name={isExpanded ? "chevron-up" : "chevron-down"}
+                        size={16}
+                        color={colors.mutedForeground}
+                        style={{ marginLeft: 8 }}
+                      />
+                    </Pressable>
+
+                    {/* Player totals */}
+                    <View style={styles.prevPlayerRow}>
+                      {game.players.map((p) => (
+                        <View key={p.id} style={styles.prevPlayerChip}>
+                          <View style={[styles.entryColorDot, { backgroundColor: p.color }]} />
+                          <Text style={[styles.prevPlayerName, { color: p.color }]} numberOfLines={1}>{p.name}</Text>
+                          <Text style={styles.prevPlayerTotal}>{gTotals[p.id] ?? 0}</Text>
+                        </View>
+                      ))}
+                    </View>
+
+                    {/* Expanded entry list */}
+                    {isExpanded && (
+                      <View style={styles.prevEntryList}>
+                        {[...game.entries].reverse().map((entry, eIdx) => {
+                          const ep = game.players.find((p) => p.id === entry.playerId);
+                          const num = game.entries.length - eIdx;
+                          return (
+                            <View key={entry.id} style={styles.entryRow}>
+                              <Text style={styles.entryNum}>#{num}</Text>
+                              <View style={[styles.entryColorDot, { backgroundColor: ep?.color ?? "#888" }]} />
+                              <Text style={[styles.entryPlayerName, { color: ep?.color ?? "#888" }]} numberOfLines={1}>
+                                {ep?.name ?? "—"}
+                              </Text>
+                              <Text style={styles.entryPoints}>+{entry.points}</Text>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </ScrollView>
+            <Pressable
+              style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 14 }]}
+              onPress={() => setHistoryModal(false)}
+            >
+              <Text style={styles.modalConfirmText}>Cerrar</Text>
+            </Pressable>
           </View>
         </View>
       </Modal>
@@ -606,6 +714,42 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     entryActionBtn: {
       padding: 4,
     },
+    bottomRow: {
+      flexDirection: "row",
+      gap: 10,
+      marginBottom: 0,
+    },
+    historyBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      paddingVertical: 13,
+      paddingHorizontal: 14,
+      borderRadius: 12,
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    historyBtnText: {
+      color: colors.mutedForeground,
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 13,
+    },
+    historyBadge: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      minWidth: 18,
+      height: 18,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 4,
+    },
+    historyBadgeText: {
+      color: "#000",
+      fontFamily: "Inter_700Bold",
+      fontSize: 10,
+    },
     restartBtn: {
       flexDirection: "row",
       alignItems: "center",
@@ -621,6 +765,68 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       color: colors.destructive,
       fontFamily: "Inter_600SemiBold",
       fontSize: 14,
+    },
+    // Previous games
+    prevGameBlock: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      paddingBottom: 12,
+      marginBottom: 12,
+    },
+    prevGameHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 8,
+    },
+    prevGameDate: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 13,
+      color: colors.foreground,
+    },
+    prevGameMeta: {
+      fontFamily: "Inter_400Regular",
+      fontSize: 11,
+      color: colors.mutedForeground,
+      marginTop: 1,
+    },
+    prevWinnerBadge: {
+      borderRadius: 8,
+      borderWidth: 1,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      marginLeft: 8,
+    },
+    prevWinnerText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 11,
+    },
+    prevPlayerRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 6,
+      marginBottom: 6,
+    },
+    prevPlayerChip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      backgroundColor: colors.background,
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+    },
+    prevPlayerName: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 12,
+      maxWidth: 80,
+    },
+    prevPlayerTotal: {
+      fontFamily: "Inter_700Bold",
+      fontSize: 13,
+      color: colors.foreground,
+    },
+    prevEntryList: {
+      marginTop: 4,
     },
     overlay: {
       flex: 1,
