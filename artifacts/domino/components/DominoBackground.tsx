@@ -18,22 +18,28 @@ const W = 62, H = 30, R = 5, PAD = 6;
 
 type TileData = [number, number, number, number, number, number];
 
+interface Palette {
+  fill: string;
+  stroke: string;
+  pip: string;
+}
+
 function DominoTile({
-  x, y, angle, v1, v2, scale = 1,
+  x, y, angle, v1, v2, scale = 1, palette,
 }: {
   x: number; y: number; angle: number;
-  v1: number; v2: number; scale?: number;
+  v1: number; v2: number; scale?: number; palette: Palette;
 }) {
   return (
     <G transform={`translate(${x},${y}) rotate(${angle}) scale(${scale}) translate(${-W / 2},${-H / 2})`}>
       <Rect x={0} y={0} width={W} height={H} rx={R} ry={R}
-        fill="#24243A" stroke="#484870" strokeWidth={1.2} />
-      <Line x1={W / 2} y1={4} x2={W / 2} y2={H - 4} stroke="#484870" strokeWidth={1} />
+        fill={palette.fill} stroke={palette.stroke} strokeWidth={1.2} />
+      <Line x1={W / 2} y1={4} x2={W / 2} y2={H - 4} stroke={palette.stroke} strokeWidth={1} />
       {PIPS[v1]?.map(([px, py], i) => (
-        <Circle key={`l${i}`} cx={PAD + px} cy={PAD + py} r={2.2} fill="#606090" />
+        <Circle key={`l${i}`} cx={PAD + px} cy={PAD + py} r={2.2} fill={palette.pip} />
       ))}
       {PIPS[v2]?.map(([px, py], i) => (
-        <Circle key={`r${i}`} cx={W / 2 + PAD + px} cy={PAD + py} r={2.2} fill="#606090" />
+        <Circle key={`r${i}`} cx={W / 2 + PAD + px} cy={PAD + py} r={2.2} fill={palette.pip} />
       ))}
     </G>
   );
@@ -130,17 +136,31 @@ const OPACITY_MAP: Record<string, number> = {
   scatter: 0.32, diagonal: 0.30, grid: 0.28, radial: 0.30, giant: 0.20,
 };
 
+const PALETTE_MAP: Record<string, Palette> = {
+  // Indigo / blue-violet
+  scatter:  { fill: "#24243A", stroke: "#484870", pip: "#606090" },
+  // Teal / emerald
+  diagonal: { fill: "#0F2E2A", stroke: "#1F6F63", pip: "#34D399" },
+  // Amber / gold
+  grid:     { fill: "#2E2410", stroke: "#7A5A1E", pip: "#F5B940" },
+  // Magenta / fuchsia
+  radial:   { fill: "#2C1230", stroke: "#7A2E84", pip: "#E85BD8" },
+  // Crimson / red
+  giant:    { fill: "#33141A", stroke: "#8A2E3C", pip: "#F26174" },
+};
+
 // ── component ─────────────────────────────────────────────────────────────────
 export default function DominoBackground() {
   const { bgTheme } = useGame();
   const tiles = useMemo(() => (THEME_MAP[bgTheme] ?? THEME_MAP.scatter)(), [bgTheme]);
   const opacity = OPACITY_MAP[bgTheme] ?? 0.30;
+  const palette = PALETTE_MAP[bgTheme] ?? PALETTE_MAP.scatter;
 
   return (
     <View style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]}>
       <Svg width="100%" height="100%" opacity={opacity}>
         {tiles.map(([x, y, angle, v1, v2, scale], idx) => (
-          <DominoTile key={idx} x={x} y={y} angle={angle} v1={v1} v2={v2} scale={scale} />
+          <DominoTile key={idx} x={x} y={y} angle={angle} v1={v1} v2={v2} scale={scale} palette={palette} />
         ))}
       </Svg>
     </View>
