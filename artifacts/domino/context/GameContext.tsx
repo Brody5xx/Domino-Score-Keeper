@@ -44,6 +44,7 @@ interface GameContextValue extends GameState {
   addPlayer: () => void;
   removePlayer: (playerId: string) => void;
   restart: () => void;
+  deletePreviousGame: (gameId: string) => void;
 }
 
 const STORAGE_KEY = "domino_game_v3";
@@ -185,6 +186,17 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const deletePreviousGame = useCallback((gameId: string) => {
+    setState((prev) => {
+      const next = {
+        ...prev,
+        previousGames: prev.previousGames.filter((g) => g.id !== gameId),
+      };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const restart = useCallback(() => {
     setState((prev) => {
       // Only archive if there are actual entries to save
@@ -226,6 +238,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         addPlayer,
         removePlayer,
         restart,
+        deletePreviousGame,
       }}
     >
       {children}

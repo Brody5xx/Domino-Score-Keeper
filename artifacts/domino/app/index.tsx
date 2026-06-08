@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
+import { useLang } from "@/context/LangContext";
 import { useColors } from "@/hooks/useColors";
 
 const TARGET_PRESETS = [100, 120, 150, 200];
@@ -26,6 +27,7 @@ type EditModalState = { entryId: string; currentPoints: number } | null;
 export default function MainScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { t, lang, setLang } = useLang();
   const {
     players,
     entries,
@@ -40,6 +42,7 @@ export default function MainScreen() {
     addPlayer,
     removePlayer,
     restart,
+    deletePreviousGame,
   } = useGame();
 
   const [addModal, setAddModal] = useState<AddModalState>(null);
@@ -57,12 +60,26 @@ export default function MainScreen() {
   const [restartModal, setRestartModal] = useState(false);
   const [historyModal, setHistoryModal] = useState(false);
   const [expandedGame, setExpandedGame] = useState<string | null>(null);
+  const [deleteGameModal, setDeleteGameModal] = useState<string | null>(null);
 
   const styles = makeStyles(colors);
   const topPad = Platform.OS === "web" ? 16 : insets.top;
   const bottomPad = Platform.OS === "web" ? 20 : insets.bottom;
 
   const gameOver = players.some((p) => (totals[p.id] ?? 0) >= target);
+
+  const locale = lang === "es" ? "es-419" : "en-US";
+
+  function formatDate(ts: number) {
+    return new Date(ts).toLocaleString(locale, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
 
   // ── handlers ──────────────────────────────────────────────────────────────
 
@@ -87,10 +104,8 @@ export default function MainScreen() {
   }
 
   function handleSetCustomTarget() {
-    const t = parseInt(customInput, 10);
-    if (!isNaN(t) && t > 0) {
-      setTarget(t);
-    }
+    const tv = parseInt(customInput, 10);
+    if (!isNaN(tv) && tv > 0) setTarget(tv);
     setCustomModal(false);
     setCustomInput("");
   }
@@ -99,6 +114,14 @@ export default function MainScreen() {
     restart();
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     setRestartModal(false);
+  }
+
+  function confirmDeleteGame() {
+    if (deleteGameModal) {
+      deletePreviousGame(deleteGameModal);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setDeleteGameModal(null);
   }
 
   function savePlayerName() {
@@ -118,20 +141,23 @@ export default function MainScreen() {
       {/* ── Top bar ── */}
       <View style={styles.topBar}>
         <View style={styles.targetRow}>
-          {TARGET_PRESETS.map((t) => (
+          {TARGET_PRESETS.map((tv) => (
             <Pressable
-              key={t}
-              style={[styles.targetChip, target === t && styles.targetChipActive]}
-              onPress={() => { setTarget(t); Haptics.selectionAsync(); }}
+              key={tv}
+              style={[styles.targetChip, target === tv && styles.targetChipActive]}
+              onPress={() => { setTarget(tv); Haptics.selectionAsync(); }}
             >
-              <Text style={[styles.targetChipText, target === t && styles.targetChipTextActive]}>
-                {t}
+              <Text style={[styles.targetChipText, target === tv && styles.targetChipTextActive]}>
+                {tv}
               </Text>
             </Pressable>
           ))}
           <Pressable
             style={[styles.targetChip, !TARGET_PRESETS.includes(target) && styles.targetChipActive]}
-            onPress={() => { setCustomModal(true); setCustomInput(!TARGET_PRESETS.includes(target) ? String(target) : ""); }}
+            onPress={() => {
+              setCustomModal(true);
+              setCustomInput(!TARGET_PRESETS.includes(target) ? String(target) : "");
+            }}
           >
             <Text style={[styles.targetChipText, !TARGET_PRESETS.includes(target) && styles.targetChipTextActive]}>
               {!TARGET_PRESETS.includes(target) ? String(target) : "..."}
@@ -168,7 +194,7 @@ export default function MainScreen() {
                 </Text>
                 {won && (
                   <View style={[styles.winBadge, { backgroundColor: player.color }]}>
-                    <Text style={styles.winBadgeText}>GANÓ</Text>
+                    <Text style={styles.winBadgeText}>{t.won}</Text>
                   </View>
                 )}
               </View>
@@ -176,7 +202,7 @@ export default function MainScreen() {
                 {total}
               </Text>
               <Text style={styles.remainingText}>
-                {won ? "¡Victoria!" : `Faltan ${remaining}`}
+                {won ? t.victory : t.remaining(remaining)}
               </Text>
               <Pressable
                 style={[styles.addBtn, { backgroundColor: player.color }, gameOver && styles.disabledBtn]}
@@ -194,10 +220,10 @@ export default function MainScreen() {
       <View style={styles.historyContainer}>
         <View style={styles.historyHeader}>
           <Feather name="clock" size={13} color={colors.mutedForeground} />
-          <Text style={styles.historyTitle}>Historial</Text>
+          <Text style={styles.historyTitle}>{t.history}</Text>
         </View>
         {entries.length === 0 ? (
-          <Text style={styles.emptyHistory}>Aún no hay puntos registrados</Text>
+          <Text style={styles.emptyHistory}>{t.noScores}</Text>
         ) : (
           <FlatList
             data={reversedEntries}
@@ -209,7 +235,7 @@ export default function MainScreen() {
               const num = entries.length - index;
               return (
                 <View style={styles.entryRow}>
-                  <Text style={styles.entryNum}>#{num}</Text>
+                  <Text style={styles.entryNum}>{t.entry(num)}</Text>
                   <View style={[styles.entryColorDot, { backgroundColor: player?.color ?? "#888" }]} />
                   <Text style={[styles.entryPlayerName, { color: player?.color ?? "#888" }]} numberOfLines={1}>
                     {player?.name ?? "—"}
@@ -242,7 +268,7 @@ export default function MainScreen() {
         {previousGames.length > 0 && (
           <Pressable style={styles.historyBtn} onPress={() => setHistoryModal(true)}>
             <Feather name="archive" size={15} color={colors.mutedForeground} />
-            <Text style={styles.historyBtnText}>Anteriores</Text>
+            <Text style={styles.historyBtnText}>{t.previous}</Text>
             <View style={styles.historyBadge}>
               <Text style={styles.historyBadgeText}>{previousGames.length}</Text>
             </View>
@@ -253,7 +279,7 @@ export default function MainScreen() {
           onPress={() => setRestartModal(true)}
         >
           <Feather name="rotate-ccw" size={15} color={colors.destructive} />
-          <Text style={styles.restartText}>Reiniciar</Text>
+          <Text style={styles.restartText}>{t.restart}</Text>
         </Pressable>
       </View>
 
@@ -267,7 +293,7 @@ export default function MainScreen() {
               const p = players.find((pl) => pl.id === addModal?.playerId);
               return (
                 <Text style={styles.modalTitle}>
-                  Puntos — <Text style={{ color: p?.color }}>{p?.name}</Text>
+                  {t.pointsFor} <Text style={{ color: p?.color }}>{p?.name}</Text>
                 </Text>
               );
             })()}
@@ -283,13 +309,13 @@ export default function MainScreen() {
             />
             <View style={styles.modalBtns}>
               <Pressable style={styles.modalCancel} onPress={() => setAddModal(null)}>
-                <Text style={styles.modalCancelText}>Cancelar</Text>
+                <Text style={styles.modalCancelText}>{t.cancel}</Text>
               </Pressable>
               <Pressable
                 style={[styles.modalConfirm, { backgroundColor: players.find((pl) => pl.id === addModal?.playerId)?.color ?? colors.primary }]}
                 onPress={handleAddPoints}
               >
-                <Text style={styles.modalConfirmText}>Agregar</Text>
+                <Text style={styles.modalConfirmText}>{t.add}</Text>
               </Pressable>
             </View>
           </View>
@@ -300,7 +326,7 @@ export default function MainScreen() {
       <Modal visible={editModal !== null} transparent animationType="fade" onRequestClose={() => setEditModal(null)}>
         <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === "ios" ? "padding" : "height"}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Editar puntos</Text>
+            <Text style={styles.modalTitle}>{t.editPoints}</Text>
             <TextInput
               style={styles.modalInput}
               placeholder="0"
@@ -313,10 +339,10 @@ export default function MainScreen() {
             />
             <View style={styles.modalBtns}>
               <Pressable style={styles.modalCancel} onPress={() => setEditModal(null)}>
-                <Text style={styles.modalCancelText}>Cancelar</Text>
+                <Text style={styles.modalCancelText}>{t.cancel}</Text>
               </Pressable>
               <Pressable style={[styles.modalConfirm, { backgroundColor: colors.primary }]} onPress={handleEditPoints}>
-                <Text style={styles.modalConfirmText}>Guardar</Text>
+                <Text style={styles.modalConfirmText}>{t.save}</Text>
               </Pressable>
             </View>
           </View>
@@ -327,10 +353,10 @@ export default function MainScreen() {
       <Modal visible={customModal} transparent animationType="fade" onRequestClose={() => setCustomModal(false)}>
         <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === "ios" ? "padding" : "height"}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Meta personalizada</Text>
+            <Text style={styles.modalTitle}>{t.customTargetTitle}</Text>
             <TextInput
               style={styles.modalInput}
-              placeholder="200"
+              placeholder={t.customTargetPlaceholder}
               placeholderTextColor={colors.mutedForeground}
               keyboardType="number-pad"
               value={customInput}
@@ -340,10 +366,10 @@ export default function MainScreen() {
             />
             <View style={styles.modalBtns}>
               <Pressable style={styles.modalCancel} onPress={() => setCustomModal(false)}>
-                <Text style={styles.modalCancelText}>Cancelar</Text>
+                <Text style={styles.modalCancelText}>{t.cancel}</Text>
               </Pressable>
               <Pressable style={[styles.modalConfirm, { backgroundColor: colors.primary }]} onPress={handleSetCustomTarget}>
-                <Text style={styles.modalConfirmText}>Guardar</Text>
+                <Text style={styles.modalConfirmText}>{t.save}</Text>
               </Pressable>
             </View>
           </View>
@@ -354,14 +380,32 @@ export default function MainScreen() {
       <Modal visible={restartModal} transparent animationType="fade" onRequestClose={() => setRestartModal(false)}>
         <View style={styles.overlay}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>¿Reiniciar partida?</Text>
-            <Text style={styles.modalSubtitle}>Se borrarán todos los puntos y el historial.</Text>
+            <Text style={styles.modalTitle}>{t.restartTitle}</Text>
+            <Text style={styles.modalSubtitle}>{t.restartMsg}</Text>
             <View style={styles.modalBtns}>
               <Pressable style={styles.modalCancel} onPress={() => setRestartModal(false)}>
-                <Text style={styles.modalCancelText}>Cancelar</Text>
+                <Text style={styles.modalCancelText}>{t.cancel}</Text>
               </Pressable>
               <Pressable style={[styles.modalConfirm, { backgroundColor: colors.destructive }]} onPress={confirmRestart}>
-                <Text style={styles.modalConfirmText}>Reiniciar</Text>
+                <Text style={styles.modalConfirmText}>{t.restartConfirm}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Delete previous game confirm */}
+      <Modal visible={deleteGameModal !== null} transparent animationType="fade" onRequestClose={() => setDeleteGameModal(null)}>
+        <View style={styles.overlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>{t.deleteGame}</Text>
+            <Text style={styles.modalSubtitle}>{t.confirmDeleteGame}</Text>
+            <View style={styles.modalBtns}>
+              <Pressable style={styles.modalCancel} onPress={() => setDeleteGameModal(null)}>
+                <Text style={styles.modalCancelText}>{t.cancel}</Text>
+              </Pressable>
+              <Pressable style={[styles.modalConfirm, { backgroundColor: colors.destructive }]} onPress={confirmDeleteGame}>
+                <Text style={styles.modalConfirmText}>{t.deleteConfirm}</Text>
               </Pressable>
             </View>
           </View>
@@ -373,47 +417,52 @@ export default function MainScreen() {
         <View style={styles.overlay}>
           <View style={styles.settingsCard}>
             <View style={styles.settingsHeader}>
-              <Text style={styles.settingsTitleText}>Partidas anteriores</Text>
+              <Text style={styles.settingsTitleText}>{t.previousGamesTitle}</Text>
               <Pressable onPress={() => setHistoryModal(false)} hitSlop={10}>
                 <Feather name="x" size={22} color={colors.mutedForeground} />
               </Pressable>
             </View>
             <ScrollView showsVerticalScrollIndicator={false}>
-              {previousGames.map((game: PreviousGame, gIdx: number) => {
+              {previousGames.map((game: PreviousGame) => {
                 const gTotals = computeTotals(game.entries);
                 const isExpanded = expandedGame === game.id;
-                const dateStr = new Date(game.date).toLocaleDateString("es", {
-                  day: "2-digit", month: "short", year: "numeric",
-                  hour: "2-digit", minute: "2-digit",
-                });
+                const dateStr = formatDate(game.date);
                 const winner = [...game.players].sort(
                   (a, b) => (gTotals[b.id] ?? 0) - (gTotals[a.id] ?? 0)
                 )[0];
                 return (
                   <View key={game.id} style={styles.prevGameBlock}>
-                    {/* Game header row */}
-                    <Pressable
-                      style={styles.prevGameHeader}
-                      onPress={() => setExpandedGame(isExpanded ? null : game.id)}
-                    >
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.prevGameDate}>{dateStr}</Text>
-                        <Text style={styles.prevGameMeta}>
-                          Meta: {game.target} · {game.entries.length} apuntes
-                        </Text>
-                      </View>
-                      <View style={[styles.prevWinnerBadge, { backgroundColor: winner?.color + "22", borderColor: winner?.color }]}>
-                        <Text style={[styles.prevWinnerText, { color: winner?.color }]}>
-                          🏆 {winner?.name}
-                        </Text>
-                      </View>
-                      <Feather
-                        name={isExpanded ? "chevron-up" : "chevron-down"}
-                        size={16}
-                        color={colors.mutedForeground}
-                        style={{ marginLeft: 8 }}
-                      />
-                    </Pressable>
+                    <View style={styles.prevGameHeaderRow}>
+                      <Pressable
+                        style={styles.prevGameHeaderMain}
+                        onPress={() => setExpandedGame(isExpanded ? null : game.id)}
+                      >
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.prevGameDate}>{dateStr}</Text>
+                          <Text style={styles.prevGameMeta}>
+                            {t.gameTarget}: {game.target} · {game.entries.length} {t.gameEntries}
+                          </Text>
+                        </View>
+                        <View style={[styles.prevWinnerBadge, { backgroundColor: winner?.color + "22", borderColor: winner?.color }]}>
+                          <Text style={[styles.prevWinnerText, { color: winner?.color }]}>
+                            🏆 {winner?.name}
+                          </Text>
+                        </View>
+                        <Feather
+                          name={isExpanded ? "chevron-up" : "chevron-down"}
+                          size={16}
+                          color={colors.mutedForeground}
+                          style={{ marginLeft: 8 }}
+                        />
+                      </Pressable>
+                      <Pressable
+                        style={styles.deleteGameBtn}
+                        onPress={() => setDeleteGameModal(game.id)}
+                        hitSlop={8}
+                      >
+                        <Feather name="trash-2" size={15} color={colors.destructive} />
+                      </Pressable>
+                    </View>
 
                     {/* Player totals */}
                     <View style={styles.prevPlayerRow}>
@@ -434,7 +483,7 @@ export default function MainScreen() {
                           const num = game.entries.length - eIdx;
                           return (
                             <View key={entry.id} style={styles.entryRow}>
-                              <Text style={styles.entryNum}>#{num}</Text>
+                              <Text style={styles.entryNum}>{t.entry(num)}</Text>
                               <View style={[styles.entryColorDot, { backgroundColor: ep?.color ?? "#888" }]} />
                               <Text style={[styles.entryPlayerName, { color: ep?.color ?? "#888" }]} numberOfLines={1}>
                                 {ep?.name ?? "—"}
@@ -453,7 +502,7 @@ export default function MainScreen() {
               style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 14 }]}
               onPress={() => setHistoryModal(false)}
             >
-              <Text style={styles.modalConfirmText}>Cerrar</Text>
+              <Text style={styles.modalConfirmText}>{t.close}</Text>
             </Pressable>
           </View>
         </View>
@@ -462,16 +511,43 @@ export default function MainScreen() {
       {/* Settings / Players */}
       <Modal visible={settingsModal} transparent animationType="slide" onRequestClose={() => setSettingsModal(false)}>
         <View style={styles.overlay}>
-          <View style={[styles.settingsCard]}>
+          <View style={styles.settingsCard}>
             <View style={styles.settingsHeader}>
-              <Text style={styles.settingsTitleText}>Jugadores</Text>
+              <Text style={styles.settingsTitleText}>{t.playersTitle}</Text>
               <Pressable onPress={() => setSettingsModal(false)} hitSlop={10}>
                 <Feather name="x" size={22} color={colors.mutedForeground} />
               </Pressable>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} style={styles.settingsList}>
-              {players.map((player, idx) => (
+              {/* Language switcher */}
+              <View style={styles.langSection}>
+                <Text style={styles.langLabel}>{t.languageTitle}</Text>
+                <View style={styles.langRow}>
+                  <Pressable
+                    style={[styles.langChip, lang === "es" && styles.langChipActive]}
+                    onPress={() => setLang("es")}
+                  >
+                    <Text style={[styles.langChipText, lang === "es" && styles.langChipTextActive]}>
+                      {t.langEs}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.langChip, lang === "en" && styles.langChipActive]}
+                    onPress={() => setLang("en")}
+                  >
+                    <Text style={[styles.langChipText, lang === "en" && styles.langChipTextActive]}>
+                      {t.langEn}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Divider */}
+              <View style={styles.sectionDivider} />
+
+              {/* Players list */}
+              {players.map((player) => (
                 <View key={player.id} style={styles.settingsPlayerRow}>
                   <View style={[styles.playerColorSwatch, { backgroundColor: player.color }]} />
                   {editingName?.id === player.id ? (
@@ -513,8 +589,8 @@ export default function MainScreen() {
                 onPress={() => { addPlayer(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
               >
                 <Feather name="user-plus" size={16} color={colors.primary} />
-                <Text style={[styles.addPlayerText, { color: colors.primary }]}>Agregar jugador</Text>
-                <Text style={styles.playerCountHint}>{players.length}/8</Text>
+                <Text style={[styles.addPlayerText, { color: colors.primary }]}>{t.addPlayer}</Text>
+                <Text style={styles.playerCountHint}>{t.playerCount(players.length, 8)}</Text>
               </Pressable>
             )}
 
@@ -522,7 +598,7 @@ export default function MainScreen() {
               style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 14 }]}
               onPress={() => setSettingsModal(false)}
             >
-              <Text style={styles.modalConfirmText}>Listo</Text>
+              <Text style={styles.modalConfirmText}>{t.done}</Text>
             </Pressable>
           </View>
         </View>
@@ -717,7 +793,6 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     bottomRow: {
       flexDirection: "row",
       gap: 10,
-      marginBottom: 0,
     },
     historyBtn: {
       flexDirection: "row",
@@ -773,10 +848,15 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       paddingBottom: 12,
       marginBottom: 12,
     },
-    prevGameHeader: {
+    prevGameHeaderRow: {
       flexDirection: "row",
       alignItems: "center",
       marginBottom: 8,
+    },
+    prevGameHeaderMain: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
     },
     prevGameDate: {
       fontFamily: "Inter_600SemiBold",
@@ -799,6 +879,10 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     prevWinnerText: {
       fontFamily: "Inter_600SemiBold",
       fontSize: 11,
+    },
+    deleteGameBtn: {
+      padding: 6,
+      marginLeft: 6,
     },
     prevPlayerRow: {
       flexDirection: "row",
@@ -828,6 +912,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     prevEntryList: {
       marginTop: 4,
     },
+    // Modals
     overlay: {
       flex: 1,
       backgroundColor: "rgba(0,0,0,0.7)",
@@ -898,7 +983,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     // Settings modal
     settingsCard: {
       width: "88%",
-      maxHeight: "75%",
+      maxHeight: "80%",
       backgroundColor: colors.card,
       borderRadius: 20,
       padding: 20,
@@ -918,6 +1003,47 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     settingsList: {
       flexGrow: 0,
+    },
+    langSection: {
+      marginBottom: 4,
+    },
+    langLabel: {
+      fontFamily: "Inter_500Medium",
+      fontSize: 12,
+      color: colors.mutedForeground,
+      textTransform: "uppercase",
+      letterSpacing: 0.7,
+      marginBottom: 8,
+    },
+    langRow: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    langChip: {
+      flex: 1,
+      paddingVertical: 9,
+      borderRadius: 10,
+      alignItems: "center",
+      backgroundColor: colors.background,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+    },
+    langChipActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + "22",
+    },
+    langChipText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 13,
+      color: colors.mutedForeground,
+    },
+    langChipTextActive: {
+      color: colors.primary,
+    },
+    sectionDivider: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginVertical: 14,
     },
     settingsPlayerRow: {
       flexDirection: "row",

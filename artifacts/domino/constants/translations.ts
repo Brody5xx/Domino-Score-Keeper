@@ -1,0 +1,85 @@
+export type Lang = "es" | "en";
+
+const es = {
+  // Player card
+  remaining: (n: number) => `Faltan ${n}`,
+  victory: "¡Victoria!",
+  won: "GANÓ",
+  // History section
+  history: "Historial",
+  noScores: "Aún no hay puntos registrados",
+  entry: (n: number) => `#${n}`,
+  // Bottom buttons
+  restart: "Reiniciar",
+  previous: "Anteriores",
+  // Add / edit modals
+  pointsFor: "Puntos —",
+  editPoints: "Editar puntos",
+  add: "Agregar",
+  cancel: "Cancelar",
+  save: "Guardar",
+  // Custom target modal
+  customTargetTitle: "Meta personalizada",
+  customTargetPlaceholder: "200",
+  // Restart modal
+  restartTitle: "¿Reiniciar partida?",
+  restartMsg: "Se borrarán todos los puntos y el historial.",
+  restartConfirm: "Reiniciar",
+  // Previous games modal
+  previousGamesTitle: "Partidas anteriores",
+  gameTarget: "Meta",
+  gameEntries: "apuntes",
+  expandHint: "",
+  close: "Cerrar",
+  deleteGame: "Eliminar",
+  confirmDeleteGame: "¿Eliminar esta partida del historial?",
+  deleteConfirm: "Eliminar",
+  // Settings modal
+  playersTitle: "Jugadores",
+  addPlayer: "Agregar jugador",
+  done: "Listo",
+  playerCount: (n: number, max: number) => `${n}/${max}`,
+  // Language
+  languageTitle: "Idioma",
+  langEs: "Español",
+  langEn: "English",
+};
+
+const en = {
+  remaining: (n: number) => `${n} left`,
+  victory: "Victory!",
+  won: "WON",
+  history: "History",
+  noScores: "No scores recorded yet",
+  entry: (n: number) => `#${n}`,
+  restart: "Restart",
+  previous: "Previous",
+  pointsFor: "Points —",
+  editPoints: "Edit points",
+  add: "Add",
+  cancel: "Cancel",
+  save: "Save",
+  customTargetTitle: "Custom target",
+  customTargetPlaceholder: "200",
+  restartTitle: "Restart game?",
+  restartMsg: "All scores and history will be cleared.",
+  restartConfirm: "Restart",
+  previousGamesTitle: "Previous games",
+  gameTarget: "Target",
+  gameEntries: "entries",
+  expandHint: "",
+  close: "Close",
+  deleteGame: "Delete",
+  confirmDeleteGame: "Remove this game from history?",
+  deleteConfirm: "Delete",
+  playersTitle: "Players",
+  addPlayer: "Add player",
+  done: "Done",
+  playerCount: (n: number, max: number) => `${n}/${max}`,
+  languageTitle: "Language",
+  langEs: "Español",
+  langEn: "English",
+};
+
+export type Translations = typeof es;
+export const TRANSLATIONS: Record<Lang, Translations> = { es, en };
