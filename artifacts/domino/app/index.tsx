@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PLAYER_COLORS, type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
 import { useLang } from "@/context/LangContext";
 import { useColors } from "@/hooks/useColors";
+import DominoBackground from "@/components/DominoBackground";
 
 const TARGET_PRESETS = [100, 120, 150, 200];
 
@@ -153,6 +154,7 @@ export default function MainScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: topPad, paddingBottom: bottomPad }]}>
+      <DominoBackground />
 
       {/* ── Top bar ── */}
       <View style={styles.topBar}>
