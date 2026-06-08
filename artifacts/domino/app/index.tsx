@@ -2,7 +2,6 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import {
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   Modal,
@@ -30,6 +29,7 @@ export default function MainScreen() {
   const [pointsInput, setPointsInput] = useState("");
   const [customModal, setCustomModal] = useState(false);
   const [customInput, setCustomInput] = useState("");
+  const [restartModal, setRestartModal] = useState(false);
 
   const homeRemaining = Math.max(0, target - homeTotal);
   const visitorRemaining = Math.max(0, target - visitorTotal);
@@ -41,10 +41,7 @@ export default function MainScreen() {
 
   function handleAddPoints() {
     const pts = parseInt(pointsInput, 10);
-    if (isNaN(pts) || pts <= 0) {
-      Alert.alert("Número inválido", "Ingresa un número mayor a 0");
-      return;
-    }
+    if (isNaN(pts) || pts <= 0) return;
     if (addModal) {
       addPoints(addModal.team, pts);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -55,31 +52,20 @@ export default function MainScreen() {
 
   function handleSetCustomTarget() {
     const t = parseInt(customInput, 10);
-    if (isNaN(t) || t <= 0) {
-      Alert.alert("Número inválido", "Ingresa un número mayor a 0");
-      return;
-    }
+    if (isNaN(t) || t <= 0) return;
     setTarget(t);
     setCustomModal(false);
     setCustomInput("");
   }
 
   function handleRestart() {
-    Alert.alert(
-      "Reiniciar",
-      "¿Quieres empezar una nueva partida?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Reiniciar",
-          style: "destructive",
-          onPress: () => {
-            restart();
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-          },
-        },
-      ]
-    );
+    setRestartModal(true);
+  }
+
+  function confirmRestart() {
+    restart();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    setRestartModal(false);
   }
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
@@ -326,6 +312,37 @@ export default function MainScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Restart confirmation modal */}
+      <Modal
+        visible={restartModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setRestartModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>¿Reiniciar partida?</Text>
+            <Text style={styles.modalSubtitle}>
+              Se borrarán todos los puntos y el historial.
+            </Text>
+            <View style={styles.modalBtns}>
+              <Pressable
+                style={styles.modalCancel}
+                onPress={() => setRestartModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancelar</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalConfirm, { backgroundColor: colors.destructive }]}
+                onPress={confirmRestart}
+              >
+                <Text style={styles.modalConfirmText}>Reiniciar</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -513,8 +530,15 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontFamily: "Inter_700Bold",
       fontSize: 18,
       color: colors.foreground,
-      marginBottom: 16,
+      marginBottom: 8,
       textAlign: "center",
+    },
+    modalSubtitle: {
+      fontFamily: "Inter_400Regular",
+      fontSize: 13,
+      color: colors.mutedForeground,
+      textAlign: "center",
+      marginBottom: 20,
     },
     modalInput: {
       backgroundColor: colors.background,
