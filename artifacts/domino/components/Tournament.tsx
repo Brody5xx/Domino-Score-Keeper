@@ -551,14 +551,34 @@ function PlayModal({ matchId, onClose }: { matchId: string | null; onClose: () =
                 onPress={() => { resolveMatch(match.id, match.aId); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }}
               >
                 <View style={[styles.teamDot, { backgroundColor: a?.color ?? colors.primary }]} />
-                <Text style={styles.tapWinText}>{translateTeamName(a?.name ?? "", lang)}</Text>
+                <View style={styles.flex}>
+                  <Text style={styles.tapWinText}>{translateTeamName(a?.name ?? "", lang)}</Text>
+                  {a && (a.p1.trim() || a.p2.trim()) ? (
+                    <Text style={styles.tapWinPlayers} numberOfLines={1}>
+                      {[a.p1, a.p2]
+                        .map((p) => translatePlayerName(p, lang))
+                        .filter((p) => p.trim())
+                        .join(lang === "en" ? " & " : " y ")}
+                    </Text>
+                  ) : null}
+                </View>
               </Pressable>
               <Pressable
                 style={[styles.tapWinBtn, { borderColor: b?.color ?? colors.border }]}
                 onPress={() => { resolveMatch(match.id, match.bId!); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }}
               >
                 <View style={[styles.teamDot, { backgroundColor: b?.color ?? colors.primary }]} />
-                <Text style={styles.tapWinText}>{translateTeamName(b?.name ?? "", lang)}</Text>
+                <View style={styles.flex}>
+                  <Text style={styles.tapWinText}>{translateTeamName(b?.name ?? "", lang)}</Text>
+                  {b && (b.p1.trim() || b.p2.trim()) ? (
+                    <Text style={styles.tapWinPlayers} numberOfLines={1}>
+                      {[b.p1, b.p2]
+                        .map((p) => translatePlayerName(p, lang))
+                        .filter((p) => p.trim())
+                        .join(lang === "en" ? " & " : " y ")}
+                    </Text>
+                  ) : null}
+                </View>
               </Pressable>
               <Pressable style={styles.changeMethodBtn} onPress={() => setMatchMethod(match.id, null)}>
                 <Text style={styles.changeMethodText}>{t.chooseMethod}</Text>
@@ -919,6 +939,7 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
       marginBottom: 10,
     },
     tapWinText: { fontFamily: "Inter_700Bold", fontSize: 17, color: colors.foreground },
+    tapWinPlayers: { fontFamily: "Inter_500Medium", fontSize: 13, color: colors.mutedForeground, marginTop: 2 },
     changeMethodBtn: { alignItems: "center", paddingVertical: 8, marginTop: 4 },
     changeMethodText: { fontFamily: "Inter_500Medium", fontSize: 13, color: colors.mutedForeground },
 
