@@ -421,6 +421,16 @@ function Board() {
                     <Text style={styles.teamSideName} numberOfLines={1}>
                       {a ? translateTeamName(a.name, lang) : ""}
                     </Text>
+                    {a && (a.p1.trim() || a.p2.trim()) ? (
+                      <Text style={styles.byeRestText} numberOfLines={2}>
+                        {t.byeRest(
+                          [a.p1, a.p2]
+                            .map((p) => translatePlayerName(p, lang))
+                            .filter((p) => p.trim())
+                            .join(lang === "en" ? " & " : " y ")
+                        )}
+                      </Text>
+                    ) : null}
                     <Text style={styles.byeText}>{t.bye} · {t.byeAdvances}</Text>
                   </View>
                   <Feather name="fast-forward" size={18} color={colors.primary} />
@@ -815,6 +825,7 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
     vsScore: { fontFamily: "Inter_700Bold", fontSize: 14, color: colors.foreground },
 
     byeRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+    byeRestText: { fontFamily: "Inter_600SemiBold", fontSize: 13, color: colors.foreground, marginTop: 2 },
     byeText: { fontFamily: "Inter_500Medium", fontSize: 12, color: colors.mutedForeground, marginTop: 2 },
 
     playBtn: {
