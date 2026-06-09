@@ -75,6 +75,43 @@ const es = {
   bgGrid: "Cuadrícula",
   bgRadial: "Radial",
   bgGiant: "Gigante",
+  // Tournament
+  tournament: "Torneo",
+  tournamentMode: "Modo Torneo",
+  tournamentSetup: "Configurar torneo",
+  teamsCount: "Cantidad de equipos",
+  livesCount: "Vidas por equipo",
+  matchTarget: "Meta de puntos",
+  teamNamePlaceholder: "Nombre del equipo",
+  startTournament: "Iniciar torneo",
+  roundLabel: (n: number) => `Ronda ${n}`,
+  vs: "VS",
+  bye: "Descansa",
+  byeAdvances: "Avanza sin jugar",
+  livesLeft: (n: number) => (n === 1 ? "1 vida" : `${n} vidas`),
+  eliminated: "Eliminado",
+  play: "Jugar",
+  playMatch: "Jugar partida",
+  chooseMethod: "¿Cómo decidir el ganador?",
+  methodTap: "Marcar ganador",
+  methodPoints: "Jugar a puntos",
+  winnerIs: "Ganador",
+  tapWinnerHint: "Toca el equipo que ganó",
+  addPoints: "Agregar puntos",
+  reachTarget: (n: number) => `Primero en llegar a ${n} gana`,
+  confirmWinner: "Confirmar ganador",
+  undo: "Deshacer",
+  nextRound: "Siguiente ronda",
+  reshuffle: "Volver a sortear",
+  editMatchups: "Editar enfrentamientos",
+  doneEditing: "Listo",
+  swapHint: "Toca dos equipos para intercambiarlos",
+  champion: "¡Campeón!",
+  newTournament: "Nuevo torneo",
+  exitTournament: "Salir del torneo",
+  tournamentSearchPlaceholder: "Buscar equipo o jugador...",
+  roundProgress: (done: number, total: number) => `${done}/${total} partidas`,
+  needTwoTeams: "Necesitas al menos 2 equipos",
 };
 
 const en = {
@@ -142,6 +179,43 @@ const en = {
   bgGrid: "Grid",
   bgRadial: "Radial",
   bgGiant: "Giant",
+  // Tournament
+  tournament: "Tournament",
+  tournamentMode: "Tournament Mode",
+  tournamentSetup: "Set up tournament",
+  teamsCount: "Number of teams",
+  livesCount: "Lives per team",
+  matchTarget: "Points target",
+  teamNamePlaceholder: "Team name",
+  startTournament: "Start tournament",
+  roundLabel: (n: number) => `Round ${n}`,
+  vs: "VS",
+  bye: "Bye",
+  byeAdvances: "Advances without playing",
+  livesLeft: (n: number) => (n === 1 ? "1 life" : `${n} lives`),
+  eliminated: "Eliminated",
+  play: "Play",
+  playMatch: "Play match",
+  chooseMethod: "How to decide the winner?",
+  methodTap: "Pick winner",
+  methodPoints: "Play to points",
+  winnerIs: "Winner",
+  tapWinnerHint: "Tap the team that won",
+  addPoints: "Add points",
+  reachTarget: (n: number) => `First to ${n} wins`,
+  confirmWinner: "Confirm winner",
+  undo: "Undo",
+  nextRound: "Next round",
+  reshuffle: "Reshuffle",
+  editMatchups: "Edit matchups",
+  doneEditing: "Done",
+  swapHint: "Tap two teams to swap them",
+  champion: "Champion!",
+  newTournament: "New tournament",
+  exitTournament: "Exit tournament",
+  tournamentSearchPlaceholder: "Search team or player...",
+  roundProgress: (done: number, total: number) => `${done}/${total} matches`,
+  needTwoTeams: "You need at least 2 teams",
 };
 
 export type Translations = typeof es;
@@ -161,5 +235,13 @@ export function translatePlayerName(name: string, lang: Lang): string {
   if (trimmed === "Visitante" || trimmed === "Visitors") return DEFAULT_PLAYER_NAMES[lang].away;
   const m = /^(?:Jugador|Player)\s+(\d+)$/.exec(trimmed);
   if (m) return DEFAULT_PLAYER_NAMES[lang].player(Number(m[1]));
+  return name;
+}
+
+// Translate auto-generated team names ("Equipo N" / "Team N") without touching
+// custom names the user typed.
+export function translateTeamName(name: string, lang: Lang): string {
+  const m = /^(?:Equipo|Team)\s+(\d+)$/.exec(name.trim());
+  if (m) return lang === "es" ? `Equipo ${m[1]}` : `Team ${m[1]}`;
   return name;
 }

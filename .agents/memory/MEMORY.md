@@ -2,3 +2,4 @@
 - [Domino backgrounds](domino-backgrounds.md) — bg themes + custom photo persistence notes.
 - [RN modal stacking](domino-modal-stacking.md) — sibling <Modal>s stack by JSX render order; a confirm over another modal must be declared AFTER it.
 - [Domino player name translation](domino-player-names.md) — default casilla names stored as ES literals, translated at display via translatePlayerName; wrap every new name render site.
+- [Domino tournament mode](domino-tournament.md) — tournament state is isolated from GameContext (own context + AsyncStorage key); keep the two modes' persistence separate.

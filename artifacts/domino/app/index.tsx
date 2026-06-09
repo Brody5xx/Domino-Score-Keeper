@@ -18,8 +18,10 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import Tournament from "@/components/Tournament";
 import { PLAYER_COLORS, type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
 import { useLang } from "@/context/LangContext";
+import { useTournament } from "@/context/TournamentContext";
 import { translatePlayerName } from "@/constants/translations";
 import { useColors } from "@/hooks/useColors";
 import DominoBackground from "@/components/DominoBackground";
@@ -66,6 +68,8 @@ export default function MainScreen() {
     customBgUri,
     setCustomBgUri,
   } = useGame();
+
+  const { active: tournamentActive, toggleActive: toggleTournament } = useTournament();
 
   const [addModal, setAddModal] = useState<AddModalState>(null);
   const [pointsInput, setPointsInput] = useState("");
@@ -419,34 +423,53 @@ export default function MainScreen() {
 
       {/* ── Top bar ── */}
       <View style={styles.topBar}>
-        <View style={styles.targetRow}>
-          {TARGET_PRESETS.map((tv) => (
+        {tournamentActive ? (
+          <View style={styles.tournamentTitleRow}>
+            <Feather name="award" size={20} color={colors.primary} />
+            <Text style={styles.tournamentTitle}>{t.tournamentMode}</Text>
+          </View>
+        ) : (
+          <View style={styles.targetRow}>
+            {TARGET_PRESETS.map((tv) => (
+              <Pressable
+                key={tv}
+                style={[styles.targetChip, target === tv && styles.targetChipActive]}
+                onPress={() => { setTarget(tv); Haptics.selectionAsync(); }}
+              >
+                <Text style={[styles.targetChipText, target === tv && styles.targetChipTextActive]}>
+                  {tv}
+                </Text>
+              </Pressable>
+            ))}
             <Pressable
-              key={tv}
-              style={[styles.targetChip, target === tv && styles.targetChipActive]}
-              onPress={() => { setTarget(tv); Haptics.selectionAsync(); }}
+              style={[styles.targetChip, !TARGET_PRESETS.includes(target) && styles.targetChipActive]}
+              onPress={() => {
+                setCustomModal(true);
+                setCustomInput(!TARGET_PRESETS.includes(target) ? String(target) : "");
+              }}
             >
-              <Text style={[styles.targetChipText, target === tv && styles.targetChipTextActive]}>
-                {tv}
+              <Text style={[styles.targetChipText, !TARGET_PRESETS.includes(target) && styles.targetChipTextActive]}>
+                {!TARGET_PRESETS.includes(target) ? String(target) : "..."}
               </Text>
             </Pressable>
-          ))}
+          </View>
+        )}
+        <View style={styles.topBarBtns}>
           <Pressable
-            style={[styles.targetChip, !TARGET_PRESETS.includes(target) && styles.targetChipActive]}
-            onPress={() => {
-              setCustomModal(true);
-              setCustomInput(!TARGET_PRESETS.includes(target) ? String(target) : "");
-            }}
+            style={[styles.settingsBtn, tournamentActive && styles.settingsBtnActive]}
+            onPress={() => { toggleTournament(); Haptics.selectionAsync(); }}
           >
-            <Text style={[styles.targetChipText, !TARGET_PRESETS.includes(target) && styles.targetChipTextActive]}>
-              {!TARGET_PRESETS.includes(target) ? String(target) : "..."}
-            </Text>
+            <Feather name="award" size={20} color={tournamentActive ? colors.primary : colors.mutedForeground} />
+          </Pressable>
+          <Pressable style={styles.settingsBtn} onPress={() => setSettingsModal(true)}>
+            <Feather name="settings" size={20} color={colors.mutedForeground} />
           </Pressable>
         </View>
-        <Pressable style={styles.settingsBtn} onPress={() => setSettingsModal(true)}>
-          <Feather name="settings" size={20} color={colors.mutedForeground} />
-        </Pressable>
       </View>
+
+      {tournamentActive ? <Tournament /> : (
+      <>
+      {/* ── Mesa search + grid ── */}
 
       {/* ── Mesa search bar ── */}
       {mesas > 0 && (
@@ -524,6 +547,8 @@ export default function MainScreen() {
           <Text style={styles.restartText}>{t.restart}</Text>
         </Pressable>
       </View>
+      </>
+      )}
 
       {/* ══ MODALS ══════════════════════════════════════════════════════════════ */}
 
@@ -1263,6 +1288,25 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       borderColor: colors.border,
       alignItems: "center",
       justifyContent: "center",
+    },
+    settingsBtnActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + "1A",
+    },
+    topBarBtns: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    tournamentTitleRow: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    tournamentTitle: {
+      fontFamily: "Inter_700Bold",
+      fontSize: 18,
+      color: colors.foreground,
     },
     playerScroll: {
       flexShrink: 1,
