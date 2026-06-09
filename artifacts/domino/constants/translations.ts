@@ -52,6 +52,8 @@ const es = {
   tie: "Empaté",
   tieLabel: "Empaté",
   edited: "Editado",
+  searchPlaceholder: "Buscar mesa o jugador...",
+  searchNotFound: "No encontrado",
   done: "Listo",
   playerCount: (n: number, max: number) => `${n}/${max}`,
   // Rename
@@ -119,6 +121,8 @@ const en = {
   tie: "Tie",
   tieLabel: "Tie",
   edited: "Edited",
+  searchPlaceholder: "Search table or player...",
+  searchNotFound: "Not found",
   done: "Done",
   playerCount: (n: number, max: number) => `${n}/${max}`,
   renamePlaceholder: "Player name",

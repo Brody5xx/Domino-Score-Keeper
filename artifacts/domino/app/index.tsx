@@ -2,7 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { File, Paths } from "expo-file-system";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Modal,
@@ -86,6 +86,53 @@ export default function MainScreen() {
   const [expandedGame, setExpandedGame] = useState<string | null>(null);
   const [deleteGameModal, setDeleteGameModal] = useState<string | null>(null);
   const [clearHistoryModal, setClearHistoryModal] = useState(false);
+
+  const [mesaSearch, setMesaSearch] = useState("");
+  const [searchNotFound, setSearchNotFound] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const mesaPositions = useRef<Record<number, number>>({});
+
+  const findMesaForQuery = (query: string): number => {
+    const q = query.trim().toLowerCase();
+    if (!q || mesas <= 0) return -1;
+    const mesaMatch = q.match(/^(?:mesa|table)?\s*(\d+)$/);
+    if (mesaMatch) {
+      const n = parseInt(mesaMatch[1], 10);
+      if (n >= 1 && n <= mesas) return n - 1;
+      return -1;
+    }
+    for (let i = 0; i < mesas; i++) {
+      const group = [players[i * 2], players[i * 2 + 1]];
+      for (const p of group) {
+        if (!p) continue;
+        const display = translatePlayerName(p.name, lang).toLowerCase();
+        if (display.includes(q) || p.name.toLowerCase().includes(q)) return i;
+      }
+    }
+    return -1;
+  };
+
+  const runMesaSearch = () => {
+    const idx = findMesaForQuery(mesaSearch);
+    if (idx < 0) {
+      setSearchNotFound(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      return;
+    }
+    const scrollToIdx = (attempt: number) => {
+      const y = mesaPositions.current[idx];
+      if (y !== undefined) {
+        scrollRef.current?.scrollTo({ y: Math.max(0, y - 8), animated: true });
+        setSearchNotFound(false);
+        Haptics.selectionAsync();
+      } else if (attempt < 3) {
+        requestAnimationFrame(() => scrollToIdx(attempt + 1));
+      } else {
+        setSearchNotFound(true);
+      }
+    };
+    scrollToIdx(0);
+  };
 
   const styles = makeStyles(colors);
   const topPad = Platform.OS === "web" ? 16 : insets.top;
@@ -387,8 +434,35 @@ export default function MainScreen() {
         </Pressable>
       </View>
 
+      {/* ── Mesa search bar ── */}
+      {mesas > 0 && (
+        <View style={[styles.searchBar, searchNotFound && styles.searchBarError]}>
+          <Pressable onPress={runMesaSearch} hitSlop={8}>
+            <Feather name="search" size={16} color={searchNotFound ? colors.destructive : colors.mutedForeground} />
+          </Pressable>
+          <TextInput
+            style={styles.searchInput}
+            placeholder={t.searchPlaceholder}
+            placeholderTextColor={colors.mutedForeground}
+            value={mesaSearch}
+            onChangeText={(v) => { setMesaSearch(v); if (searchNotFound) setSearchNotFound(false); }}
+            onSubmitEditing={runMesaSearch}
+            returnKeyType="search"
+          />
+          {mesaSearch.length > 0 ? (
+            <Pressable onPress={() => { setMesaSearch(""); setSearchNotFound(false); }} hitSlop={8}>
+              <Feather name="x" size={16} color={colors.mutedForeground} />
+            </Pressable>
+          ) : null}
+        </View>
+      )}
+      {mesas > 0 && searchNotFound ? (
+        <Text style={styles.searchNotFoundText}>{t.searchNotFound}</Text>
+      ) : null}
+
       {/* ── Player grid ── */}
       <ScrollView
+        ref={scrollRef}
         showsVerticalScrollIndicator={false}
         style={styles.playerScroll}
         contentContainerStyle={mesas > 0 ? styles.mesaContainer : styles.playerGrid}
@@ -398,7 +472,11 @@ export default function MainScreen() {
               const a = players[i * 2];
               const b = players[i * 2 + 1];
               return (
-                <View key={"mesa-" + i} style={styles.mesaGroup}>
+                <View
+                  key={"mesa-" + i}
+                  style={styles.mesaGroup}
+                  onLayout={(e) => { mesaPositions.current[i] = e.nativeEvent.layout.y; }}
+                >
                   <Text style={styles.mesaLabel}>{t.mesaLabel(i + 1)}</Text>
                   <View style={styles.mesaRow}>
                     {a && renderPlayerCard(a)}
@@ -1108,6 +1186,36 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       flexDirection: "row",
       gap: 6,
       flexWrap: "wrap",
+    },
+    searchBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      height: 42,
+      marginBottom: 10,
+    },
+    searchBarError: {
+      borderColor: colors.destructive,
+    },
+    searchInput: {
+      flex: 1,
+      color: colors.foreground,
+      fontFamily: "Inter_500Medium",
+      fontSize: 14,
+      paddingVertical: 0,
+    },
+    searchNotFoundText: {
+      color: colors.destructive,
+      fontFamily: "Inter_500Medium",
+      fontSize: 12,
+      marginTop: -4,
+      marginBottom: 8,
+      marginLeft: 4,
     },
     targetChip: {
       paddingHorizontal: 14,
