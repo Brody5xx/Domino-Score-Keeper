@@ -55,6 +55,7 @@ export default function MainScreen() {
     setPlayerCount,
     restart,
     deletePreviousGame,
+    clearPreviousGames,
     bgTheme,
     setBgTheme,
     customBgUri,
@@ -80,6 +81,7 @@ export default function MainScreen() {
   const [historyModal, setHistoryModal] = useState(false);
   const [expandedGame, setExpandedGame] = useState<string | null>(null);
   const [deleteGameModal, setDeleteGameModal] = useState<string | null>(null);
+  const [clearHistoryModal, setClearHistoryModal] = useState(false);
 
   const styles = makeStyles(colors);
   const topPad = Platform.OS === "web" ? 16 : insets.top;
@@ -183,6 +185,14 @@ export default function MainScreen() {
     restart();
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     setRestartModal(false);
+  }
+
+  function confirmClearHistory() {
+    clearPreviousGames();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setExpandedGame(null);
+    setClearHistoryModal(false);
+    setHistoryModal(false);
   }
 
   function confirmDeleteGame() {
@@ -644,12 +654,39 @@ export default function MainScreen() {
                 );
               })}
             </ScrollView>
+            {previousGames.length > 0 && (
+              <Pressable
+                style={styles.clearHistoryBtn}
+                onPress={() => setClearHistoryModal(true)}
+              >
+                <Feather name="trash-2" size={15} color={colors.destructive} />
+                <Text style={styles.clearHistoryBtnText}>{t.clearHistory}</Text>
+              </Pressable>
+            )}
             <Pressable
-              style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 14 }]}
+              style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 10 }]}
               onPress={() => setHistoryModal(false)}
             >
               <Text style={styles.modalConfirmText}>{t.close}</Text>
             </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Clear all history confirm */}
+      <Modal visible={clearHistoryModal} transparent animationType="fade" onRequestClose={() => setClearHistoryModal(false)}>
+        <View style={styles.overlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>{t.clearHistoryTitle}</Text>
+            <Text style={styles.modalSubtitle}>{t.clearHistoryMsg}</Text>
+            <View style={styles.modalBtns}>
+              <Pressable style={styles.modalCancel} onPress={() => setClearHistoryModal(false)}>
+                <Text style={styles.modalCancelText}>{t.cancel}</Text>
+              </Pressable>
+              <Pressable style={[styles.modalConfirm, { backgroundColor: colors.destructive }]} onPress={confirmClearHistory}>
+                <Text style={styles.modalConfirmText}>{t.clearHistoryConfirm}</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Modal>
@@ -977,6 +1014,22 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontSize: 14,
       flex: 1,
       textAlign: "right",
+    },
+    clearHistoryBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      paddingVertical: 12,
+      borderRadius: 12,
+      borderWidth: 1.5,
+      borderColor: colors.destructive,
+      marginTop: 14,
+    },
+    clearHistoryBtnText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 14,
+      color: colors.destructive,
     },
     entryRow: {
       flexDirection: "row",

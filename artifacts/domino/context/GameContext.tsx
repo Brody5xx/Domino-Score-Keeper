@@ -50,6 +50,7 @@ interface GameContextValue extends GameState {
   setPlayerCount: (count: number) => void;
   restart: () => void;
   deletePreviousGame: (gameId: string) => void;
+  clearPreviousGames: () => void;
   setBgTheme: (theme: string) => void;
   setCustomBgUri: (uri: string | null) => void;
 }
@@ -267,6 +268,14 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const clearPreviousGames = useCallback(() => {
+    setState((prev) => {
+      const next = { ...prev, previousGames: [] };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const restart = useCallback(() => {
     setState((prev) => {
       // Only archive if there are actual entries to save
@@ -331,6 +340,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setPlayerCount,
         restart,
         deletePreviousGame,
+        clearPreviousGames,
         setBgTheme,
         setCustomBgUri,
       }}
