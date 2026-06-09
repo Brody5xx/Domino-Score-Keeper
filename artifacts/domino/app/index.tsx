@@ -509,6 +509,16 @@ export default function MainScreen() {
               autoFocus
               selectTextOnFocus
             />
+            {addModal && pointsInput.trim() !== "" && !isNaN(parseInt(pointsInput, 10)) && parseInt(pointsInput, 10) >= 0 && (() => {
+              const pColor = players.find((pl) => pl.id === addModal.playerId)?.color ?? colors.primary;
+              const projected = (totals[addModal.playerId] ?? 0) + parseInt(pointsInput, 10);
+              const left = target - projected;
+              return (
+                <Text style={[styles.addPreviewText, left <= 0 && { color: pColor }]}>
+                  {left <= 0 ? t.willWin : t.remaining(left)}
+                </Text>
+              );
+            })()}
             {addModal && getPartner(addModal.playerId) && (
               <Pressable
                 style={styles.extraToggleRow}
@@ -1773,6 +1783,13 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       textDecorationLine: "line-through",
       textDecorationColor: colors.destructive,
       opacity: 0.6,
+    },
+    addPreviewText: {
+      fontFamily: "Inter_500Medium",
+      fontSize: 13,
+      color: colors.mutedForeground,
+      textAlign: "center",
+      marginBottom: 10,
     },
     tieBtn: {
       flexDirection: "row",

@@ -4,6 +4,7 @@ const es = {
   // Player card
   remaining: (n: number) => `Faltan ${n}`,
   victory: "¡Victoria!",
+  willWin: "¡Pasa la partida!",
   won: "GANÓ",
   // History section
   history: "Historial",
@@ -77,6 +78,7 @@ const es = {
 const en = {
   remaining: (n: number) => `${n} left`,
   victory: "Victory!",
+  willWin: "Wins the game!",
   won: "WON",
   history: "History",
   noScores: "No scores recorded yet",
