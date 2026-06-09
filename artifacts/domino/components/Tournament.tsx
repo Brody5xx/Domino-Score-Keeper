@@ -450,6 +450,12 @@ function Board() {
           {!anyResolved && !championId ? (
             <>
               <Pressable
+                style={styles.iconBtn}
+                onPress={() => { resetTournament(); Haptics.selectionAsync(); }}
+              >
+                <Feather name="arrow-left" size={16} color={colors.mutedForeground} />
+              </Pressable>
+              <Pressable
                 style={[styles.iconBtn, editing && styles.iconBtnActive]}
                 onPress={() => { setEditing((e) => !e); setSwapSel(null); Haptics.selectionAsync(); }}
               >
