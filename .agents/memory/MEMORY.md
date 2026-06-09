@@ -1,3 +1,4 @@
 - [Domino mesas grouping](domino-mesas.md) — mesas>0 requires players.length===mesas*2; any player-set mutation resets mesas to 0.
 - [Domino backgrounds](domino-backgrounds.md) — bg themes + custom photo persistence notes.
 - [RN modal stacking](domino-modal-stacking.md) — sibling <Modal>s stack by JSX render order; a confirm over another modal must be declared AFTER it.
+- [Domino player name translation](domino-player-names.md) — default casilla names stored as ES literals, translated at display via translatePlayerName; wrap every new name render site.

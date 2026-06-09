@@ -68,6 +68,7 @@ export default function MainScreen() {
   const [addModal, setAddModal] = useState<AddModalState>(null);
   const [pointsInput, setPointsInput] = useState("");
   const [extraMode, setExtraMode] = useState(false);
+  const [forBoth, setForBoth] = useState(false);
 
   const [editModal, setEditModal] = useState<EditModalState>(null);
   const [editInput, setEditInput] = useState("");
@@ -158,18 +159,48 @@ export default function MainScreen() {
 
   function handleAddPoints() {
     const pts = parseInt(pointsInput, 10);
-    if (!isNaN(pts) && pts > 0 && addModal) {
-      addEntry(addModal.playerId, pts, extraMode);
+    if (addModal && !isNaN(pts) && pts >= 0) {
+      const isTie = pts === 0;
+      const useExtra = isTie ? false : extraMode;
+      addEntry(addModal.playerId, pts, useExtra, isTie);
+      if (forBoth) {
+        const partner = getPartner(addModal.playerId);
+        if (partner) addEntry(partner.id, pts, useExtra, isTie);
+      }
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
+    closeAddModal();
+  }
+
+  function getPartner(playerId: string) {
+    const idx = players.findIndex((p) => p.id === playerId);
+    if (idx < 0) return null;
+    const partnerIdx = idx % 2 === 0 ? idx + 1 : idx - 1;
+    return players[partnerIdx] ?? null;
+  }
+
+  function handleTie() {
+    if (addModal) {
+      addEntry(addModal.playerId, 0, false, true);
+      if (forBoth) {
+        const partner = getPartner(addModal.playerId);
+        if (partner) addEntry(partner.id, 0, false, true);
+      }
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    closeAddModal();
+  }
+
+  function closeAddModal() {
     setAddModal(null);
     setPointsInput("");
     setExtraMode(false);
+    setForBoth(false);
   }
 
   function handleEditPoints() {
     const pts = parseInt(editInput, 10);
-    if (!isNaN(pts) && pts > 0 && editModal) {
+    if (!isNaN(pts) && pts >= 0 && editModal) {
       editEntry(editModal.entryId, pts);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
@@ -270,7 +301,7 @@ export default function MainScreen() {
         </Text>
         <Pressable
           style={[styles.addBtn, { borderColor: player.color }]}
-          onPress={() => { setAddModal({ playerId: player.id }); setPointsInput(""); setExtraMode(false); }}
+          onPress={() => { setAddModal({ playerId: player.id }); setPointsInput(""); setExtraMode(false); setForBoth(false); }}
         >
           <Feather name="plus" size={20} color={player.color} />
         </Pressable>
@@ -285,6 +316,11 @@ export default function MainScreen() {
                   {entry.extra ? (
                     <View style={styles.extraBadge}>
                       <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
+                    </View>
+                  ) : null}
+                  {(entry.tie || entry.points === 0) ? (
+                    <View style={styles.tieBadge}>
+                      <Text style={styles.tieBadgeText}>{t.tieLabel}</Text>
                     </View>
                   ) : null}
                   <Text style={[styles.cardEntryPoints, { color: player.color }]}>+{entry.points}</Text>
@@ -447,7 +483,7 @@ export default function MainScreen() {
       </Modal>
 
       {/* Add points */}
-      <Modal visible={addModal !== null} transparent animationType="fade" onRequestClose={() => { setAddModal(null); setExtraMode(false); }}>
+      <Modal visible={addModal !== null} transparent animationType="fade" onRequestClose={closeAddModal}>
         <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === "ios" ? "padding" : "height"}>
           <View style={styles.modalCard}>
             {(() => {
@@ -468,6 +504,17 @@ export default function MainScreen() {
               autoFocus
               selectTextOnFocus
             />
+            {addModal && getPartner(addModal.playerId) && (
+              <Pressable
+                style={styles.extraToggleRow}
+                onPress={() => { setForBoth((v) => !v); Haptics.selectionAsync(); }}
+              >
+                <View style={[styles.extraCheckbox, forBoth && styles.extraCheckboxOn]}>
+                  {forBoth ? <Feather name="check" size={14} color={colors.background} /> : null}
+                </View>
+                <Text style={styles.extraToggleText}>{t.forBoth}</Text>
+              </Pressable>
+            )}
             <Pressable
               style={styles.extraToggleRow}
               onPress={() => { setExtraMode((v) => !v); Haptics.selectionAsync(); }}
@@ -477,8 +524,12 @@ export default function MainScreen() {
               </View>
               <Text style={styles.extraToggleText}>{t.extraToggle}</Text>
             </Pressable>
+            <Pressable style={styles.tieBtn} onPress={handleTie}>
+              <Feather name="minus-circle" size={16} color={colors.mutedForeground} />
+              <Text style={styles.tieBtnText}>{t.tie}</Text>
+            </Pressable>
             <View style={styles.modalBtns}>
-              <Pressable style={styles.modalCancel} onPress={() => { setAddModal(null); setExtraMode(false); }}>
+              <Pressable style={styles.modalCancel} onPress={closeAddModal}>
                 <Text style={styles.modalCancelText}>{t.cancel}</Text>
               </Pressable>
               <Pressable
@@ -693,6 +744,11 @@ export default function MainScreen() {
                                               <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
                                             </View>
                                           ) : null}
+                                          {(entry.tie || entry.points === 0) ? (
+                                            <View style={styles.tieBadge}>
+                                              <Text style={styles.tieBadgeText}>{t.tieLabel}</Text>
+                                            </View>
+                                          ) : null}
                                           <Text style={styles.entryPoints}>+{entry.points}</Text>
                                         </View>
                                       );
@@ -720,6 +776,11 @@ export default function MainScreen() {
                                 {entry.extra ? (
                                   <View style={styles.extraBadge}>
                                     <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
+                                  </View>
+                                ) : null}
+                                {(entry.tie || entry.points === 0) ? (
+                                  <View style={styles.tieBadge}>
+                                    <Text style={styles.tieBadgeText}>{t.tieLabel}</Text>
                                   </View>
                                 ) : null}
                                 <Text style={styles.entryPoints}>+{entry.points}</Text>
@@ -1667,6 +1728,34 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontFamily: "Inter_600SemiBold",
       fontSize: 10,
       color: colors.primary,
+    },
+    tieBadge: {
+      backgroundColor: colors.mutedForeground + "26",
+      borderRadius: 6,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      marginRight: 6,
+    },
+    tieBadgeText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 10,
+      color: colors.mutedForeground,
+    },
+    tieBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingVertical: 12,
+      marginTop: 16,
+    },
+    tieBtnText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 14,
+      color: colors.foreground,
     },
     sectionDivider: {
       height: 1,
