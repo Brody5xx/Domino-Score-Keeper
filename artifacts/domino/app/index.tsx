@@ -930,7 +930,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     historyContainer: {
       flex: 1,
-      backgroundColor: colors.card,
+      backgroundColor: "transparent",
       borderRadius: 12,
       padding: 12,
       marginTop: 10,
