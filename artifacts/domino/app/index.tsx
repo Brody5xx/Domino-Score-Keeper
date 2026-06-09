@@ -202,8 +202,13 @@ export default function MainScreen() {
 
   function confirmRename() {
     if (renameModal) {
-      if (renameModal.value.trim()) {
-        setPlayerName(renameModal.playerId, renameModal.value.trim());
+      const trimmed = renameModal.value.trim();
+      if (trimmed) {
+        setPlayerName(renameModal.playerId, trimmed);
+      } else {
+        const idx = players.findIndex((p) => p.id === renameModal.playerId);
+        const fallback = idx === 0 ? "Visita" : idx === 1 ? "Casa" : `Jugador ${idx + 1}`;
+        setPlayerName(renameModal.playerId, fallback);
       }
       const original = players.find((p) => p.id === renameModal.playerId);
       if (original && original.color !== renameModal.color) {
