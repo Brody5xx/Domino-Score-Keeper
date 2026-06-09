@@ -1009,7 +1009,7 @@ export default function MainScreen() {
                       color={mesas === 0 ? colors.primary : colors.mutedForeground}
                     />
                   </Pressable>
-                  {[1, 2, 3, 4].map((n) => {
+                  {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => {
                     const active = mesas === n;
                     return (
                       <Pressable

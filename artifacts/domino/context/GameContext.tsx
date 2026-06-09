@@ -275,7 +275,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const setMesas = useCallback((count: number) => {
     setState((prev) => {
       if (!Number.isFinite(count)) return prev;
-      const mesas = Math.max(0, Math.min(4, Math.floor(count)));
+      const mesas = Math.max(0, Math.min(20, Math.floor(count)));
       if (mesas === 0) {
         if (prev.mesas === 0) return prev;
         const next = { ...prev, mesas: 0 };
