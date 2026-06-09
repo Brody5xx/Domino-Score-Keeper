@@ -89,8 +89,10 @@ export default function MainScreen() {
 
   const [mesaSearch, setMesaSearch] = useState("");
   const [searchNotFound, setSearchNotFound] = useState(false);
+  const [highlightedMesa, setHighlightedMesa] = useState<number | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const mesaPositions = useRef<Record<number, number>>({});
+  const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const findMesaForQuery = (query: string): number => {
     const q = query.trim().toLowerCase();
@@ -124,6 +126,9 @@ export default function MainScreen() {
       if (y !== undefined) {
         scrollRef.current?.scrollTo({ y: Math.max(0, y - 8), animated: true });
         setSearchNotFound(false);
+        setHighlightedMesa(idx);
+        if (highlightTimer.current) clearTimeout(highlightTimer.current);
+        highlightTimer.current = setTimeout(() => setHighlightedMesa(null), 2500);
         Haptics.selectionAsync();
       } else if (attempt < 3) {
         requestAnimationFrame(() => scrollToIdx(attempt + 1));
@@ -474,7 +479,7 @@ export default function MainScreen() {
               return (
                 <View
                   key={"mesa-" + i}
-                  style={styles.mesaGroup}
+                  style={[styles.mesaGroup, highlightedMesa === i && styles.mesaGroupHighlight]}
                   onLayout={(e) => { mesaPositions.current[i] = e.nativeEvent.layout.y; }}
                 >
                   <Text style={styles.mesaLabel}>{t.mesaLabel(i + 1)}</Text>
@@ -1263,6 +1268,19 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     mesaGroup: {
       gap: 8,
+      borderWidth: 2,
+      borderColor: "transparent",
+      borderRadius: 16,
+      padding: 8,
+    },
+    mesaGroupHighlight: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + "14",
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.9,
+      shadowRadius: 14,
+      elevation: 12,
     },
     mesaLabel: {
       fontFamily: "Inter_700Bold",
