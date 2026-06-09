@@ -323,7 +323,12 @@ export default function MainScreen() {
                       <Text style={styles.tieBadgeText}>{t.tieLabel}</Text>
                     </View>
                   ) : null}
-                  <Text style={[styles.cardEntryPoints, { color: player.color }]}>+{entry.points}</Text>
+                  {entry.edited ? (
+                    <View style={styles.editedBadge}>
+                      <Text style={styles.editedBadgeText}>{t.edited}</Text>
+                    </View>
+                  ) : null}
+                  <Text style={[styles.cardEntryPoints, { color: player.color }, entry.deleted && styles.deletedPoints]}>+{entry.points}</Text>
                   <Pressable
                     style={styles.entryActionBtn}
                     onPress={() => { setEditModal({ entryId: entry.id, currentPoints: entry.points }); setEditInput(String(entry.points)); }}
@@ -336,7 +341,7 @@ export default function MainScreen() {
                     onPress={() => { deleteEntry(entry.id); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
                     hitSlop={6}
                   >
-                    <Feather name="trash-2" size={13} color={colors.destructive} />
+                    <Feather name={entry.deleted ? "rotate-ccw" : "trash-2"} size={13} color={entry.deleted ? colors.mutedForeground : colors.destructive} />
                   </Pressable>
                 </View>
               );
@@ -749,7 +754,12 @@ export default function MainScreen() {
                                               <Text style={styles.tieBadgeText}>{t.tieLabel}</Text>
                                             </View>
                                           ) : null}
-                                          <Text style={styles.entryPoints}>+{entry.points}</Text>
+                                          {entry.edited ? (
+                                            <View style={styles.editedBadge}>
+                                              <Text style={styles.editedBadgeText}>{t.edited}</Text>
+                                            </View>
+                                          ) : null}
+                                          <Text style={[styles.entryPoints, entry.deleted && styles.deletedPoints]}>+{entry.points}</Text>
                                         </View>
                                       );
                                     })}
@@ -783,7 +793,12 @@ export default function MainScreen() {
                                     <Text style={styles.tieBadgeText}>{t.tieLabel}</Text>
                                   </View>
                                 ) : null}
-                                <Text style={styles.entryPoints}>+{entry.points}</Text>
+                                {entry.edited ? (
+                                  <View style={styles.editedBadge}>
+                                    <Text style={styles.editedBadgeText}>{t.edited}</Text>
+                                  </View>
+                                ) : null}
+                                <Text style={[styles.entryPoints, entry.deleted && styles.deletedPoints]}>+{entry.points}</Text>
                               </View>
                             );
                           })}
@@ -1740,6 +1755,24 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontFamily: "Inter_600SemiBold",
       fontSize: 10,
       color: colors.mutedForeground,
+    },
+    editedBadge: {
+      backgroundColor: colors.mutedForeground + "1F",
+      borderRadius: 6,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      marginRight: 6,
+    },
+    editedBadgeText: {
+      fontFamily: "Inter_500Medium",
+      fontSize: 10,
+      fontStyle: "italic",
+      color: colors.mutedForeground,
+    },
+    deletedPoints: {
+      textDecorationLine: "line-through",
+      textDecorationColor: colors.destructive,
+      opacity: 0.6,
     },
     tieBtn: {
       flexDirection: "row",

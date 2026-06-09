@@ -19,6 +19,8 @@ export interface ScoreEntry {
   points: number;
   extra?: boolean;
   tie?: boolean;
+  edited?: boolean;
+  deleted?: boolean;
 }
 
 export interface PreviousGame {
@@ -98,6 +100,7 @@ function normalizeBgTheme(theme: unknown): string {
 export function computeTotals(entries: ScoreEntry[]): Record<string, number> {
   const totals: Record<string, number> = {};
   for (const e of entries) {
+    if (e.deleted) continue;
     totals[e.playerId] = (totals[e.playerId] ?? 0) + e.points;
   }
   return totals;
@@ -152,7 +155,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       const next = {
         ...prev,
         entries: prev.entries.map((e) =>
-          e.id === entryId ? { ...e, points, tie: points === 0 ? true : undefined } : e
+          e.id === entryId
+            ? { ...e, points, tie: points === 0 ? true : undefined, edited: true }
+            : e
         ),
       };
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
@@ -164,7 +169,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => {
       const next = {
         ...prev,
-        entries: prev.entries.filter((e) => e.id !== entryId),
+        entries: prev.entries.map((e) =>
+          e.id === entryId ? { ...e, deleted: e.deleted ? undefined : true } : e
+        ),
       };
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       return next;

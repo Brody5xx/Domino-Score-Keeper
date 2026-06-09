@@ -50,6 +50,7 @@ const es = {
   forBoth: "Para ambos",
   tie: "Empaté",
   tieLabel: "Empaté",
+  edited: "Editado",
   done: "Listo",
   playerCount: (n: number, max: number) => `${n}/${max}`,
   // Rename
@@ -115,6 +116,7 @@ const en = {
   forBoth: "For both",
   tie: "Tie",
   tieLabel: "Tie",
+  edited: "Edited",
   done: "Done",
   playerCount: (n: number, max: number) => `${n}/${max}`,
   renamePlaceholder: "Player name",
