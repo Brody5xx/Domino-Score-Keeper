@@ -870,7 +870,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     playerCard: {
       width: "48%",
-      backgroundColor: colors.card,
+      backgroundColor: "transparent",
       borderRadius: 14,
       borderWidth: 2,
       overflow: "hidden",
