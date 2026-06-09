@@ -39,7 +39,6 @@ function Setup() {
     teams,
     lives,
     target,
-    setTeamCount,
     setLives,
     setMatchTarget,
     setTeamName,
@@ -51,7 +50,6 @@ function Setup() {
   } = useTournament();
   const styles = makeStyles(colors);
   const [targetInput, setTargetInput] = useState(String(target));
-  const [teamInput, setTeamInput] = useState(String(teams.length));
   const [groupName, setGroupName] = useState("");
   const [groupColor, setGroupColor] = useState(PLAYER_COLORS[0]);
   const [groupPairs, setGroupPairs] = useState(1);
@@ -63,20 +61,7 @@ function Setup() {
     addTeamGroup(groupName, groupColor, n);
     setGroupName("");
     setGroupPairs(1);
-    setTeamInput(String(teams.length + n));
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  };
-
-  const applyTeamCount = (raw: string) => {
-    const clean = raw.replace(/[^0-9]/g, "");
-    setTeamInput(clean);
-    if (clean) setTeamCount(Number(clean));
-  };
-  const stepTeamCount = (delta: number) => {
-    const next = Math.max(MIN_TEAMS, Math.min(MAX_TEAMS, teams.length + delta));
-    setTeamCount(next);
-    setTeamInput(String(next));
-    Haptics.selectionAsync();
   };
 
   return (
@@ -88,37 +73,8 @@ function Setup() {
     >
       <Text style={styles.setupTitle}>{t.tournamentSetup}</Text>
 
-      {/* Team count */}
-      <Text style={styles.fieldLabel}>{t.teamsCount}</Text>
-      <View style={styles.stepperRow}>
-        <Pressable
-          style={[styles.stepperBtn, teams.length <= MIN_TEAMS && styles.stepperBtnDisabled]}
-          onPress={() => stepTeamCount(-1)}
-          disabled={teams.length <= MIN_TEAMS}
-        >
-          <Feather name="minus" size={20} color={teams.length <= MIN_TEAMS ? colors.mutedForeground : colors.foreground} />
-        </Pressable>
-        <TextInput
-          style={styles.stepperInput}
-          value={teamInput}
-          onChangeText={applyTeamCount}
-          onBlur={() => setTeamInput(String(teams.length))}
-          keyboardType="number-pad"
-          maxLength={3}
-          selectTextOnFocus
-        />
-        <Pressable
-          style={[styles.stepperBtn, teams.length >= MAX_TEAMS && styles.stepperBtnDisabled]}
-          onPress={() => stepTeamCount(1)}
-          disabled={teams.length >= MAX_TEAMS}
-        >
-          <Feather name="plus" size={20} color={teams.length >= MAX_TEAMS ? colors.mutedForeground : colors.foreground} />
-        </Pressable>
-        <Text style={styles.stepperHint}>{`${MIN_TEAMS}–${MAX_TEAMS}`}</Text>
-      </View>
-
-      {/* Bulk add: pairs per team (club) */}
-      <Text style={[styles.fieldLabel, { marginTop: 8 }]}>{t.groupTitle}</Text>
+      {/* Team names + pairs per team (club) */}
+      <Text style={styles.fieldLabel}>{t.groupTitle}</Text>
       <View style={styles.groupCard}>
         <TextInput
           style={styles.groupNameInput}
