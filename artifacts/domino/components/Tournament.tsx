@@ -14,6 +14,7 @@ import {
 } from "react-native";
 
 import { translatePlayerName, translateTeamName } from "@/constants/translations";
+import { PLAYER_COLORS } from "@/context/GameContext";
 import { MAX_TEAMS, MIN_TEAMS, useTournament } from "@/context/TournamentContext";
 import { useLang } from "@/context/LangContext";
 import { useColors } from "@/hooks/useColors";
@@ -43,6 +44,7 @@ function Setup() {
     setMatchTarget,
     setTeamName,
     setTeamPlayer,
+    setTeamColor,
     startTournament,
   } = useTournament();
   const styles = makeStyles(colors);
@@ -150,6 +152,24 @@ function Setup() {
               placeholder={translatePlayerName(`Jugador ${idx * 2 + 2}`, lang)}
               placeholderTextColor={colors.mutedForeground}
             />
+          </View>
+          <View style={styles.colorRow}>
+            {PLAYER_COLORS.map((c) => {
+              const active = team.color === c;
+              return (
+                <Pressable
+                  key={c}
+                  style={[
+                    styles.colorSwatch,
+                    { backgroundColor: c },
+                    active && styles.colorSwatchActive,
+                  ]}
+                  onPress={() => { setTeamColor(team.id, c); Haptics.selectionAsync(); }}
+                >
+                  {active && <Feather name="check" size={12} color="#fff" />}
+                </Pressable>
+              );
+            })}
           </View>
         </View>
       ))}
@@ -647,18 +667,31 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
       color: colors.foreground,
       paddingVertical: 2,
     },
-    teamPlayersRow: { flexDirection: "row", gap: 8 },
+    teamPlayersRow: { flexDirection: "row", gap: 6 },
     playerInput: {
       flex: 1,
       backgroundColor: colors.background,
-      borderRadius: 10,
-      paddingHorizontal: 10,
-      paddingVertical: 8,
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 5,
       color: colors.foreground,
       fontFamily: "Inter_500Medium",
-      fontSize: 14,
+      fontSize: 12,
       borderWidth: 1,
       borderColor: colors.border,
+    },
+    colorRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    colorSwatch: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 2,
+      borderColor: "transparent",
+    },
+    colorSwatchActive: {
+      borderColor: colors.foreground,
     },
     startBtn: {
       flexDirection: "row",
