@@ -64,6 +64,7 @@ export default function MainScreen() {
 
   const [addModal, setAddModal] = useState<AddModalState>(null);
   const [pointsInput, setPointsInput] = useState("");
+  const [extraMode, setExtraMode] = useState(false);
 
   const [editModal, setEditModal] = useState<EditModalState>(null);
   const [editInput, setEditInput] = useState("");
@@ -154,11 +155,12 @@ export default function MainScreen() {
   function handleAddPoints() {
     const pts = parseInt(pointsInput, 10);
     if (!isNaN(pts) && pts > 0 && addModal) {
-      addEntry(addModal.playerId, pts);
+      addEntry(addModal.playerId, pts, extraMode);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
     setAddModal(null);
     setPointsInput("");
+    setExtraMode(false);
   }
 
   function handleEditPoints() {
@@ -298,7 +300,7 @@ export default function MainScreen() {
               </Text>
               <Pressable
                 style={[styles.addBtn, { borderColor: player.color }]}
-                onPress={() => { setAddModal({ playerId: player.id }); setPointsInput(""); }}
+                onPress={() => { setAddModal({ playerId: player.id }); setPointsInput(""); setExtraMode(false); }}
               >
                 <Feather name="plus" size={20} color={player.color} />
               </Pressable>
@@ -331,6 +333,11 @@ export default function MainScreen() {
                   <Text style={[styles.entryPlayerName, { color: player?.color ?? "#888" }]} numberOfLines={1}>
                     {player?.name ?? "—"}
                   </Text>
+                  {item.extra ? (
+                    <View style={styles.extraBadge}>
+                      <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
+                    </View>
+                  ) : null}
                   <Text style={styles.entryPoints}>+{item.points}</Text>
                   <Pressable
                     style={styles.entryActionBtn}
@@ -432,7 +439,7 @@ export default function MainScreen() {
       </Modal>
 
       {/* Add points */}
-      <Modal visible={addModal !== null} transparent animationType="fade" onRequestClose={() => setAddModal(null)}>
+      <Modal visible={addModal !== null} transparent animationType="fade" onRequestClose={() => { setAddModal(null); setExtraMode(false); }}>
         <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === "ios" ? "padding" : "height"}>
           <View style={styles.modalCard}>
             {(() => {
@@ -453,8 +460,17 @@ export default function MainScreen() {
               autoFocus
               selectTextOnFocus
             />
+            <Pressable
+              style={styles.extraToggleRow}
+              onPress={() => { setExtraMode((v) => !v); Haptics.selectionAsync(); }}
+            >
+              <View style={[styles.extraCheckbox, extraMode && styles.extraCheckboxOn]}>
+                {extraMode ? <Feather name="check" size={14} color={colors.background} /> : null}
+              </View>
+              <Text style={styles.extraToggleText}>{t.extraToggle}</Text>
+            </Pressable>
             <View style={styles.modalBtns}>
-              <Pressable style={styles.modalCancel} onPress={() => setAddModal(null)}>
+              <Pressable style={styles.modalCancel} onPress={() => { setAddModal(null); setExtraMode(false); }}>
                 <Text style={styles.modalCancelText}>{t.cancel}</Text>
               </Pressable>
               <Pressable
@@ -634,6 +650,11 @@ export default function MainScreen() {
                               <Text style={[styles.entryPlayerName, { color: ep?.color ?? "#888" }]} numberOfLines={1}>
                                 {ep?.name ?? "—"}
                               </Text>
+                              {entry.extra ? (
+                                <View style={styles.extraBadge}>
+                                  <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
+                                </View>
+                              ) : null}
                               <Text style={styles.entryPoints}>+{entry.points}</Text>
                             </View>
                           );
@@ -1402,6 +1423,44 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       color: colors.mutedForeground,
     },
     countChipTextActive: {
+      color: colors.primary,
+    },
+    extraToggleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      marginTop: 14,
+      paddingVertical: 4,
+    },
+    extraCheckbox: {
+      width: 24,
+      height: 24,
+      borderRadius: 6,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "transparent",
+    },
+    extraCheckboxOn: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    extraToggleText: {
+      fontFamily: "Inter_500Medium",
+      fontSize: 15,
+      color: colors.foreground,
+    },
+    extraBadge: {
+      backgroundColor: colors.primary + "22",
+      borderRadius: 6,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      marginRight: 6,
+    },
+    extraBadgeText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 10,
       color: colors.primary,
     },
     sectionDivider: {

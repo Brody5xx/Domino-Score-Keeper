@@ -38,6 +38,8 @@ const es = {
   playersTitle: "Jugadores",
   addPlayer: "Agregar jugador",
   playerCountTitle: "Cantidad de jugadores",
+  extraToggle: "Puntos extra",
+  extraLabel: "Extras",
   done: "Listo",
   playerCount: (n: number, max: number) => `${n}/${max}`,
   // Rename
@@ -91,6 +93,8 @@ const en = {
   playersTitle: "Players",
   addPlayer: "Add player",
   playerCountTitle: "Number of players",
+  extraToggle: "Extra points",
+  extraLabel: "Extras",
   done: "Done",
   playerCount: (n: number, max: number) => `${n}/${max}`,
   renamePlaceholder: "Player name",

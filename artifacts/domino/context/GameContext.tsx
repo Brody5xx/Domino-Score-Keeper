@@ -17,6 +17,7 @@ export interface ScoreEntry {
   id: string;
   playerId: string;
   points: number;
+  extra?: boolean;
 }
 
 export interface PreviousGame {
@@ -38,7 +39,7 @@ interface GameState {
 
 interface GameContextValue extends GameState {
   totals: Record<string, number>;
-  addEntry: (playerId: string, points: number) => void;
+  addEntry: (playerId: string, points: number, extra?: boolean) => void;
   editEntry: (entryId: string, points: number) => void;
   deleteEntry: (entryId: string) => void;
   setTarget: (target: number) => void;
@@ -125,12 +126,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const totals = computeTotals(state.entries);
 
-  const addEntry = useCallback((playerId: string, points: number) => {
+  const addEntry = useCallback((playerId: string, points: number, extra?: boolean) => {
     setState((prev) => {
       const entry: ScoreEntry = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 6),
         playerId,
         points,
+        extra: extra ? true : undefined,
       };
       const next = { ...prev, entries: [...prev.entries, entry] };
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
