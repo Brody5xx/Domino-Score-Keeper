@@ -77,6 +77,7 @@ const es = {
   bgGiant: "Gigante",
   // Tournament
   tournament: "Torneo",
+  clearAllTeams: "Borrar todos",
   tournamentMode: "Modo Torneo",
   tournamentSetup: "Configurar torneo",
   teamsCount: "Cantidad de equipos",
@@ -188,6 +189,7 @@ const en = {
   bgGiant: "Giant",
   // Tournament
   tournament: "Tournament",
+  clearAllTeams: "Clear all",
   tournamentMode: "Tournament Mode",
   tournamentSetup: "Set up tournament",
   teamsCount: "Number of teams",

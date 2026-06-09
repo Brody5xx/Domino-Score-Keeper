@@ -45,6 +45,8 @@ function Setup() {
     setTeamPlayer,
     setTeamColor,
     addTeamGroup,
+    removeTeam,
+    clearTeams,
     startFeasible,
     startTournament,
   } = useTournament();
@@ -187,7 +189,20 @@ function Setup() {
       </View>
 
       {/* Teams */}
-      <Text style={[styles.fieldLabel, { marginTop: 8 }]}>{t.tournament}</Text>
+      <View style={styles.teamsHeaderRow}>
+        <Text style={[styles.fieldLabel, { marginTop: 8, marginBottom: 0 }]}>
+          {`${t.tournament} (${teams.length})`}
+        </Text>
+        {teams.length > 0 && (
+          <Pressable
+            style={styles.clearAllBtn}
+            onPress={() => { clearTeams(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); }}
+          >
+            <Feather name="trash-2" size={14} color={colors.destructive} />
+            <Text style={styles.clearAllText}>{t.clearAllTeams}</Text>
+          </Pressable>
+        )}
+      </View>
       {teams.map((team, idx) => (
         <View key={team.id} style={styles.teamSetupCard}>
           <View style={styles.teamSetupHeader}>
@@ -199,6 +214,13 @@ function Setup() {
               placeholder={t.teamNamePlaceholder}
               placeholderTextColor={colors.mutedForeground}
             />
+            <Pressable
+              style={styles.removeTeamBtn}
+              onPress={() => { removeTeam(team.id); Haptics.selectionAsync(); }}
+              hitSlop={8}
+            >
+              <Feather name="trash-2" size={16} color={colors.destructive} />
+            </Pressable>
           </View>
           <View style={styles.teamPlayersRow}>
             <TextInput
@@ -823,6 +845,31 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
       gap: 10,
       borderWidth: 1,
       borderColor: colors.border,
+    },
+    teamsHeaderRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginTop: 8,
+    },
+    clearAllBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: colors.destructive + "55",
+    },
+    clearAllText: { fontFamily: "Inter_600SemiBold", fontSize: 12, color: colors.destructive },
+    removeTeamBtn: {
+      width: 34,
+      height: 34,
+      borderRadius: 9,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.destructive + "18",
     },
     teamSetupHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
     teamDot: { width: 12, height: 12, borderRadius: 6 },

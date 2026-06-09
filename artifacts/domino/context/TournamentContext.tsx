@@ -56,6 +56,8 @@ interface TournamentContextValue extends TournamentState {
   setTeamPlayer: (id: string, which: 1 | 2, name: string) => void;
   setTeamColor: (id: string, color: string) => void;
   addTeamGroup: (name: string, color: string, pairs: number) => void;
+  removeTeam: (id: string) => void;
+  clearTeams: () => void;
   startTournament: () => void;
   regenerateRound: () => void;
   swapTeamSlots: (teamIdA: string, teamIdB: string) => void;
@@ -309,6 +311,20 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     );
   }, []);
 
+  const removeTeam = useCallback((id: string) => {
+    setState((prev) => {
+      if (prev.started) return prev;
+      return persist({ ...prev, teams: prev.teams.filter((t) => t.id !== id) });
+    });
+  }, []);
+
+  const clearTeams = useCallback(() => {
+    setState((prev) => {
+      if (prev.started) return prev;
+      return persist({ ...prev, teams: [] });
+    });
+  }, []);
+
   const startTournament = useCallback(() => {
     setState((prev) => {
       if (prev.teams.length < MIN_TEAMS) return prev;
@@ -511,6 +527,8 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
         setTeamPlayer,
         setTeamColor,
         addTeamGroup,
+        removeTeam,
+        clearTeams,
         startTournament,
         regenerateRound,
         swapTeamSlots,
