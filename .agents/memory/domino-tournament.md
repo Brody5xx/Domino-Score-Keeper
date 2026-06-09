@@ -21,3 +21,18 @@ an in-progress game on either side.
 
 **How to apply:** when adding cross-cutting features (themes, search, history),
 wire them into both contexts separately rather than trying to unify the state.
+
+## Allied-team matchmaking rule
+
+Teams that share the same (trimmed, case-insensitive, non-empty) team name are
+"allies" and must never be paired against each other. Matchmaking
+(`generateMatches` → `findPairing` backtracking) applies constraints in tiers:
+1) no ally pairs AND no prior-round rematch, 2) no ally pairs, 3) any pairing.
+
+**Why:** users run multiple teams under one club name (e.g. two "Parrilla"
+teams) and expect club-vs-club, never club-vs-itself.
+
+**How to apply:** tier 3 only fires when avoiding allies is mathematically
+impossible (one name held by > half the teams). Normal pair-based setups are
+always solvable. Manual `swapTeamSlots` is intentionally NOT constrained — it's a
+deliberate user override.

@@ -110,32 +110,55 @@ function genId() {
   return "m" + Date.now() + Math.random().toString(36).slice(2, 8);
 }
 
+const normName = (name: string) => name.trim().toLowerCase();
+
+// Two teams are "allies" when they share the same (non-empty) team name.
+// Allied teams must never be paired against each other.
+function sameTeamName(a: TournamentTeam, b: TournamentTeam): boolean {
+  const na = normName(a.name);
+  const nb = normName(b.name);
+  return na.length > 0 && na === nb;
+}
+
+type Pair = [TournamentTeam, TournamentTeam | null];
+
+// Backtracking pairing that respects `isValid` for every matched pair.
+// Leaves exactly one team unpaired (a bye) when the count is odd.
+function findPairing(
+  teams: TournamentTeam[],
+  isValid: (a: TournamentTeam, b: TournamentTeam) => boolean
+): Pair[] | null {
+  if (teams.length === 0) return [];
+  if (teams.length === 1) return [[teams[0], null]]; // bye
+  const [first, ...rest] = teams;
+  for (const candidate of shuffle(rest)) {
+    if (!isValid(first, candidate)) continue;
+    const remaining = rest.filter((t) => t.id !== candidate.id);
+    const sub = findPairing(remaining, isValid);
+    if (sub) return [[first, candidate], ...sub];
+  }
+  return null;
+}
+
 function generateMatches(
   pool: TournamentTeam[],
   round: number,
   avoid: Set<string>
 ): TournamentMatch[] {
-  let best: TournamentTeam[] | null = null;
-  for (let attempt = 0; attempt < 30; attempt++) {
-    const shuffled = shuffle(pool);
-    let rematch = false;
-    for (let i = 0; i + 1 < shuffled.length; i += 2) {
-      if (avoid.has(pairKey(shuffled[i].id, shuffled[i + 1].id))) {
-        rematch = true;
-        break;
-      }
-    }
-    if (!best) best = shuffled;
-    if (!rematch) {
-      best = shuffled;
-      break;
-    }
-  }
-  const order = best ?? pool;
+  const shuffled = shuffle(pool);
+  // Priority: 1) no allied (same-name) pairs AND no rematch,
+  //           2) no allied pairs, 3) anything (mathematically forced).
+  const pairing =
+    findPairing(
+      shuffled,
+      (a, b) => !sameTeamName(a, b) && !avoid.has(pairKey(a.id, b.id))
+    ) ??
+    findPairing(shuffled, (a, b) => !sameTeamName(a, b)) ??
+    findPairing(shuffled, () => true) ??
+    [];
+
   const matches: TournamentMatch[] = [];
-  for (let i = 0; i < order.length; i += 2) {
-    const a = order[i];
-    const b = order[i + 1];
+  for (const [a, b] of pairing) {
     matches.push({
       id: genId(),
       round,
