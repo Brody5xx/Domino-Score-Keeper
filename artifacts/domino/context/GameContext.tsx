@@ -26,6 +26,7 @@ export interface PreviousGame {
   players: Player[];
   entries: ScoreEntry[];
   target: number;
+  mesas: number;
 }
 
 interface GameState {
@@ -329,6 +330,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
               players: prev.players,
               entries: prev.entries,
               target: prev.target,
+              mesas: prev.mesas,
             }
           : null;
 

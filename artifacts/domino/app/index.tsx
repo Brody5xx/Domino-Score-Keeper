@@ -634,15 +634,39 @@ export default function MainScreen() {
                     </View>
 
                     {/* Player totals */}
-                    <View style={styles.prevPlayerRow}>
-                      {game.players.map((p) => (
-                        <View key={p.id} style={styles.prevPlayerChip}>
-                          <View style={[styles.entryColorDot, { backgroundColor: p.color }]} />
-                          <Text style={[styles.prevPlayerName, { color: p.color }]} numberOfLines={1}>{p.name}</Text>
-                          <Text style={styles.prevPlayerTotal}>{gTotals[p.id] ?? 0}</Text>
-                        </View>
-                      ))}
-                    </View>
+                    {game.mesas > 0 ? (
+                      <View style={styles.prevMesaList}>
+                        {Array.from({ length: game.mesas }).map((_, mi) => {
+                          const mesaPlayers = [game.players[mi * 2], game.players[mi * 2 + 1]];
+                          return (
+                            <View key={"pmesa-" + mi} style={styles.prevMesaGroup}>
+                              <Text style={styles.prevMesaLabel}>{t.mesaLabel(mi + 1)}</Text>
+                              <View style={styles.prevPlayerRow}>
+                                {mesaPlayers.map((p) =>
+                                  p ? (
+                                    <View key={p.id} style={styles.prevPlayerChip}>
+                                      <View style={[styles.entryColorDot, { backgroundColor: p.color }]} />
+                                      <Text style={[styles.prevPlayerName, { color: p.color }]} numberOfLines={1}>{p.name}</Text>
+                                      <Text style={styles.prevPlayerTotal}>{gTotals[p.id] ?? 0}</Text>
+                                    </View>
+                                  ) : null
+                                )}
+                              </View>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    ) : (
+                      <View style={styles.prevPlayerRow}>
+                        {game.players.map((p) => (
+                          <View key={p.id} style={styles.prevPlayerChip}>
+                            <View style={[styles.entryColorDot, { backgroundColor: p.color }]} />
+                            <Text style={[styles.prevPlayerName, { color: p.color }]} numberOfLines={1}>{p.name}</Text>
+                            <Text style={styles.prevPlayerTotal}>{gTotals[p.id] ?? 0}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
 
                     {/* Expanded entry list */}
                     {isExpanded && (
@@ -1223,6 +1247,20 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     deleteGameBtn: {
       padding: 6,
       marginLeft: 6,
+    },
+    prevMesaList: {
+      gap: 8,
+      marginBottom: 6,
+    },
+    prevMesaGroup: {
+      gap: 4,
+    },
+    prevMesaLabel: {
+      fontFamily: "Inter_700Bold",
+      fontSize: 11,
+      color: colors.mutedForeground,
+      textTransform: "uppercase",
+      letterSpacing: 0.8,
     },
     prevPlayerRow: {
       flexDirection: "row",
