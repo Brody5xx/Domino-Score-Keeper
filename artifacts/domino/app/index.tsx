@@ -441,7 +441,7 @@ export default function MainScreen() {
               );
             })()}
             <TextInput
-              style={styles.modalInput}
+              style={[styles.modalInput, styles.transparentInput]}
               placeholder="0"
               placeholderTextColor={colors.mutedForeground}
               keyboardType="number-pad"
@@ -1160,6 +1160,9 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     renameInput: {
       fontSize: 18,
       borderWidth: 2,
+    },
+    transparentInput: {
+      backgroundColor: "transparent",
     },
     colorPickerLabel: {
       fontFamily: "Inter_500Medium",
