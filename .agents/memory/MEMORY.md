@@ -1,1 +1,2 @@
-- [Domino app backgrounds](domino-backgrounds.md) — SVG themes + optional gallery photo; normalize persisted bgTheme, reconcile custom theme with its uri on load, copy picker URIs to durable storage
+- [Domino mesas grouping](domino-mesas.md) — mesas>0 requires players.length===mesas*2; any player-set mutation resets mesas to 0.
+- [Domino backgrounds](domino-backgrounds.md) — bg themes + custom photo persistence notes.

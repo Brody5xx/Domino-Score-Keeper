@@ -35,6 +35,7 @@ interface GameState {
   previousGames: PreviousGame[];
   bgTheme: string;
   customBgUri: string | null;
+  mesas: number;
 }
 
 interface GameContextValue extends GameState {
@@ -48,6 +49,7 @@ interface GameContextValue extends GameState {
   addPlayer: () => void;
   removePlayer: (playerId: string) => void;
   setPlayerCount: (count: number) => void;
+  setMesas: (count: number) => void;
   restart: () => void;
   deletePreviousGame: (gameId: string) => void;
   clearPreviousGames: () => void;
@@ -80,6 +82,7 @@ const defaultState: GameState = {
   previousGames: [],
   bgTheme: "scatter",
   customBgUri: null,
+  mesas: 0,
 };
 
 const BG_THEME_IDS = ["scatter", "diagonal", "grid", "radial", "giant", "custom"];
@@ -208,7 +211,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         name: `Jugador ${prev.players.length + 1}`,
         color: PLAYER_COLORS[colorIndex],
       };
-      const next = { ...prev, players: [...prev.players, newPlayer] };
+      const next = { ...prev, players: [...prev.players, newPlayer], mesas: 0 };
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       return next;
     });
@@ -221,6 +224,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         ...prev,
         players: prev.players.filter((p) => p.id !== playerId),
         entries: prev.entries.filter((e) => e.playerId !== playerId),
+        mesas: 0,
       };
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       return next;
@@ -251,6 +255,44 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         ...prev,
         players,
         entries: prev.entries.filter((e) => keptIds.has(e.playerId)),
+        mesas: 0,
+      };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const setMesas = useCallback((count: number) => {
+    setState((prev) => {
+      if (!Number.isFinite(count)) return prev;
+      const mesas = Math.max(0, Math.min(4, Math.floor(count)));
+      if (mesas === 0) {
+        if (prev.mesas === 0) return prev;
+        const next = { ...prev, mesas: 0 };
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        return next;
+      }
+
+      const target = mesas * 2;
+      let players = [...prev.players];
+      if (target > players.length) {
+        for (let i = players.length; i < target; i++) {
+          players.push({
+            id: "p" + Date.now() + "_" + i,
+            name: `Jugador ${i + 1}`,
+            color: PLAYER_COLORS[i % PLAYER_COLORS.length],
+          });
+        }
+      } else if (target < players.length) {
+        players = players.slice(0, target);
+      }
+
+      const keptIds = new Set(players.map((p) => p.id));
+      const next = {
+        ...prev,
+        players,
+        entries: prev.entries.filter((e) => keptIds.has(e.playerId)),
+        mesas,
       };
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       return next;
@@ -338,6 +380,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         addPlayer,
         removePlayer,
         setPlayerCount,
+        setMesas,
         restart,
         deletePreviousGame,
         clearPreviousGames,

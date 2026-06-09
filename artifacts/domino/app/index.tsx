@@ -53,6 +53,8 @@ export default function MainScreen() {
     addPlayer,
     removePlayer,
     setPlayerCount,
+    setMesas,
+    mesas,
     restart,
     deletePreviousGame,
     clearPreviousGames,
@@ -231,6 +233,83 @@ export default function MainScreen() {
 
   // ── render ─────────────────────────────────────────────────────────────────
 
+  function renderPlayerCard(player: (typeof players)[number], fullWidth = false) {
+    const total = totals[player.id] ?? 0;
+    const remaining = Math.max(0, target - total);
+    const won = total >= target;
+    const playerEntries = entries.filter((e) => e.playerId === player.id);
+    return (
+      <View
+        key={player.id}
+        style={[
+          styles.playerCard,
+          { borderColor: player.color },
+          fullWidth && { width: "100%" },
+        ]}
+      >
+        <Pressable
+          style={[styles.playerHeader, { backgroundColor: player.color + "26" }]}
+          onPress={() => setRenameModal({ playerId: player.id, value: player.name, color: player.color })}
+        >
+          <Text style={[styles.playerName, { color: player.color }]} numberOfLines={1}>
+            {player.name}
+          </Text>
+          <Feather name="edit-2" size={11} color={player.color} style={{ opacity: 0.6 }} />
+          {won && (
+            <View style={[styles.winBadge, { backgroundColor: player.color }]}>
+              <Text style={styles.winBadgeText}>{t.won}</Text>
+            </View>
+          )}
+        </Pressable>
+        <Text style={[styles.scoreText, { color: won ? player.color : colors.foreground }]}>
+          {total}
+        </Text>
+        <Text style={styles.remainingText}>
+          {won ? t.victory : t.remaining(remaining)}
+        </Text>
+        <Pressable
+          style={[styles.addBtn, { borderColor: player.color }]}
+          onPress={() => { setAddModal({ playerId: player.id }); setPointsInput(""); setExtraMode(false); }}
+        >
+          <Feather name="plus" size={20} color={player.color} />
+        </Pressable>
+
+        {playerEntries.length > 0 && (
+          <View style={styles.cardHistory}>
+            {playerEntries.slice().reverse().map((entry, idx) => {
+              const num = playerEntries.length - idx;
+              return (
+                <View key={entry.id} style={styles.cardEntryRow}>
+                  <Text style={styles.cardEntryNum}>{num}</Text>
+                  {entry.extra ? (
+                    <View style={styles.extraBadge}>
+                      <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
+                    </View>
+                  ) : null}
+                  <Text style={[styles.cardEntryPoints, { color: player.color }]}>+{entry.points}</Text>
+                  <Pressable
+                    style={styles.entryActionBtn}
+                    onPress={() => { setEditModal({ entryId: entry.id, currentPoints: entry.points }); setEditInput(String(entry.points)); }}
+                    hitSlop={6}
+                  >
+                    <Feather name="edit-2" size={13} color={colors.mutedForeground} />
+                  </Pressable>
+                  <Pressable
+                    style={styles.entryActionBtn}
+                    onPress={() => { deleteEntry(entry.id); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                    hitSlop={6}
+                  >
+                    <Feather name="trash-2" size={13} color={colors.destructive} />
+                  </Pressable>
+                </View>
+              );
+            })}
+          </View>
+        )}
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.root, { paddingTop: topPad, paddingBottom: bottomPad }]}>
       <DominoBackground />
@@ -270,84 +349,23 @@ export default function MainScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={styles.playerScroll}
-        contentContainerStyle={styles.playerGrid}
+        contentContainerStyle={mesas > 0 ? styles.mesaContainer : styles.playerGrid}
       >
-        {players.map((player) => {
-          const total = totals[player.id] ?? 0;
-          const remaining = Math.max(0, target - total);
-          const won = total >= target;
-          const playerEntries = entries.filter((e) => e.playerId === player.id);
-          return (
-            <View
-              key={player.id}
-              style={[
-                styles.playerCard,
-                { borderColor: player.color },
-                players.length === 1 && { width: "100%" },
-              ]}
-            >
-              <Pressable
-                style={[styles.playerHeader, { backgroundColor: player.color + "26" }]}
-                onPress={() => setRenameModal({ playerId: player.id, value: player.name, color: player.color })}
-              >
-                <Text style={[styles.playerName, { color: player.color }]} numberOfLines={1}>
-                  {player.name}
-                </Text>
-                <Feather name="edit-2" size={11} color={player.color} style={{ opacity: 0.6 }} />
-                {won && (
-                  <View style={[styles.winBadge, { backgroundColor: player.color }]}>
-                    <Text style={styles.winBadgeText}>{t.won}</Text>
+        {mesas > 0
+          ? Array.from({ length: mesas }).map((_, i) => {
+              const a = players[i * 2];
+              const b = players[i * 2 + 1];
+              return (
+                <View key={"mesa-" + i} style={styles.mesaGroup}>
+                  <Text style={styles.mesaLabel}>{t.mesaLabel(i + 1)}</Text>
+                  <View style={styles.mesaRow}>
+                    {a && renderPlayerCard(a)}
+                    {b && renderPlayerCard(b)}
                   </View>
-                )}
-              </Pressable>
-              <Text style={[styles.scoreText, { color: won ? player.color : colors.foreground }]}>
-                {total}
-              </Text>
-              <Text style={styles.remainingText}>
-                {won ? t.victory : t.remaining(remaining)}
-              </Text>
-              <Pressable
-                style={[styles.addBtn, { borderColor: player.color }]}
-                onPress={() => { setAddModal({ playerId: player.id }); setPointsInput(""); setExtraMode(false); }}
-              >
-                <Feather name="plus" size={20} color={player.color} />
-              </Pressable>
-
-              {playerEntries.length > 0 && (
-                <View style={styles.cardHistory}>
-                  {playerEntries.slice().reverse().map((entry, idx) => {
-                    const num = playerEntries.length - idx;
-                    return (
-                      <View key={entry.id} style={styles.cardEntryRow}>
-                        <Text style={styles.cardEntryNum}>{num}</Text>
-                        {entry.extra ? (
-                          <View style={styles.extraBadge}>
-                            <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
-                          </View>
-                        ) : null}
-                        <Text style={[styles.cardEntryPoints, { color: player.color }]}>+{entry.points}</Text>
-                        <Pressable
-                          style={styles.entryActionBtn}
-                          onPress={() => { setEditModal({ entryId: entry.id, currentPoints: entry.points }); setEditInput(String(entry.points)); }}
-                          hitSlop={6}
-                        >
-                          <Feather name="edit-2" size={13} color={colors.mutedForeground} />
-                        </Pressable>
-                        <Pressable
-                          style={styles.entryActionBtn}
-                          onPress={() => { deleteEntry(entry.id); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                          hitSlop={6}
-                        >
-                          <Feather name="trash-2" size={13} color={colors.destructive} />
-                        </Pressable>
-                      </View>
-                    );
-                  })}
                 </View>
-              )}
-            </View>
-          );
-        })}
+              );
+            })
+          : players.map((player) => renderPlayerCard(player, players.length === 1))}
       </ScrollView>
 
       {/* ── Bottom buttons row ── */}
@@ -809,6 +827,35 @@ export default function MainScreen() {
                 </View>
               </View>
 
+              {/* Mesas selector */}
+              <View style={styles.langSection}>
+                <Text style={styles.langLabel}>{t.mesaTitle}</Text>
+                <View style={styles.countRow}>
+                  <Pressable
+                    style={[styles.countChip, mesas === 0 && styles.countChipActive]}
+                    onPress={() => { setMesas(0); Haptics.selectionAsync(); }}
+                  >
+                    <Text style={[styles.countChipText, mesas === 0 && styles.countChipTextActive]}>
+                      {t.mesaOff}
+                    </Text>
+                  </Pressable>
+                  {[1, 2, 3, 4].map((n) => {
+                    const active = mesas === n;
+                    return (
+                      <Pressable
+                        key={n}
+                        style={[styles.countChip, active && styles.countChipActive]}
+                        onPress={() => { setMesas(n); Haptics.selectionAsync(); }}
+                      >
+                        <Text style={[styles.countChipText, active && styles.countChipTextActive]}>
+                          {n}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+
               {/* Divider */}
               <View style={styles.sectionDivider} />
 
@@ -931,6 +978,24 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       flexWrap: "wrap",
       gap: 10,
       paddingBottom: 6,
+    },
+    mesaContainer: {
+      gap: 16,
+      paddingBottom: 6,
+    },
+    mesaGroup: {
+      gap: 8,
+    },
+    mesaLabel: {
+      fontFamily: "Inter_700Bold",
+      fontSize: 13,
+      color: colors.mutedForeground,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+    },
+    mesaRow: {
+      flexDirection: "row",
+      gap: 10,
     },
     playerCard: {
       width: "48%",
