@@ -23,11 +23,11 @@ import DominoBackground from "@/components/DominoBackground";
 const TARGET_PRESETS = [100, 120, 150, 200];
 
 const BG_THEMES = [
-  { id: "whiskey", icon: "droplet"       as const, labelKey: "bgWhiskey" as const },
-  { id: "wood",    icon: "grid"          as const, labelKey: "bgWood"    as const },
-  { id: "chain",   icon: "trending-down" as const, labelKey: "bgChain"   as const },
-  { id: "marble",  icon: "hexagon"       as const, labelKey: "bgMarble"  as const },
-  { id: "neon",    icon: "zap"           as const, labelKey: "bgNeon"    as const },
+  { id: "scatter",  icon: "shuffle"    as const, labelKey: "bgScatter"  as const },
+  { id: "diagonal", icon: "trending-up" as const, labelKey: "bgDiagonal" as const },
+  { id: "grid",     icon: "grid"       as const, labelKey: "bgGrid"     as const },
+  { id: "radial",   icon: "disc"       as const, labelKey: "bgRadial"   as const },
+  { id: "giant",    icon: "maximize-2" as const, labelKey: "bgGiant"    as const },
 ];
 
 type AddModalState = { playerId: string } | null;
@@ -745,7 +745,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       paddingHorizontal: 12,
       paddingVertical: 7,
       borderRadius: 20,
-      backgroundColor: "rgba(20,20,30,0.45)",
+      backgroundColor: colors.card,
       borderWidth: 1,
       borderColor: colors.border,
     },
@@ -765,7 +765,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       width: 38,
       height: 38,
       borderRadius: 10,
-      backgroundColor: "rgba(20,20,30,0.45)",
+      backgroundColor: colors.card,
       borderWidth: 1,
       borderColor: colors.border,
       alignItems: "center",
@@ -783,7 +783,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     playerCard: {
       width: "48%",
-      backgroundColor: "rgba(20,20,30,0.40)",
+      backgroundColor: colors.card,
       borderRadius: 14,
       borderWidth: 2,
       overflow: "hidden",
@@ -841,7 +841,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     historyContainer: {
       flex: 1,
-      backgroundColor: "rgba(20,20,30,0.32)",
+      backgroundColor: colors.card,
       borderRadius: 12,
       padding: 12,
       marginTop: 10,
@@ -917,7 +917,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       paddingVertical: 13,
       paddingHorizontal: 14,
       borderRadius: 12,
-      backgroundColor: "rgba(20,20,30,0.45)",
+      backgroundColor: colors.card,
       borderWidth: 1,
       borderColor: colors.border,
     },
@@ -947,7 +947,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       gap: 7,
       paddingVertical: 13,
       borderRadius: 12,
-      backgroundColor: "rgba(20,20,30,0.45)",
+      backgroundColor: colors.card,
       borderWidth: 1,
       borderColor: colors.destructive,
     },

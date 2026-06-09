@@ -48,11 +48,11 @@ const es = {
   langEs: "Español",
   langEn: "English",
   bgTitle: "Fondo",
-  bgWhiskey: "Hielo",
-  bgWood: "Madera",
-  bgChain: "Cadena",
-  bgMarble: "Mármol",
-  bgNeon: "Neón",
+  bgScatter: "Caos",
+  bgDiagonal: "Diagonal",
+  bgGrid: "Cuadrícula",
+  bgRadial: "Radial",
+  bgGiant: "Gigante",
 };
 
 const en = {
@@ -93,11 +93,11 @@ const en = {
   langEs: "Español",
   langEn: "English",
   bgTitle: "Background",
-  bgWhiskey: "Ice",
-  bgWood: "Wood",
-  bgChain: "Chain",
-  bgMarble: "Marble",
-  bgNeon: "Neon",
+  bgScatter: "Chaos",
+  bgDiagonal: "Diagonal",
+  bgGrid: "Grid",
+  bgRadial: "Radial",
+  bgGiant: "Giant",
 };
 
 export type Translations = typeof es;

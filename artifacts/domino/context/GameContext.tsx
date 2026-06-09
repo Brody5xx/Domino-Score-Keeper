@@ -73,15 +73,15 @@ const defaultState: GameState = {
   entries: [],
   target: 200,
   previousGames: [],
-  bgTheme: "whiskey",
+  bgTheme: "scatter",
 };
 
-const BG_THEME_IDS = ["whiskey", "wood", "chain", "marble", "neon"];
+const BG_THEME_IDS = ["scatter", "diagonal", "grid", "radial", "giant"];
 
 function normalizeBgTheme(theme: unknown): string {
   return typeof theme === "string" && BG_THEME_IDS.includes(theme)
     ? theme
-    : "whiskey";
+    : "scatter";
 }
 
 export function computeTotals(entries: ScoreEntry[]): Record<string, number> {
