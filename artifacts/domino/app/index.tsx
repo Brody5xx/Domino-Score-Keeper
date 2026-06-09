@@ -563,24 +563,6 @@ export default function MainScreen() {
         </View>
       </Modal>
 
-      {/* Delete previous game confirm */}
-      <Modal visible={deleteGameModal !== null} transparent animationType="fade" onRequestClose={() => setDeleteGameModal(null)}>
-        <View style={styles.overlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{t.deleteGame}</Text>
-            <Text style={styles.modalSubtitle}>{t.confirmDeleteGame}</Text>
-            <View style={styles.modalBtns}>
-              <Pressable style={styles.modalCancel} onPress={() => setDeleteGameModal(null)}>
-                <Text style={styles.modalCancelText}>{t.cancel}</Text>
-              </Pressable>
-              <Pressable style={[styles.modalConfirm, { backgroundColor: colors.destructive }]} onPress={confirmDeleteGame}>
-                <Text style={styles.modalConfirmText}>{t.deleteConfirm}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
       {/* Previous games */}
       <Modal visible={historyModal} transparent animationType="slide" onRequestClose={() => setHistoryModal(false)}>
         <View style={styles.overlay}>
@@ -765,6 +747,24 @@ export default function MainScreen() {
             >
               <Text style={styles.modalConfirmText}>{t.close}</Text>
             </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Delete previous game confirm — rendered after history modal so it stacks on top */}
+      <Modal visible={deleteGameModal !== null} transparent animationType="fade" onRequestClose={() => setDeleteGameModal(null)}>
+        <View style={styles.overlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>{t.deleteGame}</Text>
+            <Text style={styles.modalSubtitle}>{t.confirmDeleteGame}</Text>
+            <View style={styles.modalBtns}>
+              <Pressable style={styles.modalCancel} onPress={() => setDeleteGameModal(null)}>
+                <Text style={styles.modalCancelText}>{t.cancel}</Text>
+              </Pressable>
+              <Pressable style={[styles.modalConfirm, { backgroundColor: colors.destructive }]} onPress={confirmDeleteGame}>
+                <Text style={styles.modalConfirmText}>{t.deleteConfirm}</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Modal>
