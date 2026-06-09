@@ -33,6 +33,7 @@ interface GameState {
   target: number;
   previousGames: PreviousGame[];
   bgTheme: string;
+  customBgUri: string | null;
 }
 
 interface GameContextValue extends GameState {
@@ -48,6 +49,7 @@ interface GameContextValue extends GameState {
   restart: () => void;
   deletePreviousGame: (gameId: string) => void;
   setBgTheme: (theme: string) => void;
+  setCustomBgUri: (uri: string | null) => void;
 }
 
 const STORAGE_KEY = "domino_game_v3";
@@ -74,9 +76,10 @@ const defaultState: GameState = {
   target: 200,
   previousGames: [],
   bgTheme: "scatter",
+  customBgUri: null,
 };
 
-const BG_THEME_IDS = ["scatter", "diagonal", "grid", "radial", "giant"];
+const BG_THEME_IDS = ["scatter", "diagonal", "grid", "radial", "giant", "custom"];
 
 function normalizeBgTheme(theme: unknown): string {
   return typeof theme === "string" && BG_THEME_IDS.includes(theme)
@@ -103,10 +106,15 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       if (raw) {
         try {
           const parsed = JSON.parse(raw) as GameState;
+          const hasCustom =
+            typeof parsed.customBgUri === "string" && parsed.customBgUri.length > 0;
+          let bgTheme = normalizeBgTheme(parsed.bgTheme);
+          if (bgTheme === "custom" && !hasCustom) bgTheme = "scatter";
           setState({
             ...defaultState,
             ...parsed,
-            bgTheme: normalizeBgTheme(parsed.bgTheme),
+            customBgUri: hasCustom ? parsed.customBgUri : null,
+            bgTheme,
           });
         } catch {}
       }
@@ -260,6 +268,18 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const setCustomBgUri = useCallback((uri: string | null) => {
+    setState((prev) => {
+      const next = {
+        ...prev,
+        customBgUri: uri,
+        bgTheme: uri ? "custom" : prev.bgTheme === "custom" ? "scatter" : prev.bgTheme,
+      };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   if (!loaded) return null;
 
   return (
@@ -278,6 +298,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         restart,
         deletePreviousGame,
         setBgTheme,
+        setCustomBgUri,
       }}
     >
       {children}

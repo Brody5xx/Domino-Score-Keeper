@@ -1,5 +1,7 @@
 import { Feather } from "@expo/vector-icons";
+import { File, Paths } from "expo-file-system";
 import * as Haptics from "expo-haptics";
+import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -55,6 +57,8 @@ export default function MainScreen() {
     deletePreviousGame,
     bgTheme,
     setBgTheme,
+    customBgUri,
+    setCustomBgUri,
   } = useGame();
 
   const [addModal, setAddModal] = useState<AddModalState>(null);
@@ -65,6 +69,7 @@ export default function MainScreen() {
 
   const [customModal, setCustomModal] = useState(false);
   const [customInput, setCustomInput] = useState("");
+  const [photoDenied, setPhotoDenied] = useState(false);
 
   const [settingsModal, setSettingsModal] = useState(false);
   const [editingName, setEditingName] = useState<{ id: string; value: string } | null>(null);
@@ -95,6 +100,57 @@ export default function MainScreen() {
   }
 
   // ── handlers ──────────────────────────────────────────────────────────────
+
+  const CUSTOM_BG_FILE = "domino-custom-bg";
+
+  // Copy the picked image into app-scoped storage so it survives restarts
+  // (picker URIs are temporary on iOS/Android). Web keeps the URI as-is.
+  async function persistPickedImage(uri: string): Promise<string> {
+    if (Platform.OS === "web") return uri;
+    try {
+      const dest = new File(Paths.document, CUSTOM_BG_FILE);
+      if (dest.exists) dest.delete();
+      new File(uri).copy(dest);
+      return dest.uri;
+    } catch {
+      return uri;
+    }
+  }
+
+  function deletePersistedImage() {
+    if (Platform.OS === "web") return;
+    try {
+      const f = new File(Paths.document, CUSTOM_BG_FILE);
+      if (f.exists) f.delete();
+    } catch {}
+  }
+
+  async function handlePickBackgroundPhoto() {
+    if (Platform.OS !== "web") {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) {
+        setPhotoDenied(true);
+        return;
+      }
+    }
+    setPhotoDenied(false);
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets?.[0]?.uri) {
+      const persisted = await persistPickedImage(result.assets[0].uri);
+      setCustomBgUri(persisted);
+      Haptics.selectionAsync();
+    }
+  }
+
+  function handleRemoveBackgroundPhoto() {
+    deletePersistedImage();
+    setCustomBgUri(null);
+    setPhotoDenied(false);
+    Haptics.selectionAsync();
+  }
 
   function handleAddPoints() {
     const pts = parseInt(pointsInput, 10);
@@ -656,6 +712,37 @@ export default function MainScreen() {
                     })}
                   </View>
                 </ScrollView>
+
+                {/* Gallery photo background */}
+                <View style={styles.bgPhotoRow}>
+                  <Pressable
+                    style={[styles.bgPhotoBtn, bgTheme === "custom" && customBgUri && styles.bgPhotoBtnActive]}
+                    onPress={handlePickBackgroundPhoto}
+                  >
+                    <Feather
+                      name="image"
+                      size={14}
+                      color={bgTheme === "custom" && customBgUri ? colors.primary : colors.mutedForeground}
+                    />
+                    <Text
+                      style={[
+                        styles.bgPhotoText,
+                        bgTheme === "custom" && customBgUri && styles.bgPhotoTextActive,
+                      ]}
+                    >
+                      {customBgUri ? t.bgChangePhoto : t.bgPickPhoto}
+                    </Text>
+                  </Pressable>
+                  {customBgUri ? (
+                    <Pressable style={styles.bgPhotoRemoveBtn} onPress={handleRemoveBackgroundPhoto}>
+                      <Feather name="x" size={13} color={colors.destructive} />
+                      <Text style={styles.bgPhotoRemoveText}>{t.bgRemovePhoto}</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+                {photoDenied ? (
+                  <Text style={styles.bgPhotoDeniedText}>{t.bgPhotoDenied}</Text>
+                ) : null}
               </View>
 
               {/* Divider */}
@@ -1211,6 +1298,55 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     bgThemeTextActive: {
       color: colors.primary,
+    },
+    bgPhotoRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 10,
+    },
+    bgPhotoBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderRadius: 10,
+      backgroundColor: colors.background,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+    },
+    bgPhotoBtnActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + "22",
+    },
+    bgPhotoText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 13,
+      color: colors.mutedForeground,
+    },
+    bgPhotoTextActive: {
+      color: colors.primary,
+    },
+    bgPhotoRemoveBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      borderRadius: 10,
+    },
+    bgPhotoRemoveText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 13,
+      color: colors.destructive,
+    },
+    bgPhotoDeniedText: {
+      fontFamily: "Inter_400Regular",
+      fontSize: 12,
+      color: colors.destructive,
+      marginTop: 8,
     },
     sectionDivider: {
       height: 1,

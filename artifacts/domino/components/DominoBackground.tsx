@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { StyleSheet, View } from "react-native";
+import { ImageBackground, StyleSheet, View } from "react-native";
 import Svg, { Circle, G, Line, Rect } from "react-native-svg";
 import { useGame } from "@/context/GameContext";
 
@@ -151,10 +151,25 @@ const PALETTE_MAP: Record<string, Palette> = {
 
 // ── component ─────────────────────────────────────────────────────────────────
 export default function DominoBackground() {
-  const { bgTheme } = useGame();
+  const { bgTheme, customBgUri } = useGame();
   const tiles = useMemo(() => (THEME_MAP[bgTheme] ?? THEME_MAP.scatter)(), [bgTheme]);
   const opacity = OPACITY_MAP[bgTheme] ?? 0.30;
   const palette = PALETTE_MAP[bgTheme] ?? PALETTE_MAP.scatter;
+
+  // User-provided gallery photo background.
+  if (bgTheme === "custom" && customBgUri) {
+    return (
+      <View style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]}>
+        <ImageBackground
+          source={{ uri: customBgUri }}
+          style={StyleSheet.absoluteFill}
+          resizeMode="cover"
+        >
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(15,15,20,0.55)" }]} />
+        </ImageBackground>
+      </View>
+    );
+  }
 
   return (
     <View style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]}>

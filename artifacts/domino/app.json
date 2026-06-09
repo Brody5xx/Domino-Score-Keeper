@@ -30,7 +30,13 @@
         }
       ],
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permite a Dominó usar una foto de tu galería como fondo de la app."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

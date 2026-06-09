@@ -1,1 +1,1 @@
-- [Domino app backgrounds](domino-backgrounds.md) — photo ImageBackgrounds keyed off bgTheme; normalize persisted theme ids on hydration when renaming them
+- [Domino app backgrounds](domino-backgrounds.md) — SVG themes + optional gallery photo; normalize persisted bgTheme, reconcile custom theme with its uri on load, copy picker URIs to durable storage
