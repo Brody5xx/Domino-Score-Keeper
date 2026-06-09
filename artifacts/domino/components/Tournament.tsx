@@ -697,9 +697,10 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
       color: colors.foreground,
       paddingVertical: 2,
     },
-    teamPlayersRow: { flexDirection: "row", gap: 6 },
+    teamPlayersRow: { flexDirection: "row", gap: 6, justifyContent: "flex-start" },
     playerInput: {
       flex: 1,
+      maxWidth: 130,
       backgroundColor: colors.background,
       borderRadius: 8,
       paddingHorizontal: 8,
