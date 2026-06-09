@@ -4,7 +4,6 @@ import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import {
-  FlatList,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -222,8 +221,6 @@ export default function MainScreen() {
 
   // ── render ─────────────────────────────────────────────────────────────────
 
-  const reversedEntries = [...entries].reverse();
-
   return (
     <View style={[styles.root, { paddingTop: topPad, paddingBottom: bottomPad }]}>
       <DominoBackground />
@@ -269,6 +266,7 @@ export default function MainScreen() {
           const total = totals[player.id] ?? 0;
           const remaining = Math.max(0, target - total);
           const won = total >= target;
+          const playerEntries = entries.filter((e) => e.playerId === player.id);
           return (
             <View
               key={player.id}
@@ -304,62 +302,43 @@ export default function MainScreen() {
               >
                 <Feather name="plus" size={20} color={player.color} />
               </Pressable>
+
+              {playerEntries.length > 0 && (
+                <View style={styles.cardHistory}>
+                  {playerEntries.slice().reverse().map((entry, idx) => {
+                    const num = playerEntries.length - idx;
+                    return (
+                      <View key={entry.id} style={styles.cardEntryRow}>
+                        <Text style={styles.cardEntryNum}>{num}</Text>
+                        {entry.extra ? (
+                          <View style={styles.extraBadge}>
+                            <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
+                          </View>
+                        ) : null}
+                        <Text style={[styles.cardEntryPoints, { color: player.color }]}>+{entry.points}</Text>
+                        <Pressable
+                          style={styles.entryActionBtn}
+                          onPress={() => { setEditModal({ entryId: entry.id, currentPoints: entry.points }); setEditInput(String(entry.points)); }}
+                          hitSlop={6}
+                        >
+                          <Feather name="edit-2" size={13} color={colors.mutedForeground} />
+                        </Pressable>
+                        <Pressable
+                          style={styles.entryActionBtn}
+                          onPress={() => { deleteEntry(entry.id); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                          hitSlop={6}
+                        >
+                          <Feather name="trash-2" size={13} color={colors.destructive} />
+                        </Pressable>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
             </View>
           );
         })}
       </ScrollView>
-
-      {/* ── History ── */}
-      <View style={styles.historyContainer}>
-        <View style={styles.historyHeader}>
-          <Feather name="clock" size={13} color={colors.mutedForeground} />
-          <Text style={styles.historyTitle}>{t.history}</Text>
-        </View>
-        {entries.length === 0 ? (
-          <Text style={styles.emptyHistory}>{t.noScores}</Text>
-        ) : (
-          <FlatList
-            data={reversedEntries}
-            keyExtractor={(item) => item.id}
-            scrollEnabled={entries.length > 5}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item, index }) => {
-              const player = players.find((p) => p.id === item.playerId);
-              const num = entries.length - index;
-              return (
-                <View style={styles.entryRow}>
-                  <Text style={styles.entryNum}>{t.entry(num)}</Text>
-                  <View style={[styles.entryColorDot, { backgroundColor: player?.color ?? "#888" }]} />
-                  <Text style={[styles.entryPlayerName, { color: player?.color ?? "#888" }]} numberOfLines={1}>
-                    {player?.name ?? "—"}
-                  </Text>
-                  {item.extra ? (
-                    <View style={styles.extraBadge}>
-                      <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
-                    </View>
-                  ) : null}
-                  <Text style={styles.entryPoints}>+{item.points}</Text>
-                  <Pressable
-                    style={styles.entryActionBtn}
-                    onPress={() => { setEditModal({ entryId: item.id, currentPoints: item.points }); setEditInput(String(item.points)); }}
-                    hitSlop={8}
-                  >
-                    <Feather name="edit-2" size={14} color={colors.mutedForeground} />
-                  </Pressable>
-                  <Pressable
-                    style={styles.entryActionBtn}
-                    onPress={() => { deleteEntry(item.id); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                    hitSlop={8}
-                  >
-                    <Feather name="trash-2" size={14} color={colors.destructive} />
-                  </Pressable>
-                </View>
-              );
-            }}
-            style={styles.entryList}
-          />
-        )}
-      </View>
 
       {/* ── Bottom buttons row ── */}
       <View style={styles.bottomRow}>
@@ -973,37 +952,31 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       backgroundColor: "transparent",
       borderWidth: 2,
     },
-    historyContainer: {
-      flex: 1,
-      backgroundColor: "transparent",
-      borderRadius: 12,
-      padding: 12,
-      marginTop: 10,
-      marginBottom: 10,
-      minHeight: 80,
+    cardHistory: {
+      width: "100%",
+      marginTop: 12,
+      paddingHorizontal: 10,
+      gap: 2,
     },
-    historyHeader: {
+    cardEntryRow: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 5,
-      marginBottom: 8,
+      paddingVertical: 5,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      gap: 4,
     },
-    historyTitle: {
-      color: colors.mutedForeground,
-      fontFamily: "Inter_500Medium",
-      fontSize: 11,
-      textTransform: "uppercase",
-      letterSpacing: 0.8,
-    },
-    emptyHistory: {
+    cardEntryNum: {
       color: colors.mutedForeground,
       fontFamily: "Inter_400Regular",
-      fontSize: 13,
-      textAlign: "center",
-      paddingVertical: 12,
+      fontSize: 11,
+      minWidth: 16,
     },
-    entryList: {
+    cardEntryPoints: {
+      fontFamily: "Inter_700Bold",
+      fontSize: 14,
       flex: 1,
+      textAlign: "right",
     },
     entryRow: {
       flexDirection: "row",
