@@ -509,9 +509,11 @@ export default function MainScreen() {
               autoFocus
               selectTextOnFocus
             />
-            {addModal && pointsInput.trim() !== "" && !isNaN(parseInt(pointsInput, 10)) && parseInt(pointsInput, 10) >= 0 && (() => {
+            {addModal && (() => {
+              const parsed = parseInt(pointsInput, 10);
+              const pts = !isNaN(parsed) && parsed > 0 ? parsed : 0;
               const pColor = players.find((pl) => pl.id === addModal.playerId)?.color ?? colors.primary;
-              const projected = (totals[addModal.playerId] ?? 0) + parseInt(pointsInput, 10);
+              const projected = (totals[addModal.playerId] ?? 0) + pts;
               const left = target - projected;
               return (
                 <Text style={[styles.addPreviewText, left <= 0 && { color: pColor }]}>
