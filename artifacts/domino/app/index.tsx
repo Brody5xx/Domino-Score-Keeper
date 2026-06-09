@@ -293,11 +293,11 @@ export default function MainScreen() {
                 {won ? t.victory : t.remaining(remaining)}
               </Text>
               <Pressable
-                style={[styles.addBtn, { backgroundColor: player.color }, gameOver && styles.disabledBtn]}
+                style={[styles.addBtn, { borderColor: player.color }, gameOver && styles.disabledBtn]}
                 onPress={() => { if (!gameOver) { setAddModal({ playerId: player.id }); setPointsInput(""); } }}
                 disabled={gameOver}
               >
-                <Feather name="plus" size={20} color="#fff" />
+                <Feather name="plus" size={20} color={player.color} />
               </Pressable>
             </View>
           );
@@ -922,6 +922,8 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       borderRadius: 21,
       alignItems: "center",
       justifyContent: "center",
+      backgroundColor: "transparent",
+      borderWidth: 2,
     },
     disabledBtn: {
       opacity: 0.3,
