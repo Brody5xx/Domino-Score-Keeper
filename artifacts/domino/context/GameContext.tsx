@@ -67,7 +67,7 @@ export const PLAYER_COLORS = [
 
 const defaultPlayers: Player[] = [
   { id: "p1", name: "Casa", color: PLAYER_COLORS[0] },
-  { id: "p2", name: "Visitante", color: PLAYER_COLORS[1] },
+  { id: "p2", name: "Visita", color: PLAYER_COLORS[1] },
 ];
 
 const defaultState: GameState = {
