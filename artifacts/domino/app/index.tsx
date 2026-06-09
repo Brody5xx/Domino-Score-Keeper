@@ -207,7 +207,7 @@ export default function MainScreen() {
         setPlayerName(renameModal.playerId, trimmed);
       } else {
         const idx = players.findIndex((p) => p.id === renameModal.playerId);
-        const fallback = idx === 0 ? "Visita" : idx === 1 ? "Casa" : `Jugador ${idx + 1}`;
+        const fallback = idx === 0 ? "Casa" : idx === 1 ? "Visitante" : `Jugador ${idx + 1}`;
         setPlayerName(renameModal.playerId, fallback);
       }
       const original = players.find((p) => p.id === renameModal.playerId);
