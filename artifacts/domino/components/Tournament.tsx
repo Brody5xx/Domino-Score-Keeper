@@ -214,13 +214,6 @@ function Setup() {
               placeholder={t.teamNamePlaceholder}
               placeholderTextColor={colors.mutedForeground}
             />
-            <Pressable
-              style={styles.removeTeamBtn}
-              onPress={() => { removeTeam(team.id); Haptics.selectionAsync(); }}
-              hitSlop={8}
-            >
-              <Feather name="trash-2" size={16} color={colors.destructive} />
-            </Pressable>
           </View>
           <View style={styles.teamPlayersRow}>
             <TextInput
@@ -256,6 +249,13 @@ function Setup() {
               );
             })}
           </View>
+          <Pressable
+            style={styles.removeTeamBtn}
+            onPress={() => { removeTeam(team.id); Haptics.selectionAsync(); }}
+          >
+            <Feather name="trash-2" size={15} color={colors.destructive} />
+            <Text style={styles.removeTeamText}>{t.removePair}</Text>
+          </Pressable>
         </View>
       ))}
 
@@ -864,13 +864,17 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
     },
     clearAllText: { fontFamily: "Inter_600SemiBold", fontSize: 12, color: colors.destructive },
     removeTeamBtn: {
-      width: 34,
-      height: 34,
-      borderRadius: 9,
+      flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
+      gap: 6,
+      alignSelf: "flex-start",
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+      borderRadius: 9,
       backgroundColor: colors.destructive + "18",
     },
+    removeTeamText: { fontFamily: "Inter_600SemiBold", fontSize: 13, color: colors.destructive },
     teamSetupHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
     teamDot: { width: 12, height: 12, borderRadius: 6 },
     teamNameInput: {

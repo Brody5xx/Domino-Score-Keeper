@@ -78,6 +78,7 @@ const es = {
   // Tournament
   tournament: "Torneo",
   clearAllTeams: "Borrar todos",
+  removePair: "Eliminar",
   tournamentMode: "Modo Torneo",
   tournamentSetup: "Configurar torneo",
   teamsCount: "Cantidad de equipos",
@@ -190,6 +191,7 @@ const en = {
   // Tournament
   tournament: "Tournament",
   clearAllTeams: "Clear all",
+  removePair: "Remove",
   tournamentMode: "Tournament Mode",
   tournamentSetup: "Set up tournament",
   teamsCount: "Number of teams",
