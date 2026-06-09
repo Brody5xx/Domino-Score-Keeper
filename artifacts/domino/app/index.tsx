@@ -22,7 +22,7 @@ import { translatePlayerName } from "@/constants/translations";
 import { useColors } from "@/hooks/useColors";
 import DominoBackground from "@/components/DominoBackground";
 
-const TARGET_PRESETS = [100, 120, 150, 200];
+const TARGET_PRESETS = [100, 200];
 
 const BG_THEMES = [
   { id: "scatter",  icon: "shuffle"    as const, labelKey: "bgScatter"  as const },
@@ -1113,12 +1113,12 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       paddingHorizontal: 12,
       paddingVertical: 7,
       borderRadius: 20,
-      backgroundColor: colors.card,
+      backgroundColor: "transparent",
       borderWidth: 1,
       borderColor: colors.border,
     },
     targetChipActive: {
-      backgroundColor: colors.primary,
+      backgroundColor: "transparent",
       borderColor: colors.primary,
     },
     targetChipText: {
@@ -1127,7 +1127,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontSize: 13,
     },
     targetChipTextActive: {
-      color: "#000",
+      color: colors.primary,
     },
     settingsBtn: {
       width: 38,
