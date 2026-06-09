@@ -912,10 +912,13 @@ export default function MainScreen() {
                   <Pressable
                     style={[styles.countChip, mesas === 0 && styles.countChipActive]}
                     onPress={() => { setMesas(0); Haptics.selectionAsync(); }}
+                    accessibilityLabel={t.mesaOff}
                   >
-                    <Text style={[styles.countChipText, mesas === 0 && styles.countChipTextActive]}>
-                      {t.mesaOff}
-                    </Text>
+                    <Feather
+                      name="x"
+                      size={16}
+                      color={mesas === 0 ? colors.primary : colors.mutedForeground}
+                    />
                   </Pressable>
                   {[1, 2, 3, 4].map((n) => {
                     const active = mesas === n;
