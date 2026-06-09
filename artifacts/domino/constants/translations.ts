@@ -37,6 +37,7 @@ const es = {
   // Settings modal
   playersTitle: "Jugadores",
   addPlayer: "Agregar jugador",
+  playerCountTitle: "Cantidad de jugadores",
   done: "Listo",
   playerCount: (n: number, max: number) => `${n}/${max}`,
   // Rename
@@ -89,6 +90,7 @@ const en = {
   deleteConfirm: "Delete",
   playersTitle: "Players",
   addPlayer: "Add player",
+  playerCountTitle: "Number of players",
   done: "Done",
   playerCount: (n: number, max: number) => `${n}/${max}`,
   renamePlaceholder: "Player name",

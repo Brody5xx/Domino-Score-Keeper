@@ -53,6 +53,7 @@ export default function MainScreen() {
     setPlayerColor,
     addPlayer,
     removePlayer,
+    setPlayerCount,
     restart,
     deletePreviousGame,
     bgTheme,
@@ -83,8 +84,6 @@ export default function MainScreen() {
   const styles = makeStyles(colors);
   const topPad = Platform.OS === "web" ? 16 : insets.top;
   const bottomPad = Platform.OS === "web" ? 20 : insets.bottom;
-
-  const gameOver = players.some((p) => (totals[p.id] ?? 0) >= target);
 
   const locale = lang === "es" ? "es-419" : "en-US";
 
@@ -298,9 +297,8 @@ export default function MainScreen() {
                 {won ? t.victory : t.remaining(remaining)}
               </Text>
               <Pressable
-                style={[styles.addBtn, { borderColor: player.color }, gameOver && styles.disabledBtn]}
-                onPress={() => { if (!gameOver) { setAddModal({ playerId: player.id }); setPointsInput(""); } }}
-                disabled={gameOver}
+                style={[styles.addBtn, { borderColor: player.color }]}
+                onPress={() => { setAddModal({ playerId: player.id }); setPointsInput(""); }}
               >
                 <Feather name="plus" size={20} color={player.color} />
               </Pressable>
@@ -753,6 +751,30 @@ export default function MainScreen() {
               {/* Divider */}
               <View style={styles.sectionDivider} />
 
+              {/* Player count selector */}
+              <View style={styles.langSection}>
+                <Text style={styles.langLabel}>{t.playerCountTitle}</Text>
+                <View style={styles.countRow}>
+                  {[2, 3, 4, 5, 6, 7, 8].map((n) => {
+                    const active = players.length === n;
+                    return (
+                      <Pressable
+                        key={n}
+                        style={[styles.countChip, active && styles.countChipActive]}
+                        onPress={() => { setPlayerCount(n); Haptics.selectionAsync(); }}
+                      >
+                        <Text style={[styles.countChipText, active && styles.countChipTextActive]}>
+                          {n}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {/* Divider */}
+              <View style={styles.sectionDivider} />
+
               {/* Players list */}
               {players.map((player) => (
                 <View key={player.id} style={styles.settingsPlayerRow}>
@@ -929,9 +951,6 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       justifyContent: "center",
       backgroundColor: "transparent",
       borderWidth: 2,
-    },
-    disabledBtn: {
-      opacity: 0.3,
     },
     historyContainer: {
       flex: 1,
@@ -1357,6 +1376,33 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontSize: 12,
       color: colors.destructive,
       marginTop: 8,
+    },
+    countRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+    },
+    countChip: {
+      width: 40,
+      height: 40,
+      borderRadius: 10,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.background,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+    },
+    countChipActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + "22",
+    },
+    countChipText: {
+      fontFamily: "Inter_700Bold",
+      fontSize: 16,
+      color: colors.mutedForeground,
+    },
+    countChipTextActive: {
+      color: colors.primary,
     },
     sectionDivider: {
       height: 1,

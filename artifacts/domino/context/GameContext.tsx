@@ -46,6 +46,7 @@ interface GameContextValue extends GameState {
   setPlayerColor: (playerId: string, color: string) => void;
   addPlayer: () => void;
   removePlayer: (playerId: string) => void;
+  setPlayerCount: (count: number) => void;
   restart: () => void;
   deletePreviousGame: (gameId: string) => void;
   setBgTheme: (theme: string) => void;
@@ -223,6 +224,36 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const setPlayerCount = useCallback((count: number) => {
+    setState((prev) => {
+      if (!Number.isFinite(count)) return prev;
+      const target = Math.max(2, Math.min(8, Math.floor(count)));
+      if (target === prev.players.length) return prev;
+
+      let players = [...prev.players];
+      if (target > players.length) {
+        for (let i = players.length; i < target; i++) {
+          players.push({
+            id: "p" + Date.now() + "_" + i,
+            name: `Jugador ${i + 1}`,
+            color: PLAYER_COLORS[i % PLAYER_COLORS.length],
+          });
+        }
+      } else {
+        players = players.slice(0, target);
+      }
+
+      const keptIds = new Set(players.map((p) => p.id));
+      const next = {
+        ...prev,
+        players,
+        entries: prev.entries.filter((e) => keptIds.has(e.playerId)),
+      };
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const deletePreviousGame = useCallback((gameId: string) => {
     setState((prev) => {
       const next = {
@@ -295,6 +326,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setPlayerColor,
         addPlayer,
         removePlayer,
+        setPlayerCount,
         restart,
         deletePreviousGame,
         setBgTheme,
