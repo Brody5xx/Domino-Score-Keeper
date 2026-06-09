@@ -670,27 +670,81 @@ export default function MainScreen() {
 
                     {/* Expanded entry list */}
                     {isExpanded && (
-                      <View style={styles.prevEntryList}>
-                        {[...game.entries].reverse().map((entry, eIdx) => {
-                          const ep = game.players.find((p) => p.id === entry.playerId);
-                          const num = game.entries.length - eIdx;
-                          return (
-                            <View key={entry.id} style={styles.entryRow}>
-                              <Text style={styles.entryNum}>{t.entry(num)}</Text>
-                              <View style={[styles.entryColorDot, { backgroundColor: ep?.color ?? "#888" }]} />
-                              <Text style={[styles.entryPlayerName, { color: ep?.color ?? "#888" }]} numberOfLines={1}>
-                                {ep?.name ?? "—"}
-                              </Text>
-                              {entry.extra ? (
-                                <View style={styles.extraBadge}>
-                                  <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
+                      game.mesas > 0 ? (
+                        <View style={styles.prevMesaEntryWrap}>
+                          {Array.from({ length: game.mesas }).map((_, mi) => {
+                            const mesaPlayers = [game.players[mi * 2], game.players[mi * 2 + 1]].filter(
+                              (p): p is (typeof game.players)[number] => Boolean(p)
+                            );
+                            const mesaIds = new Set(mesaPlayers.map((p) => p.id));
+                            const mesaWinner = [...mesaPlayers].sort(
+                              (a, b) => (gTotals[b.id] ?? 0) - (gTotals[a.id] ?? 0)
+                            )[0];
+                            const mesaEntries = game.entries.filter((e) => mesaIds.has(e.playerId));
+                            return (
+                              <View key={"emesa-" + mi} style={styles.prevMesaEntryGroup}>
+                                <View style={styles.prevMesaEntryHeader}>
+                                  <Text style={styles.prevMesaLabel}>{t.mesaLabel(mi + 1)}</Text>
+                                  {mesaWinner && (
+                                    <View style={[styles.prevWinnerBadge, { backgroundColor: mesaWinner.color + "22", borderColor: mesaWinner.color }]}>
+                                      <Text style={[styles.prevWinnerText, { color: mesaWinner.color }]}>
+                                        🏆 {mesaWinner.name}
+                                      </Text>
+                                    </View>
+                                  )}
                                 </View>
-                              ) : null}
-                              <Text style={styles.entryPoints}>+{entry.points}</Text>
-                            </View>
-                          );
-                        })}
-                      </View>
+                                {mesaEntries.length > 0 ? (
+                                  <View style={styles.prevEntryList}>
+                                    {[...mesaEntries].reverse().map((entry, eIdx) => {
+                                      const ep = game.players.find((p) => p.id === entry.playerId);
+                                      const num = mesaEntries.length - eIdx;
+                                      return (
+                                        <View key={entry.id} style={styles.entryRow}>
+                                          <Text style={styles.entryNum}>{t.entry(num)}</Text>
+                                          <View style={[styles.entryColorDot, { backgroundColor: ep?.color ?? "#888" }]} />
+                                          <Text style={[styles.entryPlayerName, { color: ep?.color ?? "#888" }]} numberOfLines={1}>
+                                            {ep?.name ?? "—"}
+                                          </Text>
+                                          {entry.extra ? (
+                                            <View style={styles.extraBadge}>
+                                              <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
+                                            </View>
+                                          ) : null}
+                                          <Text style={styles.entryPoints}>+{entry.points}</Text>
+                                        </View>
+                                      );
+                                    })}
+                                  </View>
+                                ) : (
+                                  <Text style={styles.prevMesaEmpty}>—</Text>
+                                )}
+                              </View>
+                            );
+                          })}
+                        </View>
+                      ) : (
+                        <View style={styles.prevEntryList}>
+                          {[...game.entries].reverse().map((entry, eIdx) => {
+                            const ep = game.players.find((p) => p.id === entry.playerId);
+                            const num = game.entries.length - eIdx;
+                            return (
+                              <View key={entry.id} style={styles.entryRow}>
+                                <Text style={styles.entryNum}>{t.entry(num)}</Text>
+                                <View style={[styles.entryColorDot, { backgroundColor: ep?.color ?? "#888" }]} />
+                                <Text style={[styles.entryPlayerName, { color: ep?.color ?? "#888" }]} numberOfLines={1}>
+                                  {ep?.name ?? "—"}
+                                </Text>
+                                {entry.extra ? (
+                                  <View style={styles.extraBadge}>
+                                    <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
+                                  </View>
+                                ) : null}
+                                <Text style={styles.entryPoints}>+{entry.points}</Text>
+                              </View>
+                            );
+                          })}
+                        </View>
+                      )
                     )}
                   </View>
                 );
@@ -1251,6 +1305,24 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     prevMesaList: {
       gap: 8,
       marginBottom: 6,
+    },
+    prevMesaEntryWrap: {
+      gap: 12,
+      marginTop: 4,
+    },
+    prevMesaEntryGroup: {
+      gap: 6,
+    },
+    prevMesaEntryHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 8,
+    },
+    prevMesaEmpty: {
+      fontFamily: "Inter_400Regular",
+      fontSize: 12,
+      color: colors.mutedForeground,
     },
     prevMesaGroup: {
       gap: 4,
