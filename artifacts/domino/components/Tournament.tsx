@@ -153,7 +153,7 @@ function Setup() {
               <Feather name="minus" size={20} color={groupPairs <= 1 ? colors.mutedForeground : colors.foreground} />
             </Pressable>
             <TextInput
-              style={styles.stepperInput}
+              style={[styles.stepperInput, styles.groupPairsInput]}
               value={String(groupPairs)}
               onChangeText={(v) => {
                 const clean = v.replace(/[^0-9]/g, "");
@@ -812,6 +812,7 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
       borderColor: colors.border,
     },
     groupPairsRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
+    groupPairsInput: { minWidth: 0, width: 48, paddingHorizontal: 6 },
     groupPairsLabel: { fontFamily: "Inter_600SemiBold", fontSize: 14, color: colors.foreground },
     addGroupBtn: {
       flexDirection: "row",
