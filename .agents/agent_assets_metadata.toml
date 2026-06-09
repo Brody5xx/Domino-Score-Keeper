@@ -11,28 +11,28 @@ title = "generated_image"
 id = "dBh0dfTO3488-JzJACExK"
 uri = "file://artifacts/domino/assets/backgrounds/whiskey.png"
 type = "image"
-title = "ice domino whiskey"
+title = "small ice domino whiskey"
 
 [[generated]]
 id = "N4Thge30bcugnQswbrQST"
 uri = "file://artifacts/domino/assets/backgrounds/wood.png"
 type = "image"
-title = "wooden dominoes table"
+title = "small wooden dominoes"
 
 [[generated]]
 id = "97909tStTdTlvRuXmPrEd"
 uri = "file://artifacts/domino/assets/backgrounds/chain.png"
 type = "image"
-title = "domino chain reaction"
+title = "small domino chain"
 
 [[generated]]
 id = "DFVTodaI1JPWQUpdrl9ZB"
 uri = "file://artifacts/domino/assets/backgrounds/marble.png"
 type = "image"
-title = "marble gold dominoes"
+title = "small marble dominoes"
 
 [[generated]]
 id = "Pkf3UcRODcKiocTgcy374"
 uri = "file://artifacts/domino/assets/backgrounds/neon.png"
 type = "image"
-title = "neon glowing dominoes"
+title = "small neon dominoes"
