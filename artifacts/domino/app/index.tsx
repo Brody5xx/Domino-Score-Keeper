@@ -4,6 +4,8 @@ import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
 import React, { useRef, useState } from "react";
 import {
+  Animated,
+  Easing,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -92,7 +94,7 @@ export default function MainScreen() {
   const [highlightedMesa, setHighlightedMesa] = useState<number | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const mesaPositions = useRef<Record<number, number>>({});
-  const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const highlightAnim = useRef(new Animated.Value(0)).current;
 
   const findMesaForQuery = (query: string): number => {
     const q = query.trim().toLowerCase();
@@ -127,8 +129,15 @@ export default function MainScreen() {
         scrollRef.current?.scrollTo({ y: Math.max(0, y - 8), animated: true });
         setSearchNotFound(false);
         setHighlightedMesa(idx);
-        if (highlightTimer.current) clearTimeout(highlightTimer.current);
-        highlightTimer.current = setTimeout(() => setHighlightedMesa(null), 2500);
+        highlightAnim.stopAnimation();
+        highlightAnim.setValue(0);
+        Animated.sequence([
+          Animated.timing(highlightAnim, { toValue: 1, duration: 320, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+          Animated.timing(highlightAnim, { toValue: 0.35, duration: 520, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+          Animated.timing(highlightAnim, { toValue: 1, duration: 520, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+          Animated.delay(600),
+          Animated.timing(highlightAnim, { toValue: 0, duration: 700, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+        ]).start(({ finished }) => { if (finished) setHighlightedMesa(null); });
         Haptics.selectionAsync();
       } else if (attempt < 3) {
         requestAnimationFrame(() => scrollToIdx(attempt + 1));
@@ -479,9 +488,12 @@ export default function MainScreen() {
               return (
                 <View
                   key={"mesa-" + i}
-                  style={[styles.mesaGroup, highlightedMesa === i && styles.mesaGroupHighlight]}
+                  style={styles.mesaGroup}
                   onLayout={(e) => { mesaPositions.current[i] = e.nativeEvent.layout.y; }}
                 >
+                  {highlightedMesa === i ? (
+                    <Animated.View pointerEvents="none" style={[styles.mesaGlow, { opacity: highlightAnim }]} />
+                  ) : null}
                   <Text style={styles.mesaLabel}>{t.mesaLabel(i + 1)}</Text>
                   <View style={styles.mesaRow}>
                     {a && renderPlayerCard(a)}
@@ -1273,13 +1285,20 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       borderRadius: 16,
       padding: 8,
     },
-    mesaGroupHighlight: {
+    mesaGlow: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      borderRadius: 16,
+      borderWidth: 2,
       borderColor: colors.primary,
-      backgroundColor: colors.primary + "14",
+      backgroundColor: colors.primary + "1A",
       shadowColor: colors.primary,
       shadowOffset: { width: 0, height: 0 },
       shadowOpacity: 0.9,
-      shadowRadius: 14,
+      shadowRadius: 16,
       elevation: 12,
     },
     mesaLabel: {
