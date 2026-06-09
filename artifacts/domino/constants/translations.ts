@@ -132,3 +132,20 @@ const en = {
 
 export type Translations = typeof es;
 export const TRANSLATIONS: Record<Lang, Translations> = { es, en };
+
+// Default player names per language. Used to translate auto-generated casilla
+// names (home/away/Player N) when switching language, without touching custom
+// names the user typed.
+const DEFAULT_PLAYER_NAMES = {
+  es: { home: "Casa", away: "Visitante", player: (n: number) => `Jugador ${n}` },
+  en: { home: "House", away: "Visitors", player: (n: number) => `Player ${n}` },
+} as const;
+
+export function translatePlayerName(name: string, lang: Lang): string {
+  const trimmed = name.trim();
+  if (trimmed === "Casa" || trimmed === "House") return DEFAULT_PLAYER_NAMES[lang].home;
+  if (trimmed === "Visitante" || trimmed === "Visitors") return DEFAULT_PLAYER_NAMES[lang].away;
+  const m = /^(?:Jugador|Player)\s+(\d+)$/.exec(trimmed);
+  if (m) return DEFAULT_PLAYER_NAMES[lang].player(Number(m[1]));
+  return name;
+}

@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { PLAYER_COLORS, type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
 import { useLang } from "@/context/LangContext";
+import { translatePlayerName } from "@/constants/translations";
 import { useColors } from "@/hooks/useColors";
 import DominoBackground from "@/components/DominoBackground";
 
@@ -249,10 +250,10 @@ export default function MainScreen() {
       >
         <Pressable
           style={[styles.playerHeader, { backgroundColor: player.color + "26" }]}
-          onPress={() => setRenameModal({ playerId: player.id, value: player.name, color: player.color })}
+          onPress={() => setRenameModal({ playerId: player.id, value: translatePlayerName(player.name, lang), color: player.color })}
         >
           <Text style={[styles.playerName, { color: player.color }]} numberOfLines={1}>
-            {player.name}
+            {translatePlayerName(player.name, lang)}
           </Text>
           <Feather name="edit-2" size={11} color={player.color} style={{ opacity: 0.6 }} />
           {won && (
@@ -453,7 +454,7 @@ export default function MainScreen() {
               const p = players.find((pl) => pl.id === addModal?.playerId);
               return (
                 <Text style={styles.modalTitle}>
-                  {t.pointsFor} <Text style={{ color: p?.color }}>{p?.name}</Text>
+                  {t.pointsFor} <Text style={{ color: p?.color }}>{p ? translatePlayerName(p.name, lang) : ""}</Text>
                 </Text>
               );
             })()}
@@ -596,7 +597,7 @@ export default function MainScreen() {
                         </View>
                         <View style={[styles.prevWinnerBadge, { backgroundColor: winner?.color + "22", borderColor: winner?.color }]}>
                           <Text style={[styles.prevWinnerText, { color: winner?.color }]}>
-                            🏆 {winner?.name}
+                            🏆 {winner ? translatePlayerName(winner.name, lang) : ""}
                           </Text>
                         </View>
                         <Feather
@@ -628,7 +629,7 @@ export default function MainScreen() {
                                   p ? (
                                     <View key={p.id} style={styles.prevPlayerChip}>
                                       <View style={[styles.entryColorDot, { backgroundColor: p.color }]} />
-                                      <Text style={[styles.prevPlayerName, { color: p.color }]} numberOfLines={1}>{p.name}</Text>
+                                      <Text style={[styles.prevPlayerName, { color: p.color }]} numberOfLines={1}>{translatePlayerName(p.name, lang)}</Text>
                                       <Text style={styles.prevPlayerTotal}>{gTotals[p.id] ?? 0}</Text>
                                     </View>
                                   ) : null
@@ -643,7 +644,7 @@ export default function MainScreen() {
                         {game.players.map((p) => (
                           <View key={p.id} style={styles.prevPlayerChip}>
                             <View style={[styles.entryColorDot, { backgroundColor: p.color }]} />
-                            <Text style={[styles.prevPlayerName, { color: p.color }]} numberOfLines={1}>{p.name}</Text>
+                            <Text style={[styles.prevPlayerName, { color: p.color }]} numberOfLines={1}>{translatePlayerName(p.name, lang)}</Text>
                             <Text style={styles.prevPlayerTotal}>{gTotals[p.id] ?? 0}</Text>
                           </View>
                         ))}
@@ -670,7 +671,7 @@ export default function MainScreen() {
                                   {mesaWinner && (
                                     <View style={[styles.prevWinnerBadge, { backgroundColor: mesaWinner.color + "22", borderColor: mesaWinner.color }]}>
                                       <Text style={[styles.prevWinnerText, { color: mesaWinner.color }]}>
-                                        🏆 {mesaWinner.name}
+                                        🏆 {translatePlayerName(mesaWinner.name, lang)}
                                       </Text>
                                     </View>
                                   )}
@@ -685,7 +686,7 @@ export default function MainScreen() {
                                           <Text style={styles.entryNum}>{t.entry(num)}</Text>
                                           <View style={[styles.entryColorDot, { backgroundColor: ep?.color ?? "#888" }]} />
                                           <Text style={[styles.entryPlayerName, { color: ep?.color ?? "#888" }]} numberOfLines={1}>
-                                            {ep?.name ?? "—"}
+                                            {ep ? translatePlayerName(ep.name, lang) : "—"}
                                           </Text>
                                           {entry.extra ? (
                                             <View style={styles.extraBadge}>
@@ -714,7 +715,7 @@ export default function MainScreen() {
                                 <Text style={styles.entryNum}>{t.entry(num)}</Text>
                                 <View style={[styles.entryColorDot, { backgroundColor: ep?.color ?? "#888" }]} />
                                 <Text style={[styles.entryPlayerName, { color: ep?.color ?? "#888" }]} numberOfLines={1}>
-                                  {ep?.name ?? "—"}
+                                  {ep ? translatePlayerName(ep.name, lang) : "—"}
                                 </Text>
                                 {entry.extra ? (
                                   <View style={styles.extraBadge}>
@@ -958,9 +959,9 @@ export default function MainScreen() {
                   ) : (
                     <Pressable
                       style={styles.nameDisplay}
-                      onPress={() => setEditingName({ id: player.id, value: player.name })}
+                      onPress={() => setEditingName({ id: player.id, value: translatePlayerName(player.name, lang) })}
                     >
-                      <Text style={styles.nameDisplayText} numberOfLines={1}>{player.name}</Text>
+                      <Text style={styles.nameDisplayText} numberOfLines={1}>{translatePlayerName(player.name, lang)}</Text>
                       <Feather name="edit-2" size={13} color={colors.mutedForeground} style={{ marginLeft: 6 }} />
                     </Pressable>
                   )}
