@@ -67,7 +67,7 @@ interface TournamentContextValue extends TournamentState {
 
 const STORAGE_KEY = "domino_tournament_v1";
 const MIN_TEAMS = 2;
-const MAX_TEAMS = 12;
+const MAX_TEAMS = 100;
 
 function makeTeam(index: number, lives: number): TournamentTeam {
   return {

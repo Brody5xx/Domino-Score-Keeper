@@ -49,6 +49,19 @@ function Setup() {
   } = useTournament();
   const styles = makeStyles(colors);
   const [targetInput, setTargetInput] = useState(String(target));
+  const [teamInput, setTeamInput] = useState(String(teams.length));
+
+  const applyTeamCount = (raw: string) => {
+    const clean = raw.replace(/[^0-9]/g, "");
+    setTeamInput(clean);
+    if (clean) setTeamCount(Number(clean));
+  };
+  const stepTeamCount = (delta: number) => {
+    const next = Math.max(MIN_TEAMS, Math.min(MAX_TEAMS, teams.length + delta));
+    setTeamCount(next);
+    setTeamInput(String(next));
+    Haptics.selectionAsync();
+  };
 
   return (
     <ScrollView
@@ -61,20 +74,31 @@ function Setup() {
 
       {/* Team count */}
       <Text style={styles.fieldLabel}>{t.teamsCount}</Text>
-      <View style={styles.chipWrap}>
-        {Array.from({ length: MAX_TEAMS - MIN_TEAMS + 1 }).map((_, i) => {
-          const n = MIN_TEAMS + i;
-          const active = teams.length === n;
-          return (
-            <Pressable
-              key={n}
-              style={[styles.numChip, active && styles.numChipActive]}
-              onPress={() => { setTeamCount(n); Haptics.selectionAsync(); }}
-            >
-              <Text style={[styles.numChipText, active && styles.numChipTextActive]}>{n}</Text>
-            </Pressable>
-          );
-        })}
+      <View style={styles.stepperRow}>
+        <Pressable
+          style={[styles.stepperBtn, teams.length <= MIN_TEAMS && styles.stepperBtnDisabled]}
+          onPress={() => stepTeamCount(-1)}
+          disabled={teams.length <= MIN_TEAMS}
+        >
+          <Feather name="minus" size={20} color={teams.length <= MIN_TEAMS ? colors.mutedForeground : colors.foreground} />
+        </Pressable>
+        <TextInput
+          style={styles.stepperInput}
+          value={teamInput}
+          onChangeText={applyTeamCount}
+          onBlur={() => setTeamInput(String(teams.length))}
+          keyboardType="number-pad"
+          maxLength={3}
+          selectTextOnFocus
+        />
+        <Pressable
+          style={[styles.stepperBtn, teams.length >= MAX_TEAMS && styles.stepperBtnDisabled]}
+          onPress={() => stepTeamCount(1)}
+          disabled={teams.length >= MAX_TEAMS}
+        >
+          <Feather name="plus" size={20} color={teams.length >= MAX_TEAMS ? colors.mutedForeground : colors.foreground} />
+        </Pressable>
+        <Text style={styles.stepperHint}>{`${MIN_TEAMS}–${MAX_TEAMS}`}</Text>
       </View>
 
       {/* Lives */}
@@ -651,6 +675,35 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
       marginTop: 6,
     },
     chipWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    stepperRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+    stepperBtn: {
+      width: 44,
+      height: 44,
+      borderRadius: 12,
+      borderWidth: 1.5,
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + "22",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    stepperBtnDisabled: {
+      borderColor: colors.border,
+      backgroundColor: "transparent",
+    },
+    stepperInput: {
+      minWidth: 64,
+      height: 44,
+      paddingHorizontal: 12,
+      borderRadius: 12,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      backgroundColor: colors.card,
+      color: colors.foreground,
+      fontFamily: "Inter_700Bold",
+      fontSize: 18,
+      textAlign: "center",
+    },
+    stepperHint: { fontFamily: "Inter_500Medium", fontSize: 13, color: colors.mutedForeground },
     numChip: {
       minWidth: 40,
       height: 40,
