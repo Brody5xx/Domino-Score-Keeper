@@ -45,11 +45,27 @@ function Setup() {
     setTeamName,
     setTeamPlayer,
     setTeamColor,
+    addTeamGroup,
+    startFeasible,
     startTournament,
   } = useTournament();
   const styles = makeStyles(colors);
   const [targetInput, setTargetInput] = useState(String(target));
   const [teamInput, setTeamInput] = useState(String(teams.length));
+  const [groupName, setGroupName] = useState("");
+  const [groupColor, setGroupColor] = useState(PLAYER_COLORS[0]);
+  const [groupPairs, setGroupPairs] = useState(1);
+  const groupRoom = MAX_TEAMS - teams.length;
+
+  const handleAddGroup = () => {
+    const n = Math.min(groupPairs, groupRoom);
+    if (n <= 0) return;
+    addTeamGroup(groupName, groupColor, n);
+    setGroupName("");
+    setGroupPairs(1);
+    setTeamInput(String(teams.length + n));
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
 
   const applyTeamCount = (raw: string) => {
     const clean = raw.replace(/[^0-9]/g, "");
@@ -99,6 +115,73 @@ function Setup() {
           <Feather name="plus" size={20} color={teams.length >= MAX_TEAMS ? colors.mutedForeground : colors.foreground} />
         </Pressable>
         <Text style={styles.stepperHint}>{`${MIN_TEAMS}–${MAX_TEAMS}`}</Text>
+      </View>
+
+      {/* Bulk add: pairs per team (club) */}
+      <Text style={[styles.fieldLabel, { marginTop: 8 }]}>{t.groupTitle}</Text>
+      <View style={styles.groupCard}>
+        <TextInput
+          style={styles.groupNameInput}
+          value={groupName}
+          onChangeText={setGroupName}
+          placeholder={t.teamNamePlaceholder}
+          placeholderTextColor={colors.mutedForeground}
+          maxLength={24}
+        />
+        <View style={styles.colorRow}>
+          {PLAYER_COLORS.map((c) => {
+            const active = groupColor === c;
+            return (
+              <Pressable
+                key={c}
+                style={[styles.colorSwatch, { backgroundColor: c }, active && styles.colorSwatchActive]}
+                onPress={() => { setGroupColor(c); Haptics.selectionAsync(); }}
+              >
+                {active && <Feather name="check" size={12} color="#fff" />}
+              </Pressable>
+            );
+          })}
+        </View>
+        <View style={styles.groupPairsRow}>
+          <Text style={styles.groupPairsLabel}>{t.groupPairs}</Text>
+          <View style={styles.stepperRow}>
+            <Pressable
+              style={[styles.stepperBtn, groupPairs <= 1 && styles.stepperBtnDisabled]}
+              onPress={() => { setGroupPairs((p) => Math.max(1, p - 1)); Haptics.selectionAsync(); }}
+              disabled={groupPairs <= 1}
+            >
+              <Feather name="minus" size={20} color={groupPairs <= 1 ? colors.mutedForeground : colors.foreground} />
+            </Pressable>
+            <TextInput
+              style={styles.stepperInput}
+              value={String(groupPairs)}
+              onChangeText={(v) => {
+                const clean = v.replace(/[^0-9]/g, "");
+                setGroupPairs(clean ? Math.max(1, Math.min(100, Number(clean))) : 1);
+              }}
+              keyboardType="number-pad"
+              maxLength={3}
+              selectTextOnFocus
+            />
+            <Pressable
+              style={[styles.stepperBtn, groupPairs >= 100 && styles.stepperBtnDisabled]}
+              onPress={() => { setGroupPairs((p) => Math.min(100, p + 1)); Haptics.selectionAsync(); }}
+              disabled={groupPairs >= 100}
+            >
+              <Feather name="plus" size={20} color={groupPairs >= 100 ? colors.mutedForeground : colors.foreground} />
+            </Pressable>
+          </View>
+        </View>
+        <Pressable
+          style={[styles.addGroupBtn, groupRoom <= 0 && styles.addGroupBtnDisabled]}
+          onPress={handleAddGroup}
+          disabled={groupRoom <= 0}
+        >
+          <Feather name="plus-circle" size={16} color={colors.primaryForeground} />
+          <Text style={styles.addGroupText}>
+            {groupRoom <= 0 ? t.groupFull : t.addGroup(Math.min(groupPairs, groupRoom))}
+          </Text>
+        </Pressable>
       </View>
 
       {/* Lives */}
@@ -198,8 +281,13 @@ function Setup() {
         </View>
       ))}
 
+      {!startFeasible && teams.length >= MIN_TEAMS && (
+        <Text style={styles.startWarning}>{t.startBlockedAllies}</Text>
+      )}
+
       <Pressable
-        style={styles.startBtn}
+        style={[styles.startBtn, !startFeasible && styles.startBtnDisabled]}
+        disabled={!startFeasible}
         onPress={() => { startTournament(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }}
       >
         <Feather name="play" size={18} color={colors.primaryForeground} />
@@ -704,6 +792,38 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
       textAlign: "center",
     },
     stepperHint: { fontFamily: "Inter_500Medium", fontSize: 13, color: colors.mutedForeground },
+    groupCard: {
+      backgroundColor: colors.card,
+      borderRadius: 14,
+      padding: 12,
+      gap: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    groupNameInput: {
+      backgroundColor: colors.background,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+      color: colors.foreground,
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 15,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    groupPairsRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
+    groupPairsLabel: { fontFamily: "Inter_600SemiBold", fontSize: 14, color: colors.foreground },
+    addGroupBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      backgroundColor: colors.primary,
+      borderRadius: 12,
+      paddingVertical: 12,
+    },
+    addGroupBtnDisabled: { opacity: 0.5 },
+    addGroupText: { fontFamily: "Inter_700Bold", fontSize: 15, color: colors.primaryForeground },
     numChip: {
       minWidth: 40,
       height: 40,
@@ -787,7 +907,16 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
       paddingVertical: 15,
       marginTop: 16,
     },
+    startBtnDisabled: { opacity: 0.5 },
     startBtnText: { fontFamily: "Inter_700Bold", fontSize: 16, color: colors.primaryForeground },
+    startWarning: {
+      fontFamily: "Inter_500Medium",
+      fontSize: 13,
+      color: colors.destructive,
+      textAlign: "center",
+      marginTop: 12,
+      lineHeight: 18,
+    },
 
     // Board
     boardHeader: {

@@ -45,6 +45,7 @@ interface TournamentContextValue extends TournamentState {
   currentMatches: TournamentMatch[];
   survivors: TournamentTeam[];
   roundComplete: boolean;
+  startFeasible: boolean;
   getTeam: (id: string | null) => TournamentTeam | undefined;
   setActive: (active: boolean) => void;
   toggleActive: () => void;
@@ -54,6 +55,7 @@ interface TournamentContextValue extends TournamentState {
   setTeamName: (id: string, name: string) => void;
   setTeamPlayer: (id: string, which: 1 | 2, name: string) => void;
   setTeamColor: (id: string, color: string) => void;
+  addTeamGroup: (name: string, color: string, pairs: number) => void;
   startTournament: () => void;
   regenerateRound: () => void;
   swapTeamSlots: (teamIdA: string, teamIdB: string) => void;
@@ -174,6 +176,23 @@ function generateMatches(
   return matches;
 }
 
+// A non-allied (no same-name) pairing of round 1 exists iff the largest group of
+// same-named teams is at most ceil(N/2) (one bye allowed when N is odd).
+// Empty names are wildcards and never count as a shared group.
+function allyPairingFeasible(teams: TournamentTeam[]): boolean {
+  const n = teams.length;
+  if (n < MIN_TEAMS) return false;
+  const counts = new Map<string, number>();
+  for (const t of teams) {
+    const k = normName(t.name);
+    if (!k) continue;
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  let max = 0;
+  for (const v of counts.values()) max = Math.max(max, v);
+  return max <= Math.ceil(n / 2);
+}
+
 function prevRoundPairs(state: TournamentState): Set<string> {
   const set = new Set<string>();
   for (const m of state.matches) {
@@ -263,6 +282,24 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     );
   }, []);
 
+  const addTeamGroup = useCallback((name: string, color: string, pairs: number) => {
+    setState((prev) => {
+      const room = MAX_TEAMS - prev.teams.length;
+      const n = Math.max(0, Math.min(room, Math.floor(pairs)));
+      if (n <= 0) return prev;
+      const base = prev.teams.length;
+      const trimmed = name.trim();
+      const added: TournamentTeam[] = Array.from({ length: n }).map((_, i) => ({
+        ...makeTeam(base + i, prev.lives),
+        name: trimmed || `Equipo ${base + i + 1}`,
+        color,
+        p1: "",
+        p2: "",
+      }));
+      return persist({ ...prev, teams: [...prev.teams, ...added] });
+    });
+  }, []);
+
   const setTeamColor = useCallback((id: string, color: string) => {
     setState((prev) =>
       persist({
@@ -275,6 +312,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   const startTournament = useCallback(() => {
     setState((prev) => {
       if (prev.teams.length < MIN_TEAMS) return prev;
+      if (!allyPairingFeasible(prev.teams)) return prev;
       const teams = prev.teams.map((t) => ({
         ...t,
         lives: prev.lives,
@@ -453,6 +491,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     currentMatches.every((m) => m.winnerId !== null);
   const getTeam = (id: string | null) =>
     id ? state.teams.find((t) => t.id === id) : undefined;
+  const startFeasible = allyPairingFeasible(state.teams);
 
   return (
     <TournamentContext.Provider
@@ -461,6 +500,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
         currentMatches,
         survivors,
         roundComplete,
+        startFeasible,
         getTeam,
         setActive,
         toggleActive,
@@ -470,6 +510,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
         setTeamName,
         setTeamPlayer,
         setTeamColor,
+        addTeamGroup,
         startTournament,
         regenerateRound,
         swapTeamSlots,

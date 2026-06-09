@@ -36,3 +36,18 @@ teams) and expect club-vs-club, never club-vs-itself.
 impossible (one name held by > half the teams). Normal pair-based setups are
 always solvable. Manual `swapTeamSlots` is intentionally NOT constrained — it's a
 deliberate user override.
+
+## Start-time ally feasibility gate
+
+`allyPairingFeasible(teams)` = largest same-name group size ≤ `ceil(N/2)` (empty
+names are wildcards, not a shared group). This is the exact necessary/sufficient
+condition for a round-1 pairing with no same-name opponents and at most one bye.
+`startTournament` refuses to start when infeasible; Setup exposes `startFeasible`
+to disable the Start button and show `startBlockedAllies` (es/en).
+
+**Why:** bulk-add ("add N pairs per club") makes many same-name teams common, so a
+lopsided setup (one club > half the teams) would force allies to meet in round 1.
+
+**How to apply:** gate ONLY round-1 start, never later rounds — the end-game
+(only allies left) legitimately needs same-name matches to crown one champion, so
+`generateMatches` keeps its tier-3 fallback for in-tournament rounds.
