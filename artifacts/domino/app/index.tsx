@@ -559,7 +559,7 @@ export default function MainScreen() {
             <Pressable
               disabled={mesas <= 0}
               style={[styles.stepperSide, mesas <= 0 && styles.stepperDisabled]}
-              onPress={() => { setMesas(mesas - 1); Haptics.selectionAsync(); }}
+              onPress={() => { setMesas(mesas <= 2 ? 0 : mesas - 1); Haptics.selectionAsync(); }}
             >
               <Feather name="minus" size={18} color={colors.destructive} />
             </Pressable>
@@ -570,7 +570,7 @@ export default function MainScreen() {
             <Pressable
               disabled={mesas >= 20}
               style={[styles.stepperSide, mesas >= 20 && styles.stepperDisabled]}
-              onPress={() => { setMesas(mesas + 1); Haptics.selectionAsync(); }}
+              onPress={() => { setMesas(mesas === 0 ? 2 : mesas + 1); Haptics.selectionAsync(); }}
             >
               <Feather name="plus" size={18} color={colors.primary} />
             </Pressable>
@@ -1171,7 +1171,7 @@ export default function MainScreen() {
                   <Pressable
                     disabled={mesas <= 0}
                     style={[styles.stepperSide, mesas <= 0 && styles.stepperDisabled]}
-                    onPress={() => { setMesas(mesas - 1); Haptics.selectionAsync(); }}
+                    onPress={() => { setMesas(mesas <= 2 ? 0 : mesas - 1); Haptics.selectionAsync(); }}
                   >
                     <Feather name="minus" size={18} color={colors.destructive} />
                   </Pressable>
@@ -1181,7 +1181,7 @@ export default function MainScreen() {
                   <Pressable
                     disabled={mesas >= 20}
                     style={[styles.stepperSide, mesas >= 20 && styles.stepperDisabled]}
-                    onPress={() => { setMesas(mesas + 1); Haptics.selectionAsync(); }}
+                    onPress={() => { setMesas(mesas === 0 ? 2 : mesas + 1); Haptics.selectionAsync(); }}
                   >
                     <Feather name="plus" size={18} color={colors.primary} />
                   </Pressable>
