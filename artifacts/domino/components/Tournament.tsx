@@ -13,11 +13,25 @@ import {
   View,
 } from "react-native";
 
-import { translatePlayerName, translateTeamName } from "@/constants/translations";
+import { Lang, translatePlayerName, translateTeamName } from "@/constants/translations";
 import { PLAYER_COLORS } from "@/context/GameContext";
-import { MAX_TEAMS, MIN_TEAMS, useTournament } from "@/context/TournamentContext";
+import { MAX_TEAMS, MIN_TEAMS, TournamentTeam, useTournament } from "@/context/TournamentContext";
 import { useLang } from "@/context/LangContext";
 import { useColors } from "@/hooks/useColors";
+
+// Player display names with index-based defaults ("Jugador N") when a slot is
+// empty (e.g. bulk-added teams), matching the Setup placeholders.
+function teamPlayerNames(
+  team: TournamentTeam | undefined,
+  index: number,
+  lang: Lang
+): [string, string] {
+  if (!team) return ["", ""];
+  const i = index >= 0 ? index : 0;
+  const raw1 = team.p1.trim() || `Jugador ${i * 2 + 1}`;
+  const raw2 = team.p2.trim() || `Jugador ${i * 2 + 2}`;
+  return [translatePlayerName(raw1, lang), translatePlayerName(raw2, lang)];
+}
 
 const POINT_CHIPS = [5, 10, 15, 25];
 
@@ -386,6 +400,7 @@ function Board() {
     const team = getTeam(teamId);
     if (!team) return <View style={styles.teamSide} />;
     const selected = swapSel === teamId;
+    const [pn1, pn2] = teamPlayerNames(team, tourney.teams.findIndex((t) => t.id === teamId), lang);
     return (
       <Pressable
         style={[
@@ -402,7 +417,7 @@ function Board() {
           {translateTeamName(team.name, lang)}
         </Text>
         <Text style={styles.teamSidePlayers} numberOfLines={1}>
-          {translatePlayerName(team.p1, lang)} · {translatePlayerName(team.p2, lang)}
+          {pn1} · {pn2}
         </Text>
         {renderHearts(team)}
         {isWinner ? (
@@ -517,12 +532,10 @@ function Board() {
                     <Text style={styles.teamSideName} numberOfLines={1}>
                       {a ? translateTeamName(a.name, lang) : ""}
                     </Text>
-                    {a && (a.p1.trim() || a.p2.trim()) ? (
+                    {a ? (
                       <Text style={styles.byeRestText} numberOfLines={2}>
                         {t.byeRest(
-                          [a.p1, a.p2]
-                            .map((p) => translatePlayerName(p, lang))
-                            .filter((p) => p.trim())
+                          teamPlayerNames(a, tourney.teams.findIndex((tm) => tm.id === a.id), lang)
                             .join(lang === "en" ? " & " : " y ")
                         )}
                       </Text>
@@ -581,7 +594,7 @@ function Board() {
 function PlayModal({ matchId, onClose }: { matchId: string | null; onClose: () => void }) {
   const colors = useColors();
   const { t, lang } = useLang();
-  const { currentMatches, target, getTeam, setMatchMethod, addMatchPoints, resolveMatch, undoMatch } = useTournament();
+  const { teams, currentMatches, target, getTeam, setMatchMethod, addMatchPoints, resolveMatch, undoMatch } = useTournament();
   const styles = makeStyles(colors);
 
   const match = matchId ? currentMatches.find((m) => m.id === matchId) : null;
@@ -591,6 +604,8 @@ function PlayModal({ matchId, onClose }: { matchId: string | null; onClose: () =
   const a = getTeam(match.aId);
   const b = getTeam(match.bId);
   const resolved = match.winnerId !== null;
+  const aPlayers = teamPlayerNames(a, teams.findIndex((tm) => tm.id === match.aId), lang);
+  const bPlayers = teamPlayerNames(b, teams.findIndex((tm) => tm.id === match.bId), lang);
 
   return (
     <Modal visible={!!matchId} transparent animationType="fade" onRequestClose={onClose}>
@@ -649,12 +664,9 @@ function PlayModal({ matchId, onClose }: { matchId: string | null; onClose: () =
                 <View style={[styles.teamDot, { backgroundColor: a?.color ?? colors.primary }]} />
                 <View style={styles.flex}>
                   <Text style={styles.tapWinText}>{translateTeamName(a?.name ?? "", lang)}</Text>
-                  {a && (a.p1.trim() || a.p2.trim()) ? (
+                  {a ? (
                     <Text style={styles.tapWinPlayers} numberOfLines={1}>
-                      {[a.p1, a.p2]
-                        .map((p) => translatePlayerName(p, lang))
-                        .filter((p) => p.trim())
-                        .join(lang === "en" ? " & " : " y ")}
+                      {aPlayers.join(lang === "en" ? " & " : " y ")}
                     </Text>
                   ) : null}
                 </View>
@@ -666,12 +678,9 @@ function PlayModal({ matchId, onClose }: { matchId: string | null; onClose: () =
                 <View style={[styles.teamDot, { backgroundColor: b?.color ?? colors.primary }]} />
                 <View style={styles.flex}>
                   <Text style={styles.tapWinText}>{translateTeamName(b?.name ?? "", lang)}</Text>
-                  {b && (b.p1.trim() || b.p2.trim()) ? (
+                  {b ? (
                     <Text style={styles.tapWinPlayers} numberOfLines={1}>
-                      {[b.p1, b.p2]
-                        .map((p) => translatePlayerName(p, lang))
-                        .filter((p) => p.trim())
-                        .join(lang === "en" ? " & " : " y ")}
+                      {bPlayers.join(lang === "en" ? " & " : " y ")}
                     </Text>
                   ) : null}
                 </View>
