@@ -567,7 +567,7 @@ function Board() {
                     >
                       <Feather name={m.winnerId ? "edit-2" : "play"} size={14} color={m.winnerId ? colors.mutedForeground : colors.primaryForeground} />
                       <Text style={[styles.playBtnText, m.winnerId && styles.playBtnTextDone]}>
-                        {m.winnerId ? t.winnerIs + ": " + translateTeamName(getTeam(m.winnerId)?.name ?? "", lang) : t.play}
+                        {m.winnerId ? t.winnerIs + ": " + translateTeamName(getTeam(m.winnerId)?.name ?? "", lang) : t.winnerIs}
                       </Text>
                     </Pressable>
                   ) : null}
