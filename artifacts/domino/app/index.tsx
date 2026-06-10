@@ -1160,32 +1160,24 @@ export default function MainScreen() {
               {/* Mesas selector */}
               <View style={styles.langSection}>
                 <Text style={styles.langLabel}>{t.mesaTitle}</Text>
-                <View style={styles.countRow}>
+                <View style={[styles.mesaStepperBox, { borderColor: colors.border }]}>
                   <Pressable
-                    style={[styles.countChip, mesas === 0 && styles.countChipActive]}
-                    onPress={() => { setMesas(0); Haptics.selectionAsync(); }}
-                    accessibilityLabel={t.mesaOff}
+                    disabled={mesas <= 0}
+                    style={[styles.stepperSide, mesas <= 0 && styles.stepperDisabled]}
+                    onPress={() => { setMesas(mesas - 1); Haptics.selectionAsync(); }}
                   >
-                    <Feather
-                      name="x"
-                      size={16}
-                      color={mesas === 0 ? colors.primary : colors.mutedForeground}
-                    />
+                    <Feather name="minus" size={18} color={colors.destructive} />
                   </Pressable>
-                  {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => {
-                    const active = mesas === n;
-                    return (
-                      <Pressable
-                        key={n}
-                        style={[styles.countChip, active && styles.countChipActive]}
-                        onPress={() => { setMesas(n); Haptics.selectionAsync(); }}
-                      >
-                        <Text style={[styles.countChipText, active && styles.countChipTextActive]}>
-                          {n}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
+                  <Text style={[styles.mesaStepperLabel, { color: colors.foreground }]}>
+                    {mesas === 0 ? t.mesaOff : mesas}
+                  </Text>
+                  <Pressable
+                    disabled={mesas >= 20}
+                    style={[styles.stepperSide, mesas >= 20 && styles.stepperDisabled]}
+                    onPress={() => { setMesas(mesas + 1); Haptics.selectionAsync(); }}
+                  >
+                    <Feather name="plus" size={18} color={colors.primary} />
+                  </Pressable>
                 </View>
               </View>
 
@@ -1396,6 +1388,22 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     stepperLabel: {
       fontFamily: "Inter_600SemiBold",
       fontSize: 15,
+    },
+    mesaStepperBox: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      alignSelf: "flex-start",
+      borderRadius: 12,
+      borderWidth: 1.5,
+      borderStyle: "dashed",
+      marginTop: 10,
+    },
+    mesaStepperLabel: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 15,
+      minWidth: 96,
+      textAlign: "center",
     },
     mesaContainer: {
       gap: 16,
