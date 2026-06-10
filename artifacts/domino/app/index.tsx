@@ -1201,10 +1201,10 @@ export default function MainScreen() {
             )}
 
             <Pressable
-              style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 14, paddingVertical: 16 }]}
+              style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 14, paddingVertical: 16, alignSelf: "center", paddingHorizontal: 56 }]}
               onPress={() => setSettingsModal(false)}
             >
-              <Text style={styles.modalConfirmText}>{t.done}</Text>
+              <Text style={[styles.modalConfirmText, { fontSize: 16 }]}>{t.done}</Text>
             </Pressable>
           </View>
         </View>
