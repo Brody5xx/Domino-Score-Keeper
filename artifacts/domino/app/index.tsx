@@ -1167,24 +1167,21 @@ export default function MainScreen() {
               {/* Mesas selector */}
               <View style={styles.langSection}>
                 <Text style={styles.langLabel}>{t.mesaTitle}</Text>
-                <View style={[styles.mesaStepperBox, { borderColor: colors.border }]}>
-                  <Pressable
-                    disabled={mesas <= 0}
-                    style={[styles.stepperSide, mesas <= 0 && styles.stepperDisabled]}
-                    onPress={() => { setMesas(mesas <= 2 ? 0 : mesas - 1); Haptics.selectionAsync(); }}
-                  >
-                    <Feather name="minus" size={18} color={colors.destructive} />
-                  </Pressable>
-                  <Text style={[styles.mesaStepperLabel, { color: colors.foreground }]}>
-                    {mesas === 0 ? t.mesaOff : mesas}
-                  </Text>
-                  <Pressable
-                    disabled={mesas >= 20}
-                    style={[styles.stepperSide, mesas >= 20 && styles.stepperDisabled]}
-                    onPress={() => { setMesas(mesas === 0 ? 2 : mesas + 1); Haptics.selectionAsync(); }}
-                  >
-                    <Feather name="plus" size={18} color={colors.primary} />
-                  </Pressable>
+                <View style={styles.countRow}>
+                  {Array.from({ length: 21 }, (_, i) => i).map((n) => {
+                    const active = mesas === n;
+                    return (
+                      <Pressable
+                        key={n}
+                        style={[styles.countChip, active && styles.countChipActive]}
+                        onPress={() => { setMesas(n); Haptics.selectionAsync(); }}
+                      >
+                        <Text style={[styles.countChipText, active && styles.countChipTextActive]}>
+                          {n}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
                 </View>
               </View>
 
@@ -1407,22 +1404,6 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontFamily: "Inter_500Medium",
       fontSize: 13,
       flexShrink: 1,
-    },
-    mesaStepperBox: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      alignSelf: "flex-start",
-      borderRadius: 12,
-      borderWidth: 1.5,
-      borderStyle: "dashed",
-      marginTop: 10,
-    },
-    mesaStepperLabel: {
-      fontFamily: "Inter_600SemiBold",
-      fontSize: 15,
-      minWidth: 96,
-      textAlign: "center",
     },
     mesaContainer: {
       gap: 16,
