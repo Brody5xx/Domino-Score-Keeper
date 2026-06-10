@@ -377,37 +377,41 @@ export default function MainScreen() {
               const num = playerEntries.length - idx;
               return (
                 <View key={entry.id} style={styles.cardEntryRow}>
-                  <Text style={styles.cardEntryNum}>{num}</Text>
-                  {entry.extra ? (
-                    <View style={styles.extraBadge}>
-                      <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
-                    </View>
-                  ) : null}
-                  {(entry.tie || entry.points === 0) ? (
-                    <View style={styles.tieBadge}>
-                      <Text style={styles.tieBadgeText}>{t.tieLabel}</Text>
-                    </View>
-                  ) : null}
-                  {entry.edited ? (
-                    <View style={styles.editedBadge}>
-                      <Text style={styles.editedBadgeText}>{t.edited}</Text>
-                    </View>
-                  ) : null}
-                  <Text style={[styles.cardEntryPoints, { color: player.color }, entry.deleted && styles.deletedPoints]}>+{entry.points}</Text>
-                  <Pressable
-                    style={styles.entryActionBtn}
-                    onPress={() => { setEditModal({ entryId: entry.id, currentPoints: entry.points }); setEditInput(String(entry.points)); }}
-                    hitSlop={6}
-                  >
-                    <Feather name="edit-2" size={13} color={colors.mutedForeground} />
-                  </Pressable>
-                  <Pressable
-                    style={styles.entryActionBtn}
-                    onPress={() => { deleteEntry(entry.id); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                    hitSlop={6}
-                  >
-                    <Feather name={entry.deleted ? "rotate-ccw" : "trash-2"} size={13} color={entry.deleted ? colors.mutedForeground : colors.destructive} />
-                  </Pressable>
+                  <View style={styles.cardEntryLeft}>
+                    <Text style={styles.cardEntryNum}>{num}</Text>
+                    {entry.extra ? (
+                      <View style={styles.extraBadge}>
+                        <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
+                      </View>
+                    ) : null}
+                    {(entry.tie || entry.points === 0) ? (
+                      <View style={styles.tieBadge}>
+                        <Text style={styles.tieBadgeText}>{t.tieLabel}</Text>
+                      </View>
+                    ) : null}
+                    {entry.edited ? (
+                      <View style={styles.editedBadge}>
+                        <Text style={styles.editedBadgeText}>{t.edited}</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                  <View style={styles.cardEntryRight}>
+                    <Text style={[styles.cardEntryPoints, { color: player.color }, entry.deleted && styles.deletedPoints]}>+{entry.points}</Text>
+                    <Pressable
+                      style={styles.entryActionBtn}
+                      onPress={() => { setEditModal({ entryId: entry.id, currentPoints: entry.points }); setEditInput(String(entry.points)); }}
+                      hitSlop={6}
+                    >
+                      <Feather name="edit-2" size={13} color={colors.mutedForeground} />
+                    </Pressable>
+                    <Pressable
+                      style={styles.entryActionBtn}
+                      onPress={() => { deleteEntry(entry.id); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                      hitSlop={6}
+                    >
+                      <Feather name={entry.deleted ? "rotate-ccw" : "trash-2"} size={13} color={entry.deleted ? colors.mutedForeground : colors.destructive} />
+                    </Pressable>
+                  </View>
                 </View>
               );
             })}
@@ -1509,10 +1513,23 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     cardEntryRow: {
       flexDirection: "row",
       alignItems: "center",
+      justifyContent: "space-between",
       paddingVertical: 5,
       borderTopWidth: 1,
       borderTopColor: colors.border,
+      gap: 8,
+    },
+    cardEntryLeft: {
+      flexDirection: "row",
+      alignItems: "center",
       gap: 4,
+      flexShrink: 1,
+    },
+    cardEntryRight: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      flexShrink: 0,
     },
     cardEntryNum: {
       color: colors.mutedForeground,
@@ -1523,8 +1540,8 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     cardEntryPoints: {
       fontFamily: "Inter_700Bold",
       fontSize: 14,
-      flex: 1,
       textAlign: "right",
+      minWidth: 36,
     },
     clearHistoryBtn: {
       flexDirection: "row",
