@@ -543,9 +543,8 @@ export default function MainScreen() {
                 <Feather name="minus" size={18} color={colors.destructive} />
               </Pressable>
               <View style={styles.stepperCenter}>
-                <Text style={[styles.stepperWord, { color: colors.mutedForeground }]}>{t.thereAre}</Text>
-                <Text style={[styles.stepperLabel, { color: colors.foreground }]}>{players.length}</Text>
-                <Text numberOfLines={1} style={[styles.stepperWord, { color: colors.mutedForeground }]}>{t.playersTitle}</Text>
+                <Text numberOfLines={1} style={[styles.stepperWord, { color: colors.mutedForeground }]}>{t.playerSingular}</Text>
+                <Text style={[styles.stepperLabel, { color: colors.foreground }]}>{players.length}/8</Text>
               </View>
               <Pressable
                 disabled={players.length >= 8}

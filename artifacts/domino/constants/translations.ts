@@ -41,7 +41,7 @@ const es = {
   clearHistoryConfirm: "Limpiar todo",
   // Settings modal
   playersTitle: "Jugadores",
-  thereAre: "Hay",
+  playerSingular: "Jugador",
   addPlayer: "Agregar jugador",
   playerCountTitle: "Cantidad de jugadores",
   mesaTitle: "Mesas",
@@ -159,7 +159,7 @@ const en = {
   clearHistoryConfirm: "Clear all",
   deleteConfirm: "Delete",
   playersTitle: "Players",
-  thereAre: "There are",
+  playerSingular: "Player",
   addPlayer: "Add player",
   playerCountTitle: "Number of players",
   mesaTitle: "Tables",
