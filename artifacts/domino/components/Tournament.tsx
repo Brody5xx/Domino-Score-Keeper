@@ -597,7 +597,7 @@ function Board() {
 function PlayModal({ matchId, onClose }: { matchId: string | null; onClose: () => void }) {
   const colors = useColors();
   const { t, lang } = useLang();
-  const { teams, currentMatches, target, getTeam, setMatchMethod, addMatchPoints, resolveMatch, undoMatch } = useTournament();
+  const { teams, lives, currentMatches, target, getTeam, setMatchMethod, addMatchPoints, resolveMatch, undoMatch } = useTournament();
   const styles = makeStyles(colors);
 
   const match = matchId ? currentMatches.find((m) => m.id === matchId) : null;
@@ -609,6 +609,19 @@ function PlayModal({ matchId, onClose }: { matchId: string | null; onClose: () =
   const resolved = match.winnerId !== null;
   const aPlayers = teamPlayerNames(a, teams.findIndex((tm) => tm.id === match.aId), lang);
   const bPlayers = teamPlayerNames(b, teams.findIndex((tm) => tm.id === match.bId), lang);
+
+  const renderHearts = (team: { lives: number }) => (
+    <View style={styles.heartsRow}>
+      {Array.from({ length: lives }).map((_, i) => (
+        <Feather
+          key={i}
+          name="heart"
+          size={12}
+          color={i < team.lives ? colors.destructive : colors.border}
+        />
+      ))}
+    </View>
+  );
 
   return (
     <Modal visible={!!matchId} transparent animationType="fade" onRequestClose={onClose}>
@@ -673,7 +686,10 @@ function PlayModal({ matchId, onClose }: { matchId: string | null; onClose: () =
               >
                 <View style={[styles.teamDot, { backgroundColor: a?.color ?? colors.primary }]} />
                 <View style={styles.flex}>
-                  <Text style={styles.tapWinText}>{translateTeamName(a?.name ?? "", lang)}</Text>
+                  <View style={styles.tapWinNameRow}>
+                    <Text style={styles.tapWinText}>{translateTeamName(a?.name ?? "", lang)}</Text>
+                    {a ? renderHearts(a) : null}
+                  </View>
                   {a ? (
                     <Text style={styles.tapWinPlayers} numberOfLines={1}>
                       {aPlayers.join(lang === "en" ? " & " : " y ")}
@@ -687,7 +703,10 @@ function PlayModal({ matchId, onClose }: { matchId: string | null; onClose: () =
               >
                 <View style={[styles.teamDot, { backgroundColor: b?.color ?? colors.primary }]} />
                 <View style={styles.flex}>
-                  <Text style={styles.tapWinText}>{translateTeamName(b?.name ?? "", lang)}</Text>
+                  <View style={styles.tapWinNameRow}>
+                    <Text style={styles.tapWinText}>{translateTeamName(b?.name ?? "", lang)}</Text>
+                    {b ? renderHearts(b) : null}
+                  </View>
                   {b ? (
                     <Text style={styles.tapWinPlayers} numberOfLines={1}>
                       {bPlayers.join(lang === "en" ? " & " : " y ")}
@@ -1155,6 +1174,7 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
       borderWidth: 2,
       marginBottom: 10,
     },
+    tapWinNameRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
     tapWinText: { fontFamily: "Inter_700Bold", fontSize: 17, color: colors.foreground },
     tapWinPlayers: { fontFamily: "Inter_500Medium", fontSize: 13, color: colors.mutedForeground, marginTop: 2 },
     changeMethodBtn: { alignItems: "center", paddingVertical: 8, marginTop: 4 },
