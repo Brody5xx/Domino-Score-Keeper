@@ -2064,9 +2064,11 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     editedBadge: {
       backgroundColor: colors.mutedForeground + "1F",
       borderRadius: 6,
-      paddingHorizontal: 4,
+      paddingLeft: 2,
+      paddingRight: 4,
       paddingVertical: 2,
       marginRight: 2,
+      marginLeft: -4,
     },
     editedBadgeText: {
       fontFamily: "Inter_500Medium",
