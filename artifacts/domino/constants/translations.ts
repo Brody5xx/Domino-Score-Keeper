@@ -110,7 +110,7 @@ const es = {
   addPoints: "Agregar puntos",
   reachTarget: (n: number) => `Primero en llegar a ${n} gana`,
   confirmWinner: "Confirmar ganador",
-  matchDone: "Hecho",
+  matchDone: "Listo",
   undo: "Deshacer",
   nextRound: "Siguiente ronda",
   reshuffle: "Volver a sortear",
