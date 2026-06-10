@@ -528,47 +528,54 @@ export default function MainScreen() {
                 </View>
               );
             })
-          : (
-            <>
-              {players.map((player) => renderPlayerCard(player, players.length === 1))}
-              {(players.length < 8 || players.length > 2) && (
-                <View style={styles.addBoxRow}>
-                  {[1, 2].map((step) => {
-                    const canAdd = players.length < 8;
-                    const canRemove = players.length > 2;
-                    return (
-                      <View key={step} style={[styles.stepperBox, { borderColor: colors.border }]}>
-                        <Pressable
-                          disabled={!canRemove}
-                          style={[styles.stepperSide, !canRemove && styles.stepperDisabled]}
-                          onPress={() => {
-                            for (let i = 0; i < step; i++) {
-                              const list = players.slice(0, players.length - i);
-                              if (list.length > 2) removePlayer(list[list.length - 1].id);
-                            }
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          }}
-                        >
-                          <Feather name="minus" size={18} color={colors.destructive} />
-                        </Pressable>
-                        <Text style={[styles.stepperLabel, { color: colors.foreground }]}>{step}</Text>
-                        <Pressable
-                          disabled={!canAdd}
-                          style={[styles.stepperSide, !canAdd && styles.stepperDisabled]}
-                          onPress={() => {
-                            for (let i = 0; i < step; i++) addPlayer();
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          }}
-                        >
-                          <Feather name="plus" size={18} color={colors.primary} />
-                        </Pressable>
-                      </View>
-                    );
-                  })}
-                </View>
-              )}
-            </>
+          : players.map((player) => renderPlayerCard(player, players.length === 1))}
+        <View style={styles.addBoxRow}>
+          {mesas === 0 && (
+            <View style={[styles.stepperBox, { borderColor: colors.border }]}>
+              <Pressable
+                disabled={players.length <= 2}
+                style={[styles.stepperSide, players.length <= 2 && styles.stepperDisabled]}
+                onPress={() => {
+                  if (players.length > 2) removePlayer(players[players.length - 1].id);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <Feather name="minus" size={18} color={colors.destructive} />
+              </Pressable>
+              <View style={styles.stepperCenter}>
+                <Feather name="user" size={14} color={colors.mutedForeground} />
+                <Text style={[styles.stepperLabel, { color: colors.foreground }]}>{players.length}</Text>
+              </View>
+              <Pressable
+                disabled={players.length >= 8}
+                style={[styles.stepperSide, players.length >= 8 && styles.stepperDisabled]}
+                onPress={() => { addPlayer(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+              >
+                <Feather name="plus" size={18} color={colors.primary} />
+              </Pressable>
+            </View>
           )}
+          <View style={[styles.stepperBox, { borderColor: colors.border }]}>
+            <Pressable
+              disabled={mesas <= 0}
+              style={[styles.stepperSide, mesas <= 0 && styles.stepperDisabled]}
+              onPress={() => { setMesas(mesas - 1); Haptics.selectionAsync(); }}
+            >
+              <Feather name="minus" size={18} color={colors.destructive} />
+            </Pressable>
+            <View style={styles.stepperCenter}>
+              <Feather name="grid" size={14} color={colors.mutedForeground} />
+              <Text style={[styles.stepperLabel, { color: colors.foreground }]}>{mesas}</Text>
+            </View>
+            <Pressable
+              disabled={mesas >= 20}
+              style={[styles.stepperSide, mesas >= 20 && styles.stepperDisabled]}
+              onPress={() => { setMesas(mesas + 1); Haptics.selectionAsync(); }}
+            >
+              <Feather name="plus" size={18} color={colors.primary} />
+            </Pressable>
+          </View>
+        </View>
       </ScrollView>
 
       {/* ── Bottom buttons row ── */}
@@ -1388,6 +1395,11 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     stepperLabel: {
       fontFamily: "Inter_600SemiBold",
       fontSize: 15,
+    },
+    stepperCenter: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
     },
     mesaStepperBox: {
       flexDirection: "row",
