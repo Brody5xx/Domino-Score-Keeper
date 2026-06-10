@@ -431,7 +431,7 @@ function Board() {
                 style={[styles.iconBtn, styles.backBtn]}
                 onPress={() => { resetTournament(); Haptics.selectionAsync(); }}
               >
-                <Feather name="arrow-left" size={16} color="#16a34a" />
+                <Feather name="arrow-left" size={16} color={colors.destructive} />
               </Pressable>
               <Pressable
                 style={[styles.iconBtn, editing && styles.iconBtnActive]}
@@ -954,7 +954,7 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
       justifyContent: "center",
     },
     iconBtnActive: { borderColor: colors.primary, backgroundColor: colors.primary + "1A" },
-    backBtn: { borderColor: "#16a34a", backgroundColor: "#16a34a1A" },
+    backBtn: { borderColor: colors.destructive, backgroundColor: colors.destructive + "1A" },
     swapHint: {
       fontFamily: "Inter_500Medium",
       fontSize: 13,
