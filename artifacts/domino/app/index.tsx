@@ -528,7 +528,29 @@ export default function MainScreen() {
                 </View>
               );
             })
-          : players.map((player) => renderPlayerCard(player, players.length === 1))}
+          : (
+            <>
+              {players.map((player) => renderPlayerCard(player, players.length === 1))}
+              {players.length < 8 && (
+                <View style={styles.addBoxRow}>
+                  <Pressable
+                    style={[styles.addBoxBtn, { borderColor: colors.primary }]}
+                    onPress={() => { addPlayer(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                  >
+                    <Feather name="plus" size={18} color={colors.primary} />
+                    <Text style={[styles.addBoxText, { color: colors.primary }]}>{t.addBoxOne}</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.addBoxBtn, { borderColor: colors.primary }]}
+                    onPress={() => { addPlayer(); addPlayer(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                  >
+                    <Feather name="plus" size={18} color={colors.primary} />
+                    <Text style={[styles.addBoxText, { color: colors.primary }]}>{t.addBoxTwo}</Text>
+                  </Pressable>
+                </View>
+              )}
+            </>
+          )}
       </ScrollView>
 
       {/* ── Bottom buttons row ── */}
@@ -1330,6 +1352,27 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       flexWrap: "wrap",
       gap: 10,
       paddingBottom: 6,
+    },
+    addBoxRow: {
+      width: "100%",
+      flexDirection: "row",
+      gap: 10,
+      marginTop: 4,
+    },
+    addBoxBtn: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      paddingVertical: 12,
+      borderRadius: 12,
+      borderWidth: 1.5,
+      borderStyle: "dashed",
+    },
+    addBoxText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 14,
     },
     mesaContainer: {
       gap: 16,

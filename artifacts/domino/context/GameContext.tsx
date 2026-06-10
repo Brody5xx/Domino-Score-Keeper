@@ -217,7 +217,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       if (prev.players.length >= 8) return prev;
       const colorIndex = prev.players.length % PLAYER_COLORS.length;
       const newPlayer: Player = {
-        id: "p" + Date.now(),
+        id: "p" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
         name: `Jugador ${prev.players.length + 1}`,
         color: PLAYER_COLORS[colorIndex],
       };

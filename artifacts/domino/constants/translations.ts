@@ -42,6 +42,8 @@ const es = {
   // Settings modal
   playersTitle: "Jugadores",
   addPlayer: "Agregar jugador",
+  addBoxOne: "Agregar 1",
+  addBoxTwo: "Agregar 2",
   playerCountTitle: "Cantidad de jugadores",
   mesaTitle: "Mesas",
   mesaOff: "Sin mesas",
@@ -159,6 +161,8 @@ const en = {
   deleteConfirm: "Delete",
   playersTitle: "Players",
   addPlayer: "Add player",
+  addBoxOne: "Add 1",
+  addBoxTwo: "Add 2",
   playerCountTitle: "Number of players",
   mesaTitle: "Tables",
   mesaOff: "No tables",
