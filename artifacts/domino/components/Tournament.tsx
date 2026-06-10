@@ -333,6 +333,7 @@ function Board() {
       for (const id of [m.aId, m.bId]) {
         const team = getTeam(id);
         if (!team) continue;
+        const [dp1, dp2] = teamPlayerNames(team, tourney.teams.findIndex((tm) => tm.id === id), lang);
         const fields = [
           translateTeamName(team.name, lang).toLowerCase(),
           team.name.toLowerCase(),
@@ -340,6 +341,8 @@ function Board() {
           team.p2.toLowerCase(),
           translatePlayerName(team.p1, lang).toLowerCase(),
           translatePlayerName(team.p2, lang).toLowerCase(),
+          dp1.toLowerCase(),
+          dp2.toLowerCase(),
         ];
         if (fields.some((f) => f.includes(q))) { foundId = m.id; break; }
       }
