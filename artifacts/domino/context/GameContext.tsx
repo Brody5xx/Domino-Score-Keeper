@@ -278,7 +278,14 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       const mesas = Math.max(0, Math.min(20, Math.floor(count)));
       if (mesas === 0) {
         if (prev.mesas === 0) return prev;
-        const next = { ...prev, mesas: 0 };
+        const players = prev.players.slice(0, 2);
+        const keptIds = new Set(players.map((p) => p.id));
+        const next = {
+          ...prev,
+          players,
+          entries: prev.entries.filter((e) => keptIds.has(e.playerId)),
+          mesas: 0,
+        };
         AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
         return next;
       }
