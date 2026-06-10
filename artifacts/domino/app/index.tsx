@@ -531,47 +531,40 @@ export default function MainScreen() {
           : (
             <>
               {players.map((player) => renderPlayerCard(player, players.length === 1))}
-              {players.length < 8 && (
+              {(players.length < 8 || players.length > 2) && (
                 <View style={styles.addBoxRow}>
-                  <Pressable
-                    style={[styles.addBoxBtn, { borderColor: colors.primary }]}
-                    onPress={() => { addPlayer(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                  >
-                    <Feather name="plus" size={18} color={colors.primary} />
-                    <Text style={[styles.addBoxText, { color: colors.primary }]}>{t.addBoxOne}</Text>
-                  </Pressable>
-                  <Pressable
-                    style={[styles.addBoxBtn, { borderColor: colors.primary }]}
-                    onPress={() => { addPlayer(); addPlayer(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                  >
-                    <Feather name="plus" size={18} color={colors.primary} />
-                    <Text style={[styles.addBoxText, { color: colors.primary }]}>{t.addBoxTwo}</Text>
-                  </Pressable>
-                </View>
-              )}
-              {players.length > 2 && (
-                <View style={styles.addBoxRow}>
-                  <Pressable
-                    style={[styles.addBoxBtn, { borderColor: colors.destructive }]}
-                    onPress={() => {
-                      removePlayer(players[players.length - 1].id);
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    }}
-                  >
-                    <Feather name="minus" size={18} color={colors.destructive} />
-                    <Text style={[styles.addBoxText, { color: colors.destructive }]}>{t.removeBoxOne}</Text>
-                  </Pressable>
-                  <Pressable
-                    style={[styles.addBoxBtn, { borderColor: colors.destructive }]}
-                    onPress={() => {
-                      removePlayer(players[players.length - 1].id);
-                      removePlayer(players[players.length - 2].id);
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    }}
-                  >
-                    <Feather name="minus" size={18} color={colors.destructive} />
-                    <Text style={[styles.addBoxText, { color: colors.destructive }]}>{t.removeBoxTwo}</Text>
-                  </Pressable>
+                  {[1, 2].map((step) => {
+                    const canAdd = players.length < 8;
+                    const canRemove = players.length > 2;
+                    return (
+                      <View key={step} style={[styles.stepperBox, { borderColor: colors.border }]}>
+                        <Pressable
+                          disabled={!canRemove}
+                          style={[styles.stepperSide, !canRemove && styles.stepperDisabled]}
+                          onPress={() => {
+                            for (let i = 0; i < step; i++) {
+                              const list = players.slice(0, players.length - i);
+                              if (list.length > 2) removePlayer(list[list.length - 1].id);
+                            }
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          }}
+                        >
+                          <Feather name="minus" size={18} color={colors.destructive} />
+                        </Pressable>
+                        <Text style={[styles.stepperLabel, { color: colors.foreground }]}>{step}</Text>
+                        <Pressable
+                          disabled={!canAdd}
+                          style={[styles.stepperSide, !canAdd && styles.stepperDisabled]}
+                          onPress={() => {
+                            for (let i = 0; i < step; i++) addPlayer();
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          }}
+                        >
+                          <Feather name="plus" size={18} color={colors.primary} />
+                        </Pressable>
+                      </View>
+                    );
+                  })}
                 </View>
               )}
             </>
@@ -1384,20 +1377,25 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       gap: 10,
       marginTop: 4,
     },
-    addBoxBtn: {
+    stepperBox: {
       flex: 1,
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "center",
-      gap: 6,
-      paddingVertical: 12,
+      justifyContent: "space-between",
       borderRadius: 12,
       borderWidth: 1.5,
       borderStyle: "dashed",
     },
-    addBoxText: {
+    stepperSide: {
+      paddingVertical: 12,
+      paddingHorizontal: 18,
+    },
+    stepperDisabled: {
+      opacity: 0.3,
+    },
+    stepperLabel: {
       fontFamily: "Inter_600SemiBold",
-      fontSize: 14,
+      fontSize: 15,
     },
     mesaContainer: {
       gap: 16,
