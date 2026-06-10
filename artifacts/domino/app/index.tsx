@@ -455,18 +455,15 @@ export default function MainScreen() {
           </View>
         )}
         <View style={styles.topBarBtns}>
-          {!tournamentActive && (
-            <View style={styles.tournamentHint}>
-              <Text style={styles.tournamentHintText}>{t.tournamentShort}</Text>
-              <Feather name="arrow-right" size={16} color={colors.primary} />
-            </View>
-          )}
-          <Pressable
-            style={[styles.settingsBtn, tournamentActive && styles.settingsBtnActive]}
-            onPress={() => { toggleTournament(); Haptics.selectionAsync(); }}
-          >
-            <FontAwesome5 name="trophy" size={18} color={tournamentActive ? colors.primary : colors.mutedForeground} />
-          </Pressable>
+          <View style={styles.tournamentToggle}>
+            <Text style={styles.tournamentHintText}>{t.tournamentShort}</Text>
+            <Pressable
+              style={[styles.settingsBtn, tournamentActive && styles.settingsBtnActive]}
+              onPress={() => { toggleTournament(); Haptics.selectionAsync(); }}
+            >
+              <FontAwesome5 name="trophy" size={18} color={tournamentActive ? colors.primary : colors.mutedForeground} />
+            </Pressable>
+          </View>
           <Pressable style={styles.settingsBtn} onPress={() => setSettingsModal(true)}>
             <Feather name="settings" size={20} color={colors.mutedForeground} />
           </Pressable>
@@ -1301,17 +1298,16 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     topBarBtns: {
       flexDirection: "row",
-      alignItems: "center",
+      alignItems: "flex-end",
       gap: 8,
     },
-    tournamentHint: {
-      flexDirection: "row",
+    tournamentToggle: {
       alignItems: "center",
-      gap: 4,
+      gap: 3,
     },
     tournamentHintText: {
       fontFamily: "Inter_700Bold",
-      fontSize: 14,
+      fontSize: 12,
       color: colors.primary,
     },
     tournamentTitleRow: {
