@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import { File, Paths } from "expo-file-system";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
@@ -425,7 +425,7 @@ export default function MainScreen() {
       <View style={styles.topBar}>
         {tournamentActive ? (
           <View style={styles.tournamentTitleRow}>
-            <Feather name="award" size={20} color={colors.primary} />
+            <FontAwesome5 name="trophy" size={18} color={colors.primary} />
             <Text style={styles.tournamentTitle}>{t.tournamentMode}</Text>
           </View>
         ) : (
@@ -455,11 +455,17 @@ export default function MainScreen() {
           </View>
         )}
         <View style={styles.topBarBtns}>
+          {!tournamentActive && (
+            <View style={styles.tournamentHint}>
+              <Text style={styles.tournamentHintText}>{t.tournamentShort}</Text>
+              <Feather name="arrow-right" size={16} color={colors.primary} />
+            </View>
+          )}
           <Pressable
             style={[styles.settingsBtn, tournamentActive && styles.settingsBtnActive]}
             onPress={() => { toggleTournament(); Haptics.selectionAsync(); }}
           >
-            <Feather name="award" size={20} color={tournamentActive ? colors.primary : colors.mutedForeground} />
+            <FontAwesome5 name="trophy" size={18} color={tournamentActive ? colors.primary : colors.mutedForeground} />
           </Pressable>
           <Pressable style={styles.settingsBtn} onPress={() => setSettingsModal(true)}>
             <Feather name="settings" size={20} color={colors.mutedForeground} />
@@ -1295,7 +1301,18 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     topBarBtns: {
       flexDirection: "row",
+      alignItems: "center",
       gap: 8,
+    },
+    tournamentHint: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+    },
+    tournamentHintText: {
+      fontFamily: "Inter_700Bold",
+      fontSize: 14,
+      color: colors.primary,
     },
     tournamentTitleRow: {
       flex: 1,

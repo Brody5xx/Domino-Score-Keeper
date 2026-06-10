@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import React, { useRef, useState } from "react";
 import {
@@ -494,7 +494,7 @@ function Board() {
       {/* Champion banner */}
       {champion ? (
         <View style={[styles.championCard, { borderColor: champion.color }]}>
-          <Feather name="award" size={28} color={colors.primary} />
+          <FontAwesome5 name="trophy" size={26} color={colors.primary} />
           <Text style={styles.championTitle}>{t.champion}</Text>
           <Text style={styles.championName}>{translateTeamName(champion.name, lang)}</Text>
           <Text style={styles.championPlayers}>
@@ -627,7 +627,7 @@ function PlayModal({ matchId, onClose }: { matchId: string | null; onClose: () =
 
           {resolved ? (
             <View style={styles.resultBox}>
-              <Feather name="award" size={26} color={colors.primary} />
+              <FontAwesome5 name="trophy" size={24} color={colors.primary} />
               <Text style={styles.resultText}>
                 {t.winnerIs}: {translateTeamName(getTeam(match.winnerId)?.name ?? "", lang)}
               </Text>
