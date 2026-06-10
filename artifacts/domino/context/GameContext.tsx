@@ -81,13 +81,7 @@ const defaultPlayers: Player[] = [
 
 const defaultState: GameState = {
   players: defaultPlayers,
-  entries: [
-    { id: "e1", playerId: "p1", points: 15, extra: true },
-    { id: "e2", playerId: "p2", points: 0, tie: true },
-    { id: "e3", playerId: "p1", points: 20, edited: true },
-    { id: "e4", playerId: "p2", points: 25 },
-    { id: "e5", playerId: "p1", points: 10 },
-  ],
+  entries: [],
   target: 200,
   previousGames: [],
   bgTheme: "scatter",

@@ -1522,7 +1522,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     cardEntryLeft: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 2,
+      gap: 0,
       flexShrink: 1,
     },
     cardEntryRight: {
@@ -2040,9 +2040,9 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     extraBadge: {
       backgroundColor: colors.primary + "22",
       borderRadius: 6,
-      paddingHorizontal: 6,
+      paddingHorizontal: 4,
       paddingVertical: 2,
-      marginRight: 6,
+      marginRight: 2,
     },
     extraBadgeText: {
       fontFamily: "Inter_600SemiBold",
@@ -2052,9 +2052,9 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     tieBadge: {
       backgroundColor: colors.mutedForeground + "26",
       borderRadius: 6,
-      paddingHorizontal: 6,
+      paddingHorizontal: 4,
       paddingVertical: 2,
-      marginRight: 6,
+      marginRight: 2,
     },
     tieBadgeText: {
       fontFamily: "Inter_600SemiBold",
@@ -2064,9 +2064,9 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     editedBadge: {
       backgroundColor: colors.mutedForeground + "1F",
       borderRadius: 6,
-      paddingHorizontal: 6,
+      paddingHorizontal: 4,
       paddingVertical: 2,
-      marginRight: 6,
+      marginRight: 2,
     },
     editedBadgeText: {
       fontFamily: "Inter_500Medium",
