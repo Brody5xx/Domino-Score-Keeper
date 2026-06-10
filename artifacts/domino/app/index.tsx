@@ -564,8 +564,8 @@ export default function MainScreen() {
               <Feather name="minus" size={18} color={colors.destructive} />
             </Pressable>
             <View style={styles.stepperCenter}>
-              <Feather name="grid" size={14} color={colors.mutedForeground} />
               <Text style={[styles.stepperLabel, { color: colors.foreground }]}>{mesas}</Text>
+              <Text numberOfLines={1} style={[styles.stepperWord, { color: colors.mutedForeground }]}>{t.mesaTitle}</Text>
             </View>
             <Pressable
               disabled={mesas >= 20}
@@ -1387,7 +1387,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     stepperSide: {
       paddingVertical: 12,
-      paddingHorizontal: 18,
+      paddingHorizontal: 16,
     },
     stepperDisabled: {
       opacity: 0.3,
@@ -1397,9 +1397,17 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontSize: 15,
     },
     stepperCenter: {
+      flex: 1,
       flexDirection: "row",
       alignItems: "center",
+      justifyContent: "center",
       gap: 6,
+      minWidth: 0,
+    },
+    stepperWord: {
+      fontFamily: "Inter_500Medium",
+      fontSize: 13,
+      flexShrink: 1,
     },
     mesaStepperBox: {
       flexDirection: "row",
