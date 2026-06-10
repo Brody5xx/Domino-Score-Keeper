@@ -549,6 +549,31 @@ export default function MainScreen() {
                   </Pressable>
                 </View>
               )}
+              {players.length > 2 && (
+                <View style={styles.addBoxRow}>
+                  <Pressable
+                    style={[styles.addBoxBtn, { borderColor: colors.destructive }]}
+                    onPress={() => {
+                      removePlayer(players[players.length - 1].id);
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                  >
+                    <Feather name="minus" size={18} color={colors.destructive} />
+                    <Text style={[styles.addBoxText, { color: colors.destructive }]}>{t.removeBoxOne}</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.addBoxBtn, { borderColor: colors.destructive }]}
+                    onPress={() => {
+                      removePlayer(players[players.length - 1].id);
+                      removePlayer(players[players.length - 2].id);
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                  >
+                    <Feather name="minus" size={18} color={colors.destructive} />
+                    <Text style={[styles.addBoxText, { color: colors.destructive }]}>{t.removeBoxTwo}</Text>
+                  </Pressable>
+                </View>
+              )}
             </>
           )}
       </ScrollView>
