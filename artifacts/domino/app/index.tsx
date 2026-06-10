@@ -543,8 +543,8 @@ export default function MainScreen() {
                 <Feather name="minus" size={18} color={colors.destructive} />
               </Pressable>
               <View style={styles.stepperCenter}>
-                <Feather name="user" size={14} color={colors.mutedForeground} />
                 <Text style={[styles.stepperLabel, { color: colors.foreground }]}>{players.length}</Text>
+                <Text numberOfLines={1} style={[styles.stepperWord, { color: colors.mutedForeground }]}>{t.playersTitle}</Text>
               </View>
               <Pressable
                 disabled={players.length >= 8}
@@ -1372,12 +1372,11 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     addBoxRow: {
       width: "100%",
-      flexDirection: "row",
+      flexDirection: "column",
       gap: 10,
       marginTop: 4,
     },
     stepperBox: {
-      flex: 1,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
