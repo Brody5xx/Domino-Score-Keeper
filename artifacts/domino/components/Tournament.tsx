@@ -632,6 +632,13 @@ function PlayModal({ matchId, onClose }: { matchId: string | null; onClose: () =
                 {t.winnerIs}: {translateTeamName(getTeam(match.winnerId)?.name ?? "", lang)}
               </Text>
               <Pressable
+                style={styles.doneBtn}
+                onPress={() => { onClose(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }}
+              >
+                <Feather name="check" size={16} color={colors.primaryForeground} />
+                <Text style={styles.doneBtnText}>{t.matchDone}</Text>
+              </Pressable>
+              <Pressable
                 style={styles.undoBtn}
                 onPress={() => { undoMatch(match.id); Haptics.selectionAsync(); }}
               >
@@ -1155,6 +1162,18 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
 
     resultBox: { alignItems: "center", gap: 10, paddingVertical: 10 },
     resultText: { fontFamily: "Inter_700Bold", fontSize: 17, color: colors.foreground, textAlign: "center" },
+    doneBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      backgroundColor: colors.primary,
+      borderRadius: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 18,
+      alignSelf: "stretch",
+    },
+    doneBtnText: { fontFamily: "Inter_700Bold", fontSize: 15, color: colors.primaryForeground },
     undoBtn: {
       flexDirection: "row",
       alignItems: "center",
