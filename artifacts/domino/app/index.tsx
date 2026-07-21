@@ -2,7 +2,7 @@ import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import { File, Paths } from "expo-file-system";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Easing,
@@ -377,69 +377,99 @@ export default function MainScreen() {
           <View style={styles.cardHistory}>
             {playerEntries.slice().reverse().map((entry, idx) => {
               const num = playerEntries.length - idx;
+              const isOpen = revealedEntry === entry.id;
+              const animHeight = useRef(new Animated.Value(0)).current;
+              useEffect(() => {
+                Animated.timing(animHeight, {
+                  toValue: isOpen ? 1 : 0,
+                  duration: 250,
+                  easing: Easing.inOut(Easing.ease),
+                  useNativeDriver: false,
+                }).start();
+              }, [isOpen]);
+              const panelHeight = animHeight.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, (entry.history?.length ?? 0) * 22 + 8],
+              });
+              const panelOpacity = animHeight.interpolate({
+                inputRange: [0, 0.5, 1],
+                outputRange: [0, 0, 1],
+              });
               return (
-                <View key={entry.id} style={styles.cardEntryRow}>
-                  <View style={[styles.cardEntryLeft, { flexWrap: "wrap", alignItems: "center" }]}>
-                    <Text style={styles.cardEntryNum}>{num}</Text>
-                    {entry.extra ? (
-                      <View style={styles.extraBadge}>
-                        <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
-                      </View>
-                    ) : null}
-                    {(entry.tie || entry.points === 0) ? (
-                      <View style={styles.tieBadge}>
-                        <Text style={styles.tieBadgeText}>{t.tieLabel}</Text>
-                      </View>
-                    ) : null}
-                    {entry.edited ? (
-                      <Pressable
-                        style={styles.editedBadge}
-                        onPress={() => {
-                          if (revealTimerRef.current) {
-                            clearTimeout(revealTimerRef.current);
-                            revealTimerRef.current = null;
-                          }
-                          if (revealedEntry === entry.id) {
-                            setRevealedEntry(null);
-                          } else {
-                            setRevealedEntry(entry.id);
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                            revealTimerRef.current = setTimeout(() => {
-                              setRevealedEntry(null);
+                <View key={entry.id}>
+                  <View style={styles.cardEntryRow}>
+                    <View style={[styles.cardEntryLeft, { flexWrap: "wrap", alignItems: "center" }]}>
+                      <Text style={styles.cardEntryNum}>{num}</Text>
+                      {entry.extra ? (
+                        <View style={styles.extraBadge}>
+                          <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
+                        </View>
+                      ) : null}
+                      {(entry.tie || entry.points === 0) ? (
+                        <View style={styles.tieBadge}>
+                          <Text style={styles.tieBadgeText}>{t.tieLabel}</Text>
+                        </View>
+                      ) : null}
+                      {entry.edited ? (
+                        <Pressable
+                          style={styles.editedBadge}
+                          onPress={() => {
+                            if (revealTimerRef.current) {
+                              clearTimeout(revealTimerRef.current);
                               revealTimerRef.current = null;
-                            }, 10000);
-                          }
-                        }}
-                        hitSlop={4}
+                            }
+                            if (revealedEntry === entry.id) {
+                              setRevealedEntry(null);
+                            } else {
+                              setRevealedEntry(entry.id);
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              revealTimerRef.current = setTimeout(() => {
+                                setRevealedEntry(null);
+                                revealTimerRef.current = null;
+                              }, 10000);
+                            }
+                          }}
+                          hitSlop={4}
+                        >
+                          <Feather name="eye" size={10} color={colors.mutedForeground} />
+                          <Text style={styles.editedBadgeText}>{t.edited}</Text>
+                        </Pressable>
+                      ) : null}
+                      <Text style={[
+                        styles.cardEntryPoints,
+                        { color: player.color },
+                        entry.deleted && styles.deletedPoints,
+                      ]}>
+                        +{entry.points}
+                      </Text>
+                    </View>
+                    <View style={styles.cardEntryRight}>
+                      <Pressable
+                        style={styles.entryActionBtn}
+                        onPress={() => { setEditModal({ entryId: entry.id, currentPoints: entry.points }); setEditInput(String(entry.points)); }}
+                        hitSlop={6}
                       >
-                        <Feather name="eye" size={10} color={colors.mutedForeground} />
-                        <Text style={styles.editedBadgeText}>{t.edited}</Text>
+                        <Feather name="edit-2" size={13} color={colors.mutedForeground} />
                       </Pressable>
-                    ) : null}
-                    <Text style={[
-                      styles.cardEntryPoints,
-                      { color: revealedEntry === entry.id && entry.originalPoints !== undefined ? "#fff" : player.color },
-                      entry.deleted && styles.deletedPoints,
-                    ]}>
-                      +{revealedEntry === entry.id && entry.originalPoints !== undefined ? entry.originalPoints : entry.points}
-                    </Text>
+                      <Pressable
+                        style={styles.entryActionBtn}
+                        onPress={() => { deleteEntry(entry.id); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                        hitSlop={6}
+                      >
+                        <Feather name={entry.deleted ? "rotate-ccw" : "trash-2"} size={13} color={entry.deleted ? colors.mutedForeground : colors.destructive} />
+                      </Pressable>
+                    </View>
                   </View>
-                  <View style={styles.cardEntryRight}>
-                    <Pressable
-                      style={styles.entryActionBtn}
-                      onPress={() => { setEditModal({ entryId: entry.id, currentPoints: entry.points }); setEditInput(String(entry.points)); }}
-                      hitSlop={6}
-                    >
-                      <Feather name="edit-2" size={13} color={colors.mutedForeground} />
-                    </Pressable>
-                    <Pressable
-                      style={styles.entryActionBtn}
-                      onPress={() => { deleteEntry(entry.id); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                      hitSlop={6}
-                    >
-                      <Feather name={entry.deleted ? "rotate-ccw" : "trash-2"} size={13} color={entry.deleted ? colors.mutedForeground : colors.destructive} />
-                    </Pressable>
-                  </View>
+                  {entry.history && entry.history.length > 0 && (
+                    <Animated.View style={[styles.historyPanel, { height: panelHeight, opacity: panelOpacity }]}>
+                      {entry.history.slice().reverse().map((h, hIdx) => (
+                        <View key={hIdx} style={styles.historyPanelRow}>
+                          <Text style={styles.historyPanelLabel}>{t.previous} {entry.history!.length - hIdx}</Text>
+                          <Text style={styles.historyPanelValue}>+{h}</Text>
+                        </View>
+                      ))}
+                    </Animated.View>
+                  )}
                 </View>
               );
             })}
@@ -2195,6 +2225,29 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontFamily: "Inter_400Regular",
       fontSize: 12,
       color: colors.mutedForeground,
+    },
+    historyPanel: {
+      overflow: "hidden",
+      paddingLeft: 24,
+      paddingRight: 10,
+      gap: 2,
+    },
+    historyPanelRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: 2,
+    },
+    historyPanelLabel: {
+      fontFamily: "Inter_400Regular",
+      fontSize: 11,
+      color: colors.mutedForeground,
+    },
+    historyPanelValue: {
+      fontFamily: "Inter_700Bold",
+      fontSize: 13,
+      color: "#fff",
+      textAlign: "right",
     },
   });
 }
