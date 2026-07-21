@@ -377,7 +377,7 @@ export default function MainScreen() {
               const num = playerEntries.length - idx;
               return (
                 <View key={entry.id} style={styles.cardEntryRow}>
-                  <View style={styles.cardEntryLeft}>
+                  <View style={[styles.cardEntryLeft, { flexWrap: "wrap", alignItems: "center" }]}>
                     <Text style={styles.cardEntryNum}>{num}</Text>
                     {entry.extra ? (
                       <View style={styles.extraBadge}>
@@ -394,9 +394,9 @@ export default function MainScreen() {
                         <Text style={styles.editedBadgeText}>{t.edited}</Text>
                       </View>
                     ) : null}
+                    <Text style={[styles.cardEntryPoints, { color: player.color }, entry.deleted && styles.deletedPoints]}>+{entry.points}</Text>
                   </View>
                   <View style={styles.cardEntryRight}>
-                    <Text style={[styles.cardEntryPoints, { color: player.color }, entry.deleted && styles.deletedPoints]}>+{entry.points}</Text>
                     <Pressable
                       style={styles.entryActionBtn}
                       onPress={() => { setEditModal({ entryId: entry.id, currentPoints: entry.points }); setEditInput(String(entry.points)); }}
@@ -2039,40 +2039,38 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     extraBadge: {
       backgroundColor: colors.primary + "22",
-      borderRadius: 6,
-      paddingHorizontal: 4,
-      paddingVertical: 2,
+      borderRadius: 4,
+      paddingHorizontal: 3,
+      paddingVertical: 1,
       marginRight: 2,
     },
     extraBadgeText: {
       fontFamily: "Inter_600SemiBold",
-      fontSize: 10,
+      fontSize: 9,
       color: colors.primary,
     },
     tieBadge: {
       backgroundColor: colors.mutedForeground + "26",
-      borderRadius: 6,
-      paddingHorizontal: 4,
-      paddingVertical: 2,
+      borderRadius: 4,
+      paddingHorizontal: 3,
+      paddingVertical: 1,
       marginRight: 2,
     },
     tieBadgeText: {
       fontFamily: "Inter_600SemiBold",
-      fontSize: 10,
+      fontSize: 9,
       color: colors.mutedForeground,
     },
     editedBadge: {
       backgroundColor: colors.mutedForeground + "1F",
-      borderRadius: 6,
-      paddingLeft: 2,
-      paddingRight: 4,
-      paddingVertical: 2,
+      borderRadius: 4,
+      paddingHorizontal: 3,
+      paddingVertical: 1,
       marginRight: 2,
-      marginLeft: -4,
     },
     editedBadgeText: {
       fontFamily: "Inter_500Medium",
-      fontSize: 10,
+      fontSize: 9,
       fontStyle: "italic",
       color: colors.mutedForeground,
     },
