@@ -124,6 +124,26 @@ const es = {
   tournamentSearchPlaceholder: "Buscar equipo o jugador...",
   roundProgress: (done: number, total: number) => `${done}/${total} partidas`,
   needTwoTeams: "Necesitas al menos 2 equipos",
+  // Tutorial
+  tutorialSkip: "Omitir",
+  tutorialNext: "Siguiente",
+  tutorialBack: "Atrás",
+  tutorialShowAgain: "Ver tutorial",
+  tutorialDone: "Entendido",
+  tutorialStep1Title: "Bienvenido a Dominó - Marcador",
+  tutorialStep1Body: "Esta app te ayuda a llevar el puntaje de tus partidas de dominó de forma sencilla. Toca el botón + dentro de cada jugador para agregar puntos.",
+  tutorialStep2Title: "Anotar puntos",
+  tutorialStep2Body: "Escribe los puntos ganados y toca Agregar. Si marcaste doble (gana ambos jugadores de la misma pareja), activa \"Para ambos\" para sumar los puntos a los dos.",
+  tutorialStep3Title: "Puntos extra y empates",
+  tutorialStep3Body: "Activa \"Extras\" cuando ganas la mano con piedras sobrantes. Toca \"Empaté\" cuando nadie gana la mano.",
+  tutorialStep4Title: "Editar y borrar",
+  tutorialStep4Body: "Si te equivocaste, toca el lápiz para editar una anotación o la papelera para borrarla. Los cambios quedan guardados.",
+  tutorialStep5Title: "Historial de ediciones",
+  tutorialStep5Body: "Toca el ojito junto a una anotación editada para ver todos los valores anteriores. Se cierra solo tras 10 segundos o al tocar de nuevo.",
+  tutorialStep6Title: "Meta de la partida",
+  tutorialStep6Body: "Elige la meta de puntos en la parte superior: 100 o 200. Cuando un jugador llega, aparece ¡Victoria! y su puntaje se ilumina.",
+  tutorialStep7Title: "Configuración",
+  tutorialStep7Body: "Toca la tuerca para ajustar jugadores, mesas, idioma, fondo de pantalla y más. Desde allí también puedes volver a ver este tutorial.",
 };
 
 const en = {
@@ -240,6 +260,26 @@ const en = {
   tournamentSearchPlaceholder: "Search team or player...",
   roundProgress: (done: number, total: number) => `${done}/${total} matches`,
   needTwoTeams: "You need at least 2 teams",
+  // Tutorial
+  tutorialSkip: "Skip",
+  tutorialNext: "Next",
+  tutorialBack: "Back",
+  tutorialShowAgain: "Show tutorial",
+  tutorialDone: "Got it",
+  tutorialStep1Title: "Welcome to Domino - Score Tracker",
+  tutorialStep1Body: "This app helps you keep score in your domino games easily. Tap the + button inside each player card to add points.",
+  tutorialStep2Title: "Adding points",
+  tutorialStep2Body: "Type the points earned and tap Add. If you scored a double (both players on the same pair win), enable \"For both\" to add points to both.",
+  tutorialStep3Title: "Extra points & ties",
+  tutorialStep3Body: "Enable \"Extras\" when you win the hand with leftover stones. Tap \"Tie\" when nobody wins the hand.",
+  tutorialStep4Title: "Edit and delete",
+  tutorialStep4Body: "If you made a mistake, tap the pencil to edit an entry or the trash can to delete it. Changes are saved automatically.",
+  tutorialStep5Title: "Edit history",
+  tutorialStep5Body: "Tap the eye icon next to an edited entry to see all previous values. It closes automatically after 10 seconds or when tapped again.",
+  tutorialStep6Title: "Game target",
+  tutorialStep6Body: "Choose the points target at the top: 100 or 200. When a player reaches it, \"Victory!\" appears and their score lights up.",
+  tutorialStep7Title: "Settings",
+  tutorialStep7Body: "Tap the gear icon to adjust players, tables, language, background, and more. From there you can also watch this tutorial again.",
 };
 
 export type Translations = typeof es;

@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import { File, Paths } from "expo-file-system";
 import * as Haptics from "expo-haptics";
@@ -18,6 +19,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import Tutorial from "@/components/Tutorial";
 import Tournament from "@/components/Tournament";
 import { PLAYER_COLORS, type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
 import { useLang } from "@/context/LangContext";
@@ -85,6 +87,19 @@ export default function MainScreen() {
 
   const [settingsModal, setSettingsModal] = useState(false);
   const [editingName, setEditingName] = useState<{ id: string; value: string } | null>(null);
+  const [tutorialVisible, setTutorialVisible] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
+  const [tutorialSeen, setTutorialSeen] = useState(true);
+
+  // Load tutorial seen state on mount
+  useEffect(() => {
+    AsyncStorage.getItem("domino_tutorial_seen").then((val) => {
+      if (val === null) {
+        setTutorialSeen(false);
+        setTutorialVisible(true);
+      }
+    });
+  }, []);
 
   const [renameModal, setRenameModal] = useState<{ playerId: string; value: string; color: string } | null>(null);
   const [restartModal, setRestartModal] = useState(false);
@@ -1298,6 +1313,19 @@ export default function MainScreen() {
               </Pressable>
             )}
 
+            {/* Show tutorial button */}
+            <Pressable
+              style={[styles.showTutorialBtn, { borderColor: colors.border }]}
+              onPress={() => {
+                setSettingsModal(false);
+                setTutorialStep(0);
+                setTutorialVisible(true);
+              }}
+            >
+              <Feather name="help-circle" size={16} color={colors.mutedForeground} />
+              <Text style={[styles.showTutorialText, { color: colors.mutedForeground }]}>{t.tutorialShowAgain}</Text>
+            </Pressable>
+
             <Pressable
               style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 14, paddingTop: 13, paddingBottom: 19, alignSelf: "center", paddingHorizontal: 56 }]}
               onPress={() => setSettingsModal(false)}
@@ -1307,6 +1335,20 @@ export default function MainScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Tutorial overlay */}
+      <Tutorial
+        visible={tutorialVisible}
+        onClose={() => {
+          setTutorialVisible(false);
+          setTutorialSeen(true);
+          AsyncStorage.setItem("domino_tutorial_seen", "true");
+        }}
+        step={tutorialStep}
+        onStepChange={setTutorialStep}
+        t={t}
+        colors={colors}
+      />
     </View>
   );
 }
@@ -2225,6 +2267,20 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontFamily: "Inter_400Regular",
       fontSize: 12,
       color: colors.mutedForeground,
+    },
+    showTutorialBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      marginTop: 14,
+      paddingVertical: 12,
+      borderRadius: 10,
+      borderWidth: 1.5,
+    },
+    showTutorialText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 14,
     },
     historyPanel: {
       overflow: "hidden",
