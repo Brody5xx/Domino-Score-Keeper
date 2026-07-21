@@ -416,7 +416,11 @@ export default function MainScreen() {
                         <Text style={styles.editedBadgeText}>{t.edited}</Text>
                       </Pressable>
                     ) : null}
-                    <Text style={[styles.cardEntryPoints, { color: player.color }, entry.deleted && styles.deletedPoints]}>
+                    <Text style={[
+                      styles.cardEntryPoints,
+                      { color: revealedEntry === entry.id && entry.originalPoints !== undefined ? "#fff" : player.color },
+                      entry.deleted && styles.deletedPoints,
+                    ]}>
                       +{revealedEntry === entry.id && entry.originalPoints !== undefined ? entry.originalPoints : entry.points}
                     </Text>
                   </View>
