@@ -19,7 +19,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Tutorial from "@/components/Tutorial";
+import TutorialOverlay from "@/components/TutorialOverlay";
 import Tournament from "@/components/Tournament";
 import { PLAYER_COLORS, type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
 import { useLang } from "@/context/LangContext";
@@ -101,6 +101,70 @@ export default function MainScreen() {
     });
   }, []);
 
+  // Create demo entries when tutorial starts so the user can see real features
+  useEffect(() => {
+    if (!tutorialVisible) return;
+    if (entries.length > 0 || players.length < 2) return;
+    // Add entries with delay so state settles
+    const t1 = setTimeout(() => addEntry(players[0].id, 50), 200);
+    const t2 = setTimeout(() => addEntry(players[1].id, 30), 400);
+    const t3 = setTimeout(() => {
+      const casaEntry = entries.find((e) => e.playerId === players[0].id);
+      if (casaEntry) editEntry(casaEntry.id, 55);
+    }, 600);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [tutorialVisible]);
+
+  // Tutorial step actions — open/close modals automatically
+  useEffect(() => {
+    if (!tutorialVisible) return;
+    const actions: Record<number, () => void> = {
+      2: () => {
+        // Step 3: open add modal for Casa
+        if (players[0]) {
+          setAddModal({ playerId: players[0].id });
+          setPointsInput("");
+          setExtraMode(false);
+          setForBoth(false);
+        }
+      },
+      5: () => {
+        // Step 6: open edit modal for first Casa entry
+        const casaEntry = entries.find((e) => e.playerId === players[0]?.id);
+        if (casaEntry) {
+          setEditModal({ entryId: casaEntry.id, currentPoints: casaEntry.points });
+          setEditInput(String(casaEntry.points));
+        }
+      },
+      7: () => {
+        // Step 8: toggle eye reveal for edited Casa entry
+        const casaEntry = entries.find((e) => e.playerId === players[0]?.id && e.edited);
+        if (casaEntry) setRevealedEntry(casaEntry.id);
+      },
+      9: () => {
+        // Step 10: open settings
+        setSettingsModal(true);
+      },
+    };
+    const action = actions[tutorialStep];
+    if (action) {
+      const timer = setTimeout(action, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [tutorialStep, tutorialVisible]);
+
+  // Close modals when leaving modal-specific steps
+  useEffect(() => {
+    if (!tutorialVisible) return;
+    const modalSteps = [2, 5, 7, 9];
+    if (!modalSteps.includes(tutorialStep)) {
+      setAddModal(null);
+      setEditModal(null);
+      setSettingsModal(false);
+      setRevealedEntry(null);
+    }
+  }, [tutorialStep, tutorialVisible]);
+
   const [renameModal, setRenameModal] = useState<{ playerId: string; value: string; color: string } | null>(null);
   const [restartModal, setRestartModal] = useState(false);
   const [historyModal, setHistoryModal] = useState(false);
@@ -116,6 +180,14 @@ export default function MainScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const mesaPositions = useRef<Record<number, number>>({});
   const highlightAnim = useRef(new Animated.Value(0)).current;
+
+  // Tutorial spotlight refs
+  const targetChip200Ref = useRef<View>(null);
+  const addBtnCasaRef = useRef<View>(null);
+  const addBtnVisitRef = useRef<View>(null);
+  const settingsBtnRef = useRef<View>(null);
+  const historyBtnRef = useRef<View>(null);
+  const restartBtnRef = useRef<View>(null);
 
   const findMesaForQuery = (query: string): number => {
     const q = query.trim().toLowerCase();
@@ -347,7 +419,11 @@ export default function MainScreen() {
 
   // ── render ─────────────────────────────────────────────────────────────────
 
-  function renderPlayerCard(player: (typeof players)[number], fullWidth = false) {
+  function renderPlayerCard(
+    player: (typeof players)[number],
+    fullWidth = false,
+    addBtnRef?: React.RefObject<View | null>,
+  ) {
     const total = totals[player.id] ?? 0;
     const remaining = Math.max(0, target - total);
     const won = total >= target;
@@ -382,6 +458,7 @@ export default function MainScreen() {
           {won ? t.victory : t.remaining(remaining)}
         </Text>
         <Pressable
+          ref={addBtnRef}
           style={[styles.addBtn, { borderColor: player.color }]}
           onPress={() => { setAddModal({ playerId: player.id }); setPointsInput(""); setExtraMode(false); setForBoth(false); }}
         >
@@ -510,6 +587,7 @@ export default function MainScreen() {
             {TARGET_PRESETS.map((tv) => (
               <Pressable
                 key={tv}
+                ref={tv === 200 ? targetChip200Ref : undefined}
                 style={[styles.targetChip, target === tv && styles.targetChipActive]}
                 onPress={() => { setTarget(tv); Haptics.selectionAsync(); }}
               >
@@ -541,7 +619,7 @@ export default function MainScreen() {
               <FontAwesome5 name="trophy" size={18} color={tournamentActive ? colors.primary : colors.mutedForeground} />
             </Pressable>
           </View>
-          <Pressable style={styles.settingsBtn} onPress={() => setSettingsModal(true)}>
+          <Pressable ref={settingsBtnRef} style={styles.settingsBtn} onPress={() => setSettingsModal(true)}>
             <Feather name="settings" size={20} color={colors.mutedForeground} />
           </Pressable>
         </View>
@@ -605,7 +683,11 @@ export default function MainScreen() {
                 </View>
               );
             })
-          : players.map((player) => renderPlayerCard(player, players.length === 1))}
+          : players.map((player, pi) => renderPlayerCard(
+              player,
+              players.length === 1,
+              pi === 0 ? addBtnCasaRef : pi === 1 ? addBtnVisitRef : undefined,
+            ))}
         <View style={styles.addBoxRow}>
           {mesas === 0 && (
             <View style={[styles.stepperBox, { borderColor: colors.border }]}>
@@ -658,7 +740,7 @@ export default function MainScreen() {
       {/* ── Bottom buttons row ── */}
       <View style={styles.bottomRow}>
         {previousGames.length > 0 && (
-          <Pressable style={styles.historyBtn} onPress={() => setHistoryModal(true)}>
+          <Pressable ref={historyBtnRef} style={styles.historyBtn} onPress={() => setHistoryModal(true)}>
             <Feather name="archive" size={15} color={colors.mutedForeground} />
             <Text style={styles.historyBtnText}>{t.previous}</Text>
             <View style={styles.historyBadge}>
@@ -667,6 +749,7 @@ export default function MainScreen() {
           </Pressable>
         )}
         <Pressable
+          ref={restartBtnRef}
           style={[styles.restartBtn, previousGames.length > 0 && { flex: 1 }]}
           onPress={() => setRestartModal(true)}
         >
@@ -1337,15 +1420,38 @@ export default function MainScreen() {
       </Modal>
 
       {/* Tutorial overlay */}
-      <Tutorial
+      <TutorialOverlay
         visible={tutorialVisible}
-        onClose={() => {
+        steps={[
+          { targetRef: targetChip200Ref, text: t.tutStep1 },
+          { targetRef: addBtnCasaRef, text: t.tutStep2 },
+          { text: t.tutStep3, actionDelay: 0 },
+          { text: t.tutStep4, actionDelay: 0 },
+          { targetRef: addBtnVisitRef, text: t.tutStep5 },
+          { text: t.tutStep6, actionDelay: 0 },
+          { text: t.tutStep7, actionDelay: 0 },
+          { targetRef: historyBtnRef, text: t.tutStep8 },
+          { targetRef: restartBtnRef, text: t.tutStep9 },
+          { targetRef: settingsBtnRef, text: t.tutStep10 },
+          { text: t.tutStep11, actionDelay: 0 },
+        ]}
+        currentStep={tutorialStep}
+        onNext={() => {
+          if (tutorialStep >= 10) {
+            setTutorialVisible(false);
+            setTutorialSeen(true);
+            AsyncStorage.setItem("domino_tutorial_seen", "true");
+            restart(); // clean up demo entries
+          } else {
+            setTutorialStep(tutorialStep + 1);
+          }
+        }}
+        onSkip={() => {
           setTutorialVisible(false);
           setTutorialSeen(true);
           AsyncStorage.setItem("domino_tutorial_seen", "true");
+          restart(); // clean up demo entries
         }}
-        step={tutorialStep}
-        onStepChange={setTutorialStep}
         t={t}
         colors={colors}
       />
