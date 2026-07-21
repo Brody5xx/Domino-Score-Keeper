@@ -21,6 +21,7 @@ export interface ScoreEntry {
   tie?: boolean;
   edited?: boolean;
   deleted?: boolean;
+  originalPoints?: number;
 }
 
 export interface PreviousGame {
@@ -156,7 +157,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         ...prev,
         entries: prev.entries.map((e) =>
           e.id === entryId
-            ? { ...e, points, tie: points === 0 ? true : undefined, edited: true }
+            ? { ...e, points, tie: points === 0 ? true : undefined, edited: true, originalPoints: e.originalPoints ?? e.points }
             : e
         ),
       };

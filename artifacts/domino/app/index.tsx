@@ -96,6 +96,7 @@ export default function MainScreen() {
   const [mesaSearch, setMesaSearch] = useState("");
   const [searchNotFound, setSearchNotFound] = useState(false);
   const [highlightedMesa, setHighlightedMesa] = useState<number | null>(null);
+  const [revealedEntry, setRevealedEntry] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const mesaPositions = useRef<Record<number, number>>({});
   const highlightAnim = useRef(new Animated.Value(0)).current;
@@ -390,11 +391,19 @@ export default function MainScreen() {
                       </View>
                     ) : null}
                     {entry.edited ? (
-                      <View style={styles.editedBadge}>
+                      <Pressable
+                        style={styles.editedBadge}
+                        onPressIn={() => { setRevealedEntry(entry.id); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                        onPressOut={() => setRevealedEntry(null)}
+                        hitSlop={4}
+                      >
+                        <Feather name="eye" size={10} color={colors.mutedForeground} />
                         <Text style={styles.editedBadgeText}>{t.edited}</Text>
-                      </View>
+                      </Pressable>
                     ) : null}
-                    <Text style={[styles.cardEntryPoints, { color: player.color }, entry.deleted && styles.deletedPoints]}>+{entry.points}</Text>
+                    <Text style={[styles.cardEntryPoints, { color: player.color }, entry.deleted && styles.deletedPoints]}>
+                      +{revealedEntry === entry.id && entry.originalPoints !== undefined ? entry.originalPoints : entry.points}
+                    </Text>
                   </View>
                   <View style={styles.cardEntryRight}>
                     <Pressable
@@ -2062,10 +2071,13 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       color: colors.mutedForeground,
     },
     editedBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 3,
       backgroundColor: colors.mutedForeground + "1F",
       borderRadius: 4,
-      paddingHorizontal: 3,
-      paddingVertical: 1,
+      paddingHorizontal: 4,
+      paddingVertical: 2,
       marginRight: 2,
     },
     editedBadgeText: {
