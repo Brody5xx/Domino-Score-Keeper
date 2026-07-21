@@ -82,7 +82,12 @@ const defaultPlayers: Player[] = [
 
 const defaultState: GameState = {
   players: defaultPlayers,
-  entries: [],
+  entries: [
+    { id: "e1", playerId: "p1", points: 75, extra: true, edited: true, originalPoints: 50 },
+    { id: "e2", playerId: "p2", points: 0, tie: true },
+    { id: "e3", playerId: "p1", points: 33, edited: true, originalPoints: 15 },
+    { id: "e4", playerId: "p2", points: 25 },
+  ],
   target: 200,
   previousGames: [],
   bgTheme: "scatter",
@@ -157,7 +162,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         ...prev,
         entries: prev.entries.map((e) =>
           e.id === entryId
-            ? { ...e, points, tie: points === 0 ? true : undefined, edited: true, originalPoints: e.originalPoints ?? e.points }
+            ? { ...e, points, tie: points === 0 ? true : undefined, edited: true, originalPoints: e.points }
             : e
         ),
       };
