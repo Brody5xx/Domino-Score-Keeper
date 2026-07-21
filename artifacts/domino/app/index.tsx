@@ -135,6 +135,67 @@ export default function MainScreen() {
   const historyBtnRef = useRef<View>(null);
   const restartBtnRef = useRef<View>(null);
 
+  // Tutorial interactive actions: clear on mount so user sees fresh state
+  useEffect(() => {
+    if (!tutorialVisible) return;
+    setSettingsModal(false);
+    setHistoryModal(false);
+    setRestartModal(false);
+    setAddModal(null);
+    setEditModal(null);
+    setRevealedEntry(null);
+    if (entries.length > 0) {
+      restart(); // clears entries, archives old game if any
+    }
+  }, [tutorialVisible]);
+
+  const tutorialActions = useRef<{
+    addCasa50: () => void;
+    addVisitExtra30: () => void;
+    editCasaTo55: () => void;
+    revealEye: () => void;
+    deleteVisitEntry: () => void;
+    addCasaTie: () => void;
+  }>({ addCasa50: () => {}, addVisitExtra30: () => {}, editCasaTo55: () => {}, revealEye: () => {}, deleteVisitEntry: () => {}, addCasaTie: () => {} }).current;
+
+  // Wire tutorial actions to current context/functions
+  useEffect(() => {
+    tutorialActions.addCasa50 = () => {
+      const casa = players[0];
+      if (!casa) return;
+      addEntry(casa.id, 50, false, false);
+    };
+    tutorialActions.addVisitExtra30 = () => {
+      const visit = players[1];
+      if (!visit) return;
+      addEntry(visit.id, 30, true, false);
+    };
+    tutorialActions.editCasaTo55 = () => {
+      const casaEntries = entries.filter((e) => e.playerId === players[0]?.id && !e.deleted);
+      const lastCasa = casaEntries[casaEntries.length - 1];
+      if (lastCasa) editEntry(lastCasa.id, 55);
+    };
+    tutorialActions.revealEye = () => {
+      const casaEntries = entries.filter((e) => e.playerId === players[0]?.id && !e.deleted);
+      const lastCasa = casaEntries[casaEntries.length - 1];
+      if (lastCasa) {
+        setRevealedEntry(lastCasa.id);
+        if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
+        revealTimerRef.current = setTimeout(() => { setRevealedEntry(null); revealTimerRef.current = null; }, 10000);
+      }
+    };
+    tutorialActions.deleteVisitEntry = () => {
+      const visitEntries = entries.filter((e) => e.playerId === players[1]?.id && !e.deleted);
+      const lastVisit = visitEntries[visitEntries.length - 1];
+      if (lastVisit) deleteEntry(lastVisit.id);
+    };
+    tutorialActions.addCasaTie = () => {
+      const casa = players[0];
+      if (!casa) return;
+      addEntry(casa.id, 0, false, true);
+    };
+  }, [players, entries, addEntry, editEntry, deleteEntry]);
+
   const findMesaForQuery = (query: string): number => {
     const q = query.trim().toLowerCase();
     if (!q || mesas <= 0) return -1;
@@ -1369,18 +1430,34 @@ export default function MainScreen() {
       <TutorialOverlay
         visible={tutorialVisible}
         steps={[
-          { targetRef: targetChip200Ref, text: t.tutStep1 },
-          { targetRef: addBtnCasaRef, text: t.tutStep2 },
-          { targetRef: addBtnVisitRef, text: t.tutStep3 },
-          { targetRef: addBtnVisitRef, text: t.tutStep4 },
-          { targetRef: historyBtnRef, text: t.tutStep5 },
-          { targetRef: restartBtnRef, text: t.tutStep6 },
-          { targetRef: settingsBtnRef, text: t.tutStep7 },
-          { targetRef: settingsBtnRef, text: t.tutStep8 },
+          // Step 0: Meta de puntos
+          { targetRef: targetChip200Ref, text: t.tutStep1, action: () => { setTarget(200); }, actionDelay: 500, autoAdvanceDelay: 1200 },
+          // Step 1: +50 para Casa
+          { targetRef: addBtnCasaRef, text: t.tutStep2, action: () => { tutorialActions.addCasa50(); }, actionDelay: 500, autoAdvanceDelay: 1500 },
+          // Step 2: +30 Extra para Visitante
+          { targetRef: addBtnVisitRef, text: t.tutStep3, action: () => { tutorialActions.addVisitExtra30(); }, actionDelay: 500, autoAdvanceDelay: 1500 },
+          // Step 3: Editar Casa 50→55
+          { targetRef: addBtnCasaRef, text: t.tutStep4, action: () => { tutorialActions.editCasaTo55(); }, actionDelay: 500, autoAdvanceDelay: 1500 },
+          // Step 4: Mostrar ojito/historial
+          { targetRef: addBtnCasaRef, text: t.tutStep5, action: () => { tutorialActions.revealEye(); }, actionDelay: 500, autoAdvanceDelay: 1500 },
+          // Step 5: Borrar anotación de Visitante
+          { targetRef: addBtnVisitRef, text: t.tutStep6, action: () => { tutorialActions.deleteVisitEntry(); }, actionDelay: 500, autoAdvanceDelay: 1500 },
+          // Step 6: Empate para Casa
+          { targetRef: addBtnCasaRef, text: t.tutStep7, action: () => { tutorialActions.addCasaTie(); }, actionDelay: 500, autoAdvanceDelay: 1500 },
+          // Step 7: Historial
+          { targetRef: historyBtnRef, text: t.tutStep8 },
+          // Step 8: Reiniciar
+          { targetRef: restartBtnRef, text: t.tutStep9 },
+          // Step 9: Ajustes
+          { targetRef: settingsBtnRef, text: t.tutStep10 },
+          // Step 10: Configuración
+          { targetRef: settingsBtnRef, text: t.tutStep11 },
+          // Step 11: Done
+          { text: t.tutStep12, actionDelay: 0 },
         ]}
         currentStep={tutorialStep}
         onNext={() => {
-          if (tutorialStep >= 7) {
+          if (tutorialStep >= 11) {
             setTutorialVisible(false);
             setTutorialSeen(true);
             AsyncStorage.setItem("domino_tutorial_seen", "true");

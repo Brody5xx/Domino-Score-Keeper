@@ -19,6 +19,7 @@ export interface TutorialStep {
   text: string;
   action?: () => void;
   actionDelay?: number;
+  autoAdvanceDelay?: number; // ms after action to auto-call onNext
 }
 
 interface TutorialOverlayProps {
@@ -50,7 +51,9 @@ export default function TutorialOverlay({
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null);
   const [tooltipPos, setTooltipPos] = useState<"top" | "bottom">("bottom");
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const actionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const onNextRef = useRef(onNext);
+  onNextRef.current = onNext;
 
   const measureTarget = useCallback(
     (ref: React.RefObject<View | null>) => {
@@ -98,20 +101,25 @@ export default function TutorialOverlay({
     }).start();
   }, [visible, currentStep, fadeAnim]);
 
-  // Execute step action (app presses button automatically)
+  // Execute step action (app presses button automatically) then optionally auto-advance
   useEffect(() => {
     if (!visible) return;
     const step = steps[currentStep];
-    if (step?.action && typeof step.actionDelay === "number") {
-      actionTimerRef.current = setTimeout(() => {
-        step.action?.();
-      }, step.actionDelay);
-    }
-    return () => {
-      if (actionTimerRef.current) {
-        clearTimeout(actionTimerRef.current);
-        actionTimerRef.current = null;
+    if (!step?.action) return;
+    const delay = step.actionDelay ?? 0;
+    const actionTimer = setTimeout(() => {
+      step.action?.();
+      if (typeof step.autoAdvanceDelay === "number" && step.autoAdvanceDelay >= 0) {
+        const advanceTimer = setTimeout(() => {
+          onNextRef.current();
+        }, step.autoAdvanceDelay);
+        timersRef.current.push(advanceTimer);
       }
+    }, delay);
+    timersRef.current.push(actionTimer);
+    return () => {
+      timersRef.current.forEach(clearTimeout);
+      timersRef.current = [];
     };
   }, [visible, currentStep, steps]);
 
