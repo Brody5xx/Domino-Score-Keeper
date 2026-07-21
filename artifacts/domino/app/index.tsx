@@ -97,6 +97,7 @@ export default function MainScreen() {
   const [searchNotFound, setSearchNotFound] = useState(false);
   const [highlightedMesa, setHighlightedMesa] = useState<number | null>(null);
   const [revealedEntry, setRevealedEntry] = useState<string | null>(null);
+  const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const mesaPositions = useRef<Record<number, number>>({});
   const highlightAnim = useRef(new Animated.Value(0)).current;
@@ -393,8 +394,18 @@ export default function MainScreen() {
                     {entry.edited ? (
                       <Pressable
                         style={styles.editedBadge}
-                        onPressIn={() => { setRevealedEntry(entry.id); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                        onPressOut={() => setRevealedEntry(null)}
+                        onPress={() => {
+                          if (revealTimerRef.current) {
+                            clearTimeout(revealTimerRef.current);
+                            revealTimerRef.current = null;
+                          }
+                          setRevealedEntry(entry.id);
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          revealTimerRef.current = setTimeout(() => {
+                            setRevealedEntry(null);
+                            revealTimerRef.current = null;
+                          }, 10000);
+                        }}
                         hitSlop={4}
                       >
                         <Feather name="eye" size={10} color={colors.mutedForeground} />
