@@ -3,18 +3,18 @@ import {
   Animated,
   Dimensions,
   Easing,
+  Modal,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
 import type { Translations } from "@/constants/translations";
 import { useColors } from "@/hooks/useColors";
 
 const SCREEN = Dimensions.get("window");
 
-interface TutorialStep {
+export interface TutorialStep {
   targetRef?: React.RefObject<View | null>;
   text: string;
   action?: () => void;
@@ -62,7 +62,6 @@ export default function TutorialOverlay({
         (x: number, y: number, width: number, height: number) => {
           const rect = { x, y, width, height };
           setTargetRect(rect);
-          // Decide tooltip position: if target is in bottom half, tooltip goes above
           const screenCenterY = SCREEN.height / 2;
           setTooltipPos(y + height / 2 > screenCenterY ? "top" : "bottom");
         }
@@ -71,7 +70,6 @@ export default function TutorialOverlay({
     []
   );
 
-  // Measure target when step changes
   useEffect(() => {
     if (!visible) {
       setTargetRect(null);
@@ -79,15 +77,13 @@ export default function TutorialOverlay({
     }
     const step = steps[currentStep];
     if (step?.targetRef) {
-      // Small delay to allow layout to settle
-      const timer = setTimeout(() => measureTarget(step.targetRef!), 100);
+      const timer = setTimeout(() => measureTarget(step.targetRef!), 150);
       return () => clearTimeout(timer);
     } else {
       setTargetRect(null);
     }
   }, [visible, currentStep, steps, measureTarget]);
 
-  // Fade animation on step change
   useEffect(() => {
     if (!visible) {
       fadeAnim.setValue(0);
@@ -102,7 +98,7 @@ export default function TutorialOverlay({
     }).start();
   }, [visible, currentStep, fadeAnim]);
 
-  // Execute auto-action after delay
+  // Execute step action (app presses button automatically)
   useEffect(() => {
     if (!visible) return;
     const step = steps[currentStep];
@@ -122,143 +118,151 @@ export default function TutorialOverlay({
   if (!visible || currentStep >= steps.length) return null;
 
   const step = steps[currentStep];
-  const padding = 6;
+  const hasTarget = targetRect !== null;
+  const padding = 8;
 
-  // Cutout coordinates (relative to screen)
-  const cx = targetRect ? targetRect.x - padding : SCREEN.width / 2 - 60;
-  const cy = targetRect ? targetRect.y - padding : SCREEN.height / 2 - 30;
-  const cw = targetRect ? targetRect.width + padding * 2 : 120;
-  const ch = targetRect ? targetRect.height + padding * 2 : 60;
+  // Cutout coords
+  const cx = hasTarget ? targetRect!.x - padding : 0;
+  const cy = hasTarget ? targetRect!.y - padding : 0;
+  const cw = hasTarget ? targetRect!.width + padding * 2 : SCREEN.width;
+  const ch = hasTarget ? targetRect!.height + padding * 2 : SCREEN.height;
 
   const topBarH = Math.max(0, cy);
   const bottomBarY = Math.min(SCREEN.height, cy + ch);
-  const leftBarW = Math.max(0, cx);
-  const rightBarX = Math.min(SCREEN.width, cx + cw);
-  const midBarH = Math.max(0, ch);
+  const leftBarW = hasTarget ? Math.max(0, cx) : 0;
+  const rightBarX = hasTarget ? Math.min(SCREEN.width, cx + cw) : SCREEN.width;
+  const midBarH = hasTarget ? Math.max(0, ch) : 0;
 
-  // Tooltip position
-  const tooltipBelow = cy + ch + 20;
-  const tooltipAbove = cy - 140;
-  const tooltipY = tooltipPos === "bottom" ? tooltipBelow : tooltipAbove;
+  // Tooltip placement
+  const tooltipBelow = cy + ch + 24;
+  const tooltipAbove = cy - 150;
+  let tooltipY = hasTarget
+    ? (tooltipPos === "bottom" ? tooltipBelow : tooltipAbove)
+    : SCREEN.height / 2 - 100;
+  tooltipY = Math.max(60, Math.min(tooltipY, SCREEN.height - 200));
 
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-      {/* Dark overlay with cutout */}
-      <Animated.View style={[StyleSheet.absoluteFill, { opacity: fadeAnim }]} pointerEvents="auto">
-        {/* Top dark bar */}
-        <View style={[styles.bar, { top: 0, left: 0, right: 0, height: topBarH }]} />
-        {/* Bottom dark bar */}
-        <View style={[styles.bar, { top: bottomBarY, left: 0, right: 0, bottom: 0 }]} />
-        {/* Left dark bar (mid section) */}
-        <View style={[styles.bar, { top: topBarH, left: 0, width: leftBarW, height: midBarH }]} />
-        {/* Right dark bar (mid section) */}
-        <View style={[styles.bar, { top: topBarH, left: rightBarX, right: 0, height: midBarH }]} />
+    <Modal visible={visible} transparent animationType="none">
+      <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+        <Animated.View style={[StyleSheet.absoluteFill, { opacity: fadeAnim }]} pointerEvents="auto">
+          {/* Top bar */}
+          <View style={[styles.bar, { top: 0, left: 0, right: 0, height: topBarH }]} />
+          {/* Bottom bar */}
+          <View style={[styles.bar, { top: bottomBarY, left: 0, right: 0, bottom: 0 }]} />
+          {/* Left middle bar */}
+          <View style={[styles.bar, { top: topBarH, left: 0, width: leftBarW, height: midBarH }]} />
+          {/* Right middle bar */}
+          <View style={[styles.bar, { top: topBarH, left: rightBarX, right: 0, height: midBarH }]} />
 
-        {/* Highlight border around target */}
-        {targetRect && (
-          <View
-            style={{
-              position: "absolute",
-              left: cx,
-              top: cy,
-              width: cw,
-              height: ch,
-              borderWidth: 3,
-              borderColor: colors.primary,
-              borderRadius: 12,
-              backgroundColor: "transparent",
-            }}
-          />
-        )}
+          {/* Glow border + pulsing dot around target */}
+          {hasTarget && (
+            <>
+              <View style={{
+                position: "absolute",
+                left: cx, top: cy, width: cw, height: ch,
+                borderWidth: 3, borderColor: colors.primary,
+                borderRadius: 14, backgroundColor: "transparent",
+              }} />
+              <View style={{
+                position: "absolute",
+                left: cx + 2, top: cy + 2,
+                width: cw - 4, height: ch - 4,
+                borderWidth: 1, borderColor: colors.primary + "66",
+                borderRadius: 12, backgroundColor: "transparent",
+              }} />
+              <PulsingDot x={cx + cw / 2} y={cy + ch / 2} color={colors.primary} />
+            </>
+          )}
 
-        {/* Pulsing circle indicator on target center */}
-        {targetRect && <PulsingDot x={cx + cw / 2} y={cy + ch / 2} color={colors.primary} />}
-
-        {/* Tooltip card */}
-        <View
-          style={[
+          {/* Tooltip card */}
+          <View style={[
             styles.tooltip,
             {
-              top: Math.max(16, Math.min(tooltipY, SCREEN.height - 180)),
-              left: 24,
-              right: 24,
+              top: tooltipY,
+              left: 22, right: 22,
               backgroundColor: colors.card,
               borderColor: colors.border,
             },
-          ]}
-        >
-          {/* Arrow pointing to target */}
-          <View
-            style={[
-              styles.arrow,
-              tooltipPos === "bottom"
-                ? { top: -8, borderBottomColor: colors.card }
-                : { bottom: -8, borderTopColor: colors.card },
-              tooltipPos === "bottom"
-                ? { borderLeftColor: "transparent", borderRightColor: "transparent", borderTopColor: "transparent" }
-                : { borderLeftColor: "transparent", borderRightColor: "transparent", borderBottomColor: "transparent" },
-            ]}
-          />
+          ]}>
+            {hasTarget && (
+              <View style={[
+                styles.arrow,
+                tooltipPos === "bottom"
+                  ? {
+                      top: -10,
+                      borderBottomColor: colors.card,
+                      borderTopColor: "transparent",
+                      borderLeftColor: "transparent",
+                      borderRightColor: "transparent",
+                    }
+                  : {
+                      bottom: -10,
+                      borderTopColor: colors.card,
+                      borderBottomColor: "transparent",
+                      borderLeftColor: "transparent",
+                      borderRightColor: "transparent",
+                    },
+              ]} />
+            )}
 
-          <Text style={[styles.tooltipText, { color: colors.foreground }]}>
-            {step.text}
-          </Text>
+            <Text style={[styles.tooltipText, { color: colors.foreground }]}>
+              {step.text}
+            </Text>
 
-          {/* Navigation buttons */}
-          <View style={styles.tooltipBtns}>
-            <Pressable
-              style={[styles.tooltipBtn, styles.tooltipBtnSecondary, { borderColor: colors.border }]}
-              onPress={onSkip}
-            >
-              <Text style={[styles.tooltipBtnText, { color: colors.mutedForeground }]}>
-                {t.tutorialSkip}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={[styles.tooltipBtn, styles.tooltipBtnPrimary, { backgroundColor: colors.primary }]}
-              onPress={onNext}
-            >
-              <Text style={[styles.tooltipBtnText, { color: colors.primaryForeground }]}>
-                {currentStep < steps.length - 1 ? t.tutorialNext : t.tutorialDone}
-              </Text>
-            </Pressable>
+            <View style={styles.tooltipBtns}>
+              <Pressable
+                style={[styles.tooltipBtn, styles.tooltipBtnSecondary, { borderColor: colors.border }]}
+                onPress={onSkip}
+              >
+                <Text style={[styles.tooltipBtnText, { color: colors.mutedForeground }]}>
+                  {t.tutorialSkip}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={[styles.tooltipBtn, styles.tooltipBtnPrimary, { backgroundColor: colors.primary }]}
+                onPress={onNext}
+              >
+                <Text style={[styles.tooltipBtnText, { color: colors.primaryForeground }]}>
+                  {currentStep < steps.length - 1 ? t.tutorialNext : t.tutorialDone}
+                </Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.dotsRow}>
+              {steps.map((_, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.dot,
+                    {
+                      backgroundColor:
+                        i === currentStep ? colors.primary : colors.mutedForeground + "44",
+                    },
+                  ]}
+                />
+              ))}
+            </View>
           </View>
-
-          {/* Step dots */}
-          <View style={styles.dotsRow}>
-            {steps.map((_, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.dot,
-                  {
-                    backgroundColor:
-                      i === currentStep ? colors.primary : colors.mutedForeground + "44",
-                  },
-                ]}
-              />
-            ))}
-          </View>
-        </View>
-      </Animated.View>
-    </View>
+        </Animated.View>
+      </View>
+    </Modal>
   );
 }
 
 function PulsingDot({ x, y, color }: { x: number; y: number; color: string }) {
   const scale = useRef(new Animated.Value(1)).current;
-  const opacity = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(0.6)).current;
 
   useEffect(() => {
     const anim = Animated.loop(
       Animated.parallel([
         Animated.sequence([
-          Animated.timing(scale, { toValue: 2, duration: 800, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+          Animated.timing(scale, { toValue: 2.5, duration: 900, easing: Easing.out(Easing.ease), useNativeDriver: true }),
           Animated.timing(scale, { toValue: 1, duration: 0, useNativeDriver: true }),
         ]),
         Animated.sequence([
-          Animated.timing(opacity, { toValue: 0, duration: 800, easing: Easing.out(Easing.ease), useNativeDriver: true }),
-          Animated.timing(opacity, { toValue: 1, duration: 0, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0, duration: 900, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0.6, duration: 0, useNativeDriver: true }),
         ]),
       ])
     );
@@ -270,14 +274,10 @@ function PulsingDot({ x, y, color }: { x: number; y: number; color: string }) {
     <Animated.View
       style={{
         position: "absolute",
-        left: x - 12,
-        top: y - 12,
-        width: 24,
-        height: 24,
-        borderRadius: 12,
+        left: x - 14, top: y - 14,
+        width: 28, height: 28, borderRadius: 14,
         backgroundColor: color,
-        transform: [{ scale }],
-        opacity,
+        transform: [{ scale }], opacity,
       }}
     />
   );
@@ -286,20 +286,24 @@ function PulsingDot({ x, y, color }: { x: number; y: number; color: string }) {
 const styles = StyleSheet.create({
   bar: {
     position: "absolute",
-    backgroundColor: "rgba(0,0,0,0.78)",
+    backgroundColor: "rgba(0,0,0,0.82)",
   },
   tooltip: {
     position: "absolute",
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
-    padding: 18,
+    padding: 20,
     gap: 14,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 20,
   },
   arrow: {
     position: "absolute",
-    width: 0,
-    height: 0,
+    width: 0, height: 0,
     borderLeftWidth: 10,
     borderRightWidth: 10,
     borderTopWidth: 10,

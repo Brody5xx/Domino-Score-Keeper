@@ -131,17 +131,14 @@ const es = {
   tutorialShowAgain: "Ver tutorial",
   tutorialDone: "Entendido",
   // Spotlight tutorial steps
-  tutStep1: "Elige cuántos puntos para ganar: toca 100 o 200 arriba.",
-  tutStep2: "Toca el botón + dentro de cada jugador para anotar puntos de una jugada.",
-  tutStep3: "Escribe los puntos y toca Agregar. Activa 'Para ambos' si ganaron los dos jugadores de la misma pareja.",
-  tutStep4: "Activa Extras cuando ganas la mano con piedras sobrantes. Toca Empaté cuando nadie gana.",
-  tutStep5: "Aquí ves cada anotación. El lápiz corrige, la papelera borra. Los cambios quedan guardados.",
-  tutStep6: "Corrige puntos y guarda. El historial de valores anteriores se guarda automáticamente.",
-  tutStep7: "Toca el ojito junto a una anotación editada para ver todos los valores anteriores.",
-  tutStep8: "Historial muestra todas las jugadas en orden cronológico, con fecha y hora.",
-  tutStep9: "Reinicia para una partida nueva. La anterior se guarda automáticamente en Partidas anteriores.",
-  tutStep10: "La tuerca abre ajustes: cambia jugadores, mesas, idioma y fondo de pantalla.",
-  tutStep11: "En Ajustes elige cuántos jugadores (2-8) y cuántas mesas (0-20).",
+  tutStep1: "Elige la meta de puntos: toca 100 o 200 arriba. Cuando un jugador llega, gana la partida.",
+  tutStep2: "Toca el + dentro de cada jugador para abrir el panel de anotación. Escribe los puntos, activa Extras o Empate si aplica, y toca Agregar.",
+  tutStep3: "Cada anotación aparece aquí. El lápiz (✎) edita los puntos. La papelera (🗑) los borra. Todo queda guardado.",
+  tutStep4: "Si editas una anotación, aparece el ojito (👁). Tócalo para ver los valores anteriores. Se cierra solo en 10 segundos.",
+  tutStep5: "Historial guarda todas las partidas anteriores con fecha, jugadores y puntajes.",
+  tutStep6: "Reinicia para comenzar una partida nueva. La anterior se guarda automáticamente en Partidas anteriores.",
+  tutStep7: "La tuerca abre Ajustes: cambia jugadores, mesas, idioma y fondo de pantalla.",
+  tutStep8: "En Ajustes elige de 2 a 8 jugadores y de 0 a 20 mesas. También puedes poner tu foto de fondo.",
 };
 
 const en = {
@@ -265,17 +262,14 @@ const en = {
   tutorialShowAgain: "Show tutorial",
   tutorialDone: "Got it",
   // Spotlight tutorial steps
-  tutStep1: "Choose how many points to win: tap 100 or 200 at the top.",
-  tutStep2: "Tap the + button inside each player card to add points from a play.",
-  tutStep3: "Type the points and tap Add. Enable 'For both' if both players on the same pair won.",
-  tutStep4: "Enable Extras when you win with leftover stones. Tap Tie when nobody wins.",
-  tutStep5: "Here you see each entry. The pencil edits, the trash deletes. Changes are saved automatically.",
-  tutStep6: "Correct the points and save. Previous values are automatically recorded in history.",
-  tutStep7: "Tap the eye icon next to an edited entry to see all previous values.",
-  tutStep8: "History shows all plays in chronological order, with date and time.",
-  tutStep9: "Restart for a new game. The previous one is automatically saved in Previous Games.",
-  tutStep10: "The gear opens settings: change players, tables, language and background.",
-  tutStep11: "In Settings choose how many players (2-8) and how many tables (0-20).",
+  tutStep1: "Choose the points target: tap 100 or 200 at the top. When a player reaches it, they win.",
+  tutStep2: "Tap the + inside each player card to open the scoring panel. Type points, enable Extra or Tie if needed, then tap Add.",
+  tutStep3: "Each entry appears here. The pencil (✎) edits points. The trash (🗑) deletes them. Everything is saved.",
+  tutStep4: "If you edit an entry, the eye (👁) appears. Tap it to see previous values. It auto-closes after 10 seconds.",
+  tutStep5: "History keeps all previous games with date, players, and scores.",
+  tutStep6: "Restart to begin a new game. The previous one is automatically saved in Previous Games.",
+  tutStep7: "The gear opens Settings: change players, tables, language, and background.",
+  tutStep8: "In Settings choose 2–8 players and 0–20 tables. You can also set your own photo as background.",
 };
 
 export type Translations = typeof es;

@@ -101,69 +101,15 @@ export default function MainScreen() {
     });
   }, []);
 
-  // Create demo entries when tutorial starts so the user can see real features
+  // Close any modals when tutorial finishes
   useEffect(() => {
-    if (!tutorialVisible) return;
-    if (entries.length > 0 || players.length < 2) return;
-    // Add entries with delay so state settles
-    const t1 = setTimeout(() => addEntry(players[0].id, 50), 200);
-    const t2 = setTimeout(() => addEntry(players[1].id, 30), 400);
-    const t3 = setTimeout(() => {
-      const casaEntry = entries.find((e) => e.playerId === players[0].id);
-      if (casaEntry) editEntry(casaEntry.id, 55);
-    }, 600);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [tutorialVisible]);
-
-  // Tutorial step actions — open/close modals automatically
-  useEffect(() => {
-    if (!tutorialVisible) return;
-    const actions: Record<number, () => void> = {
-      2: () => {
-        // Step 3: open add modal for Casa
-        if (players[0]) {
-          setAddModal({ playerId: players[0].id });
-          setPointsInput("");
-          setExtraMode(false);
-          setForBoth(false);
-        }
-      },
-      5: () => {
-        // Step 6: open edit modal for first Casa entry
-        const casaEntry = entries.find((e) => e.playerId === players[0]?.id);
-        if (casaEntry) {
-          setEditModal({ entryId: casaEntry.id, currentPoints: casaEntry.points });
-          setEditInput(String(casaEntry.points));
-        }
-      },
-      7: () => {
-        // Step 8: toggle eye reveal for edited Casa entry
-        const casaEntry = entries.find((e) => e.playerId === players[0]?.id && e.edited);
-        if (casaEntry) setRevealedEntry(casaEntry.id);
-      },
-      9: () => {
-        // Step 10: open settings
-        setSettingsModal(true);
-      },
-    };
-    const action = actions[tutorialStep];
-    if (action) {
-      const timer = setTimeout(action, 600);
-      return () => clearTimeout(timer);
-    }
-  }, [tutorialStep, tutorialVisible]);
-
-  // Close modals when leaving modal-specific steps
-  useEffect(() => {
-    if (!tutorialVisible) return;
-    const modalSteps = [2, 5, 7, 9];
-    if (!modalSteps.includes(tutorialStep)) {
+    if (!tutorialVisible) {
       setAddModal(null);
       setEditModal(null);
       setSettingsModal(false);
       setRevealedEntry(null);
     }
-  }, [tutorialStep, tutorialVisible]);
+  }, [tutorialVisible]);
 
   const [renameModal, setRenameModal] = useState<{ playerId: string; value: string; color: string } | null>(null);
   const [restartModal, setRestartModal] = useState(false);
@@ -1425,23 +1371,19 @@ export default function MainScreen() {
         steps={[
           { targetRef: targetChip200Ref, text: t.tutStep1 },
           { targetRef: addBtnCasaRef, text: t.tutStep2 },
-          { text: t.tutStep3, actionDelay: 0 },
-          { text: t.tutStep4, actionDelay: 0 },
-          { targetRef: addBtnVisitRef, text: t.tutStep5 },
-          { text: t.tutStep6, actionDelay: 0 },
-          { text: t.tutStep7, actionDelay: 0 },
-          { targetRef: historyBtnRef, text: t.tutStep8 },
-          { targetRef: restartBtnRef, text: t.tutStep9 },
-          { targetRef: settingsBtnRef, text: t.tutStep10 },
-          { text: t.tutStep11, actionDelay: 0 },
+          { targetRef: addBtnVisitRef, text: t.tutStep3 },
+          { targetRef: addBtnVisitRef, text: t.tutStep4 },
+          { targetRef: historyBtnRef, text: t.tutStep5 },
+          { targetRef: restartBtnRef, text: t.tutStep6 },
+          { targetRef: settingsBtnRef, text: t.tutStep7 },
+          { targetRef: settingsBtnRef, text: t.tutStep8 },
         ]}
         currentStep={tutorialStep}
         onNext={() => {
-          if (tutorialStep >= 10) {
+          if (tutorialStep >= 7) {
             setTutorialVisible(false);
             setTutorialSeen(true);
             AsyncStorage.setItem("domino_tutorial_seen", "true");
-            restart(); // clean up demo entries
           } else {
             setTutorialStep(tutorialStep + 1);
           }
@@ -1450,7 +1392,6 @@ export default function MainScreen() {
           setTutorialVisible(false);
           setTutorialSeen(true);
           AsyncStorage.setItem("domino_tutorial_seen", "true");
-          restart(); // clean up demo entries
         }}
         t={t}
         colors={colors}
