@@ -399,12 +399,16 @@ export default function MainScreen() {
                             clearTimeout(revealTimerRef.current);
                             revealTimerRef.current = null;
                           }
-                          setRevealedEntry(entry.id);
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          revealTimerRef.current = setTimeout(() => {
+                          if (revealedEntry === entry.id) {
                             setRevealedEntry(null);
-                            revealTimerRef.current = null;
-                          }, 10000);
+                          } else {
+                            setRevealedEntry(entry.id);
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            revealTimerRef.current = setTimeout(() => {
+                              setRevealedEntry(null);
+                              revealTimerRef.current = null;
+                            }, 10000);
+                          }
                         }}
                         hitSlop={4}
                       >

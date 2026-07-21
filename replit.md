@@ -36,6 +36,11 @@ _Describe the high-level user-facing capabilities of this app once they exist._
 
 _Populate as you build — explicit user instructions worth remembering across sessions._
 
+- **Language**: UI supports Spanish (es) and English (en); user writes/prefers Spanish.
+- **Eye icon reveal behavior**: Single tap toggles reveal of `originalPoints` for edited entries; tap again to hide. A 10-second auto-hide timer runs as a fallback so the user doesn't forget to restore the display before showing scores to others.
+- **Build approach**: One feature at a time; run `pnpm --filter @workspace/domino run typecheck` + architect code review after substantive features.
+- **Tournament mode**: App supports tournament/scoring mode (mesas, player caps, etc.).
+
 ## Gotchas
 
 _Populate as you build — sharp edges, "always run X before Y" rules._
