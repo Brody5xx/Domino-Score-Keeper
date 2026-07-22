@@ -115,6 +115,8 @@ export default function MainScreen() {
   const settingsBtnRef = useRef<View>(null);
   const historyBtnRef = useRef<View>(null);
   const restartBtnRef = useRef<View>(null);
+  const casaFirstEntryRef = useRef<View>(null);
+  const visitFirstEntryRef = useRef<View>(null);
 
   // Load tutorial seen state on mount
   useEffect(() => {
@@ -154,10 +156,10 @@ export default function MainScreen() {
     { targetRef: targetChip200Ref, text: t.tutStep1, actionDelay: 500, autoAdvanceDelay: 1200 },
     { targetRef: addBtnCasaRef, text: t.tutStep2, actionDelay: 500, autoAdvanceDelay: 1500 },
     { targetRef: addBtnVisitRef, text: t.tutStep3, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: addBtnCasaRef, text: t.tutStep4, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: addBtnCasaRef, text: t.tutStep5, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: addBtnVisitRef, text: t.tutStep6, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: addBtnCasaRef, text: t.tutStep7, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: casaFirstEntryRef, text: t.tutStep4, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: casaFirstEntryRef, text: t.tutStep5, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: visitFirstEntryRef, text: t.tutStep6, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: casaFirstEntryRef, text: t.tutStep7, actionDelay: 500, autoAdvanceDelay: 1500 },
     { targetRef: historyBtnRef, text: t.tutStep8 },
     { targetRef: restartBtnRef, text: t.tutStep9 },
     { targetRef: settingsBtnRef, text: t.tutStep10 },
@@ -516,6 +518,7 @@ export default function MainScreen() {
                 playerColor={player.color}
                 isOpen={revealedEntry === entry.id}
                 isLast={idx === arr.length - 1}
+                rowRef={idx === 0 ? (player.id === players[0]?.id ? casaFirstEntryRef : player.id === players[1]?.id ? visitFirstEntryRef : undefined) : undefined}
                 onToggleReveal={() => {
                   if (revealTimerRef.current) {
                     clearTimeout(revealTimerRef.current);

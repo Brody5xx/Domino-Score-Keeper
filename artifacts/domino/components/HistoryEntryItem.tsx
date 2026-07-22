@@ -17,6 +17,7 @@ interface Props {
   playerColor: string;
   isOpen: boolean;
   isLast?: boolean;
+  rowRef?: React.RefObject<View | null>;
   onToggleReveal: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -35,6 +36,7 @@ export default function HistoryEntryItem({
   playerColor,
   isOpen,
   isLast,
+  rowRef,
   onToggleReveal,
   onEdit,
   onDelete,
@@ -62,7 +64,7 @@ export default function HistoryEntryItem({
   });
 
   return (
-    <View style={[styles.entryContainer, !isLast && { borderBottomColor: colors.mutedForeground + "33" }]}>
+    <View ref={rowRef} style={[styles.entryContainer, !isLast && { borderBottomColor: colors.mutedForeground + "33" }]}>
       <View style={styles.cardEntryRow}>
         <View style={[styles.cardEntryLeft, { flexWrap: "wrap", alignItems: "center" }]}>
           <Text style={styles.cardEntryNum}>{num}</Text>
