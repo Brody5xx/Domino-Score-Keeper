@@ -90,11 +90,15 @@ export default function TutorialOverlay({
     return () => { pulse.stopAnimation(); };
   }, [visible, currentStep]);
 
-  const tooltipY = useCallback(() => {
-    if (!targetLayout) return SCREEN.height * 0.35;
-    const below = targetLayout.y + targetLayout.height + 16;
-    if (below + 160 < SCREEN.height) return below;
-    return Math.max(16, targetLayout.y - 160);
+  const tooltipLayout = useCallback(() => {
+    if (!targetLayout) return { top: SCREEN.height * 0.35, arrowAtTop: true };
+    const targetCenter = targetLayout.y + targetLayout.height / 2;
+    // If target is in upper half, place tooltip at bottom so user sees changes
+    if (targetCenter < SCREEN.height * 0.5) {
+      return { top: SCREEN.height - 210, arrowAtTop: true };
+    }
+    // Target in lower half: place tooltip at top
+    return { top: 20, arrowAtTop: false };
   }, [targetLayout]);
 
   if (!visible || !step) return null;
@@ -140,11 +144,14 @@ export default function TutorialOverlay({
         </View>
 
         {/* Tooltip */}
+        {(() => {
+          const { top } = tooltipLayout();
+          return (
         <View
           style={[
             styles.tooltip,
             {
-              top: tooltipY(),
+              top,
               backgroundColor: colors.card,
               borderColor: colors.border,
             },
@@ -192,6 +199,8 @@ export default function TutorialOverlay({
             ))}
           </View>
         </View>
+          );
+        })()}
       </View>
     </Modal>
   );

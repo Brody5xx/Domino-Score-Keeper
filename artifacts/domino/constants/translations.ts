@@ -122,7 +122,7 @@ const es = {
   // Spotlight tutorial steps
   tutStep1: "Elige la meta de puntos: toca 100 o 200 arriba. Cuando un jugador llega, gana la partida.",
   tutStep2: "\u00a1+50 para Casa! Toca + para abrir el panel, escribe puntos y toca Agregar.",
-  tutStep3: "\u00a1+30 Extra para Visitante! Activa Extras cuando ganas la mano con piedras sobrantes.",
+  tutStep3: "\u00a1+30 Extra para Visitante! Activa Extras para sumar puntos adicionales durante la partida.",
   tutStep4: "\u00a1Editado! La app cambi\u00f3 50 por 55. El historial de valores anteriores se guarda autom\u00e1ticamente.",
   tutStep5: "El ojito muestra el historial: antes era 50, ahora es 55. Se cierra solo en 10 segundos.",
   tutStep6: "\u00a1Borrado! La app tach\u00f3 la anotaci\u00f3n de Visitante. Recup\u00e9rala con \u2197.",
@@ -256,7 +256,7 @@ const en = {
   // Spotlight tutorial steps
   tutStep1: "Choose the points target: tap 100 or 200 at the top. When a player reaches it, they win.",
   tutStep2: "+50 for House! Tap + to open the panel, type points, then tap Add.",
-  tutStep3: "+30 Extra for Visitors! Enable Extras when you win the hand with leftover stones.",
+  tutStep3: "+30 Extra for Visitors! Enable Extras to add bonus points during the match.",
   tutStep4: "Edited! The app changed 50 to 55. Previous values are automatically recorded.",
   tutStep5: "The eye shows the history: it was 50, now it's 55. It auto-closes after 10 seconds.",
   tutStep6: "Deleted! The app crossed out Visitors' entry. Restore it with \u2197.",
