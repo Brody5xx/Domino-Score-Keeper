@@ -120,6 +120,11 @@ export default function MainScreen() {
   const visitFirstEntryRef = useRef<View>(null);
   const visitDeletedEntryRef = useRef<View>(null);
   const casaEyeRef = useRef<View>(null);
+  // Add-modal interior refs
+  const addModalInputRef = useRef<View>(null);
+  const addModalExtraToggleRef = useRef<View>(null);
+  const addModalTieBtnRef = useRef<View>(null);
+  const addModalAddBtnRef = useRef<View>(null);
 
   // Load tutorial seen state on mount
   useEffect(() => {
@@ -158,18 +163,24 @@ export default function MainScreen() {
   const tutorialSteps: TutorialStep[] = [
     { text: t.tutStep0 },
     { targetRef: targetChip200Ref, text: t.tutStep1, actionDelay: 500 },
-    { targetRef: customTargetRef, text: t.tutStep1b, actionDelay: 500 },
-    { targetRef: addBtnCasaRef, text: t.tutStep2, actionDelay: 500 },
-    { targetRef: visitFirstEntryRef, text: t.tutStep3, actionDelay: 500 },
-    { targetRef: casaFirstEntryRef, text: t.tutStep4, actionDelay: 500 },
-    { targetRef: casaEyeRef, text: t.tutStep5, actionDelay: 500 },
-    { targetRef: visitDeletedEntryRef, text: t.tutStep6, actionDelay: 500 },
-    { targetRef: casaFirstEntryRef, text: t.tutStep7, actionDelay: 500 },
-    { targetRef: restartBtnRef, text: t.tutStep9, actionDelay: 500 },
-    { targetRef: historyBtnRef, text: t.tutStep8 },
-    { targetRef: settingsBtnRef, text: t.tutStep10 },
-    { targetRef: settingsBtnRef, text: t.tutStep11 },
-    { text: t.tutStep12 },
+    { targetRef: customTargetRef, text: t.tutStep2, actionDelay: 500 },
+    { targetRef: addBtnCasaRef, text: t.tutStep3, actionDelay: 500 },
+    { targetRef: addModalInputRef, text: t.tutStep4, actionDelay: 500 },
+    { targetRef: addModalAddBtnRef, text: t.tutStep5, actionDelay: 500 },
+    { targetRef: addBtnVisitRef, text: t.tutStep6, actionDelay: 500 },
+    { targetRef: addModalExtraToggleRef, text: t.tutStep7, actionDelay: 500 },
+    { targetRef: addModalInputRef, text: t.tutStep8, actionDelay: 500 },
+    { targetRef: addModalAddBtnRef, text: t.tutStep9, actionDelay: 500 },
+    { targetRef: casaFirstEntryRef, text: t.tutStep10, actionDelay: 500 },
+    { targetRef: casaEyeRef, text: t.tutStep11, actionDelay: 500 },
+    { targetRef: visitDeletedEntryRef, text: t.tutStep12, actionDelay: 500 },
+    { targetRef: addBtnCasaRef, text: t.tutStep13, actionDelay: 500 },
+    { targetRef: addModalTieBtnRef, text: t.tutStep14, actionDelay: 500 },
+    { targetRef: historyBtnRef, text: t.tutStep15 },
+    { targetRef: restartBtnRef, text: t.tutStep16, actionDelay: 500 },
+    { targetRef: settingsBtnRef, text: t.tutStep17 },
+    { targetRef: settingsBtnRef, text: t.tutStep18 },
+    { text: t.tutStep19 },
   ];
 
   // Execute tutorial actions based on step
@@ -184,24 +195,40 @@ export default function MainScreen() {
       const visit = players[1];
       switch (tutorialStep) {
         case 0:
-          // Welcome step: no action, just the greeting
           break;
         case 1:
           setTarget(200);
           break;
         case 2:
-          if (casa) addEntry(casa.id, 50, false, false);
           break;
         case 3:
-          if (visit) addEntry(visit.id, 30, true, false);
+          if (casa) { setAddModal({ playerId: casa.id }); setPointsInput(""); setExtraMode(false); setForBoth(false); }
           break;
-        case 4: {
+        case 4:
+          setPointsInput("50");
+          break;
+        case 5:
+          if (casa) { addEntry(casa.id, 50, false, false); closeAddModal(); }
+          break;
+        case 6:
+          if (visit) { setAddModal({ playerId: visit.id }); setPointsInput(""); setExtraMode(false); setForBoth(false); }
+          break;
+        case 7:
+          setExtraMode(true);
+          break;
+        case 8:
+          setPointsInput("30");
+          break;
+        case 9:
+          if (visit) { addEntry(visit.id, 30, true, false); closeAddModal(); }
+          break;
+        case 10: {
           const casaEntries = entries.filter((e) => e.playerId === players[0]?.id && !e.deleted);
           const lastCasa = casaEntries[casaEntries.length - 1];
           if (lastCasa) editEntry(lastCasa.id, 55);
           break;
         }
-        case 5: {
+        case 11: {
           const casaEntries = entries.filter((e) => e.playerId === players[0]?.id && !e.deleted);
           const lastCasa = casaEntries[casaEntries.length - 1];
           if (lastCasa) {
@@ -211,14 +238,17 @@ export default function MainScreen() {
           }
           break;
         }
-        case 6: {
+        case 12: {
           const visitEntries = entries.filter((e) => e.playerId === players[1]?.id && !e.deleted);
           const lastVisit = visitEntries[visitEntries.length - 1];
           if (lastVisit) deleteEntry(lastVisit.id);
           break;
         }
-        case 7:
-          if (casa) addEntry(casa.id, 0, false, true);
+        case 13:
+          if (casa) { setAddModal({ playerId: casa.id }); setPointsInput(""); setExtraMode(false); setForBoth(false); }
+          break;
+        case 14:
+          if (casa) { addEntry(casa.id, 0, false, true); closeAddModal(); }
           break;
       }
     };
@@ -822,6 +852,7 @@ export default function MainScreen() {
               );
             })()}
             <TextInput
+              ref={addModalInputRef as any}
               style={[styles.modalInput, styles.transparentInput]}
               placeholder="0"
               placeholderTextColor={colors.mutedForeground}
@@ -855,6 +886,7 @@ export default function MainScreen() {
               </Pressable>
             )}
             <Pressable
+              ref={addModalExtraToggleRef}
               style={styles.extraToggleRow}
               onPress={() => { setExtraMode((v) => !v); Haptics.selectionAsync(); }}
             >
@@ -863,7 +895,7 @@ export default function MainScreen() {
               </View>
               <Text style={styles.extraToggleText}>{t.extraToggle}</Text>
             </Pressable>
-            <Pressable style={styles.tieBtn} onPress={handleTie}>
+            <Pressable ref={addModalTieBtnRef} style={styles.tieBtn} onPress={handleTie}>
               <Feather name="minus-circle" size={16} color={colors.mutedForeground} />
               <Text style={styles.tieBtnText}>{t.tie}</Text>
             </Pressable>
@@ -872,6 +904,7 @@ export default function MainScreen() {
                 <Text style={styles.modalCancelText}>{t.cancel}</Text>
               </Pressable>
               <Pressable
+                ref={addModalAddBtnRef}
                 style={[styles.modalConfirm, { backgroundColor: players.find((pl) => pl.id === addModal?.playerId)?.color ?? colors.primary }]}
                 onPress={handleAddPoints}
               >
@@ -1404,7 +1437,7 @@ export default function MainScreen() {
         steps={tutorialSteps}
         currentStep={tutorialStep}
         onNext={() => {
-          if (tutorialStep >= 13) {
+          if (tutorialStep >= 19) {
             setTutorialVisible(false);
             setTutorialSeen(true);
             AsyncStorage.setItem("domino_tutorial_seen", "true");
