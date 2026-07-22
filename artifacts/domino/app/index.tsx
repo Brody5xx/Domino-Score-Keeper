@@ -21,6 +21,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Tournament from "@/components/Tournament";
 import HistoryEntryItem from "@/components/HistoryEntryItem";
+import TutorialOverlay, { type TutorialStep } from "@/components/TutorialOverlay";
 import { PLAYER_COLORS, type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
 import { useLang } from "@/context/LangContext";
 import { useTournament } from "@/context/TournamentContext";
@@ -94,6 +95,10 @@ export default function MainScreen() {
   const [deleteGameModal, setDeleteGameModal] = useState<string | null>(null);
   const [clearHistoryModal, setClearHistoryModal] = useState(false);
 
+  const [tutorialVisible, setTutorialVisible] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
+  const [tutorialSeen, setTutorialSeen] = useState(true);
+
   const [mesaSearch, setMesaSearch] = useState("");
   const [searchNotFound, setSearchNotFound] = useState(false);
   const [highlightedMesa, setHighlightedMesa] = useState<number | null>(null);
@@ -103,6 +108,127 @@ export default function MainScreen() {
   const mesaPositions = useRef<Record<number, number>>({});
   const highlightAnim = useRef(new Animated.Value(0)).current;
 
+  // Tutorial spotlight refs
+  const targetChip200Ref = useRef<View>(null);
+  const addBtnCasaRef = useRef<View>(null);
+  const addBtnVisitRef = useRef<View>(null);
+  const settingsBtnRef = useRef<View>(null);
+  const historyBtnRef = useRef<View>(null);
+  const restartBtnRef = useRef<View>(null);
+
+  // Load tutorial seen state on mount
+  useEffect(() => {
+    AsyncStorage.getItem("domino_tutorial_seen").then((val) => {
+      if (val === null) {
+        setTutorialSeen(false);
+        setTutorialVisible(true);
+      }
+    });
+  }, []);
+
+  // Close any modals when tutorial finishes
+  useEffect(() => {
+    if (!tutorialVisible) {
+      setAddModal(null);
+      setEditModal(null);
+      setSettingsModal(false);
+      setRevealedEntry(null);
+    }
+  }, [tutorialVisible]);
+
+  // Tutorial interactive actions: clear on mount so user sees fresh state
+  useEffect(() => {
+    if (!tutorialVisible) return;
+    setSettingsModal(false);
+    setHistoryModal(false);
+    setRestartModal(false);
+    setAddModal(null);
+    setEditModal(null);
+    setRevealedEntry(null);
+    if (entries.length > 0) {
+      restart();
+    }
+  }, [tutorialVisible]);
+
+  const tutorialSteps: TutorialStep[] = [
+    { targetRef: targetChip200Ref, text: t.tutStep1, actionDelay: 500, autoAdvanceDelay: 1200 },
+    { targetRef: addBtnCasaRef, text: t.tutStep2, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: addBtnVisitRef, text: t.tutStep3, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: addBtnCasaRef, text: t.tutStep4, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: addBtnCasaRef, text: t.tutStep5, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: addBtnVisitRef, text: t.tutStep6, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: addBtnCasaRef, text: t.tutStep7, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: historyBtnRef, text: t.tutStep8 },
+    { targetRef: restartBtnRef, text: t.tutStep9 },
+    { targetRef: settingsBtnRef, text: t.tutStep10 },
+    { targetRef: settingsBtnRef, text: t.tutStep11 },
+    { text: t.tutStep12 },
+  ];
+
+  // Execute tutorial actions based on step
+  const executedStepRef = useRef<number>(-1);
+  useEffect(() => {
+    if (!tutorialVisible) { executedStepRef.current = -1; return; }
+    if (executedStepRef.current === tutorialStep) return;
+    executedStepRef.current = tutorialStep;
+
+    const runAction = () => {
+      const casa = players[0];
+      const visit = players[1];
+      switch (tutorialStep) {
+        case 0:
+          setTarget(200);
+          break;
+        case 1:
+          if (casa) addEntry(casa.id, 50, false, false);
+          break;
+        case 2:
+          if (visit) addEntry(visit.id, 30, true, false);
+          break;
+        case 3: {
+          const casaEntries = entries.filter((e) => e.playerId === players[0]?.id && !e.deleted);
+          const lastCasa = casaEntries[casaEntries.length - 1];
+          if (lastCasa) editEntry(lastCasa.id, 55);
+          break;
+        }
+        case 4: {
+          const casaEntries = entries.filter((e) => e.playerId === players[0]?.id && !e.deleted);
+          const lastCasa = casaEntries[casaEntries.length - 1];
+          if (lastCasa) {
+            setRevealedEntry(lastCasa.id);
+            if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
+            revealTimerRef.current = setTimeout(() => { setRevealedEntry(null); revealTimerRef.current = null; }, 10000);
+          }
+          break;
+        }
+        case 5: {
+          const visitEntries = entries.filter((e) => e.playerId === players[1]?.id && !e.deleted);
+          const lastVisit = visitEntries[visitEntries.length - 1];
+          if (lastVisit) deleteEntry(lastVisit.id);
+          break;
+        }
+        case 6:
+          if (casa) addEntry(casa.id, 0, false, true);
+          break;
+      }
+    };
+
+    const step = tutorialSteps[tutorialStep];
+    const actionDelay = step?.actionDelay ?? 500;
+    const autoAdvanceDelay = step?.autoAdvanceDelay ?? 0;
+
+    const actionTimer = setTimeout(runAction, actionDelay);
+    const advanceTimer = autoAdvanceDelay > 0
+      ? setTimeout(() => {
+          if (tutorialStep < 11) setTutorialStep(tutorialStep + 1);
+        }, actionDelay + autoAdvanceDelay)
+      : null;
+
+    return () => {
+      clearTimeout(actionTimer);
+      if (advanceTimer) clearTimeout(advanceTimer);
+    };
+  }, [tutorialVisible, tutorialStep, players, entries, addEntry, editEntry, deleteEntry, setTarget, setRevealedEntry]);
 
   const findMesaForQuery = (query: string): number => {
     const q = query.trim().toLowerCase();
@@ -337,6 +463,7 @@ export default function MainScreen() {
   function renderPlayerCard(
     player: (typeof players)[number],
     fullWidth = false,
+    addBtnRef?: React.RefObject<View | null>,
   ) {
     const total = totals[player.id] ?? 0;
     const remaining = Math.max(0, target - total);
@@ -372,6 +499,7 @@ export default function MainScreen() {
           {won ? t.victory : t.remaining(remaining)}
         </Text>
         <Pressable
+          ref={addBtnRef}
           style={[styles.addBtn, { borderColor: player.color }]}
           onPress={() => { setAddModal({ playerId: player.id }); setPointsInput(""); setExtraMode(false); setForBoth(false); }}
         >
@@ -432,6 +560,7 @@ export default function MainScreen() {
             {TARGET_PRESETS.map((tv) => (
               <Pressable
                 key={tv}
+                ref={tv === 200 ? targetChip200Ref : undefined}
                 style={[styles.targetChip, target === tv && styles.targetChipActive]}
                 onPress={() => { setTarget(tv); Haptics.selectionAsync(); }}
               >
@@ -463,7 +592,7 @@ export default function MainScreen() {
               <FontAwesome5 name="trophy" size={18} color={tournamentActive ? colors.primary : colors.mutedForeground} />
             </Pressable>
           </View>
-          <Pressable style={styles.settingsBtn} onPress={() => setSettingsModal(true)}>
+          <Pressable ref={settingsBtnRef} style={styles.settingsBtn} onPress={() => setSettingsModal(true)}>
             <Feather name="settings" size={20} color={colors.mutedForeground} />
           </Pressable>
         </View>
@@ -527,9 +656,10 @@ export default function MainScreen() {
                 </View>
               );
             })
-          : players.map((player) => renderPlayerCard(
+          : players.map((player, pi) => renderPlayerCard(
               player,
               players.length === 1,
+              pi === 0 ? addBtnCasaRef : pi === 1 ? addBtnVisitRef : undefined,
             ))}
         <View style={styles.addBoxRow}>
           {mesas === 0 && (
@@ -583,7 +713,7 @@ export default function MainScreen() {
       {/* ── Bottom buttons row ── */}
       <View style={styles.bottomRow}>
         {previousGames.length > 0 && (
-          <Pressable style={styles.historyBtn} onPress={() => setHistoryModal(true)}>
+          <Pressable ref={historyBtnRef} style={styles.historyBtn} onPress={() => setHistoryModal(true)}>
             <Feather name="archive" size={15} color={colors.mutedForeground} />
             <Text style={styles.historyBtnText}>{t.previous}</Text>
             <View style={styles.historyBadge}>
@@ -592,6 +722,7 @@ export default function MainScreen() {
           </Pressable>
         )}
         <Pressable
+          ref={restartBtnRef}
           style={[styles.restartBtn, previousGames.length > 0 && { flex: 1 }]}
           onPress={() => setRestartModal(true)}
         >
@@ -1238,6 +1369,19 @@ export default function MainScreen() {
               </Pressable>
             )}
 
+            {/* Show tutorial button */}
+            <Pressable
+              style={[styles.showTutorialBtn, { borderColor: colors.border }]}
+              onPress={() => {
+                setSettingsModal(false);
+                setTutorialStep(0);
+                setTutorialVisible(true);
+              }}
+            >
+              <Feather name="help-circle" size={16} color={colors.mutedForeground} />
+              <Text style={[styles.showTutorialText, { color: colors.mutedForeground }]}>{t.tutorialShowAgain}</Text>
+            </Pressable>
+
             <Pressable
               style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 14, paddingTop: 13, paddingBottom: 19, alignSelf: "center", paddingHorizontal: 56 }]}
               onPress={() => setSettingsModal(false)}
@@ -1248,6 +1392,29 @@ export default function MainScreen() {
         </View>
       </Modal>
 
+      {/* Tutorial overlay */}
+      <TutorialOverlay
+        visible={tutorialVisible}
+        steps={tutorialSteps}
+        currentStep={tutorialStep}
+        onNext={() => {
+          if (tutorialStep >= 11) {
+            setTutorialVisible(false);
+            setTutorialSeen(true);
+            AsyncStorage.setItem("domino_tutorial_seen", "true");
+          } else {
+            setTutorialStep(tutorialStep + 1);
+          }
+        }}
+        onSkip={() => {
+          setTutorialVisible(false);
+          setTutorialSeen(true);
+          AsyncStorage.setItem("domino_tutorial_seen", "true");
+        }}
+        onBack={() => setTutorialStep(Math.max(0, tutorialStep - 1))}
+        t={t}
+        colors={colors}
+      />
     </View>
   );
 }
@@ -2189,6 +2356,20 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontSize: 13,
       color: "#fff",
       textAlign: "right",
+    },
+    showTutorialBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      marginTop: 14,
+      paddingVertical: 12,
+      borderRadius: 10,
+      borderWidth: 1.5,
+    },
+    showTutorialText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 14,
     },
   });
 }
