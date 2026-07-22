@@ -60,6 +60,8 @@ interface GameContextValue extends GameState {
   clearPreviousGames: () => void;
   setBgTheme: (theme: string) => void;
   setCustomBgUri: (uri: string | null) => void;
+  // internal: used by tutorial to pre-seed demo data without triggering side effects
+  __setState: React.Dispatch<React.SetStateAction<GameState>>;
 }
 
 const STORAGE_KEY = "domino_game_v3";
@@ -405,6 +407,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         clearPreviousGames,
         setBgTheme,
         setCustomBgUri,
+        __setState: setState,
       }}
     >
       {children}

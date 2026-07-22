@@ -57,7 +57,8 @@ export default function TutorialOverlay({
       return;
     }
     const measure = () => {
-      step.targetRef!.current!.measureInWindow((x, y, width, height) => {
+      if (!step.targetRef?.current) return;
+      step.targetRef.current.measureInWindow((x, y, width, height) => {
         if (width > 0 && height > 0) {
           setTargetLayout({ x, y, width, height });
         }

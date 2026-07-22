@@ -70,6 +70,7 @@ export default function MainScreen() {
     setBgTheme,
     customBgUri,
     setCustomBgUri,
+    __setState,
   } = useGame();
 
   const { active: tournamentActive, toggleActive: toggleTournament } = useTournament();
@@ -108,7 +109,7 @@ export default function MainScreen() {
   const mesaPositions = useRef<Record<number, number>>({});
   const highlightAnim = useRef(new Animated.Value(0)).current;
 
-  // Tutorial spotlight refs
+  // Tutorial spotlight refs (main screen only — no modal interior refs to avoid crash)
   const targetChip200Ref = useRef<View>(null);
   const customTargetRef = useRef<View>(null);
   const addBtnCasaRef = useRef<View>(null);
@@ -120,11 +121,6 @@ export default function MainScreen() {
   const visitFirstEntryRef = useRef<View>(null);
   const visitDeletedEntryRef = useRef<View>(null);
   const casaEyeRef = useRef<View>(null);
-  // Add-modal interior refs
-  const addModalInputRef = useRef<View>(null);
-  const addModalExtraToggleRef = useRef<View>(null);
-  const addModalTieBtnRef = useRef<View>(null);
-  const addModalAddBtnRef = useRef<View>(null);
 
   // Load tutorial seen state on mount
   useEffect(() => {
@@ -146,7 +142,7 @@ export default function MainScreen() {
     }
   }, [tutorialVisible]);
 
-  // Tutorial interactive actions: clear on mount so user sees fresh state
+  // Pre-load demo data when tutorial starts; keep it fully manual (no auto actions)
   useEffect(() => {
     if (!tutorialVisible) return;
     setSettingsModal(false);
@@ -155,113 +151,41 @@ export default function MainScreen() {
     setAddModal(null);
     setEditModal(null);
     setRevealedEntry(null);
-    if (entries.length > 0) {
-      restart();
-    }
+    // Seed demo entries so the user can see all UI elements without auto-actions.
+    // Order: older entries first so reversed() shows newest at top.
+    const casaId = players[0]?.id;
+    const visitId = players[1]?.id;
+    if (!casaId || !visitId) return;
+    __setState((prev) => {
+      if (prev.entries.length > 0) return prev; // already seeded
+      const now = Date.now();
+      const demoEntries = [
+        { id: `${now}-1`, playerId: casaId, points: 0, tie: true },                    // older
+        { id: `${now}-2`, playerId: visitId, points: 25, deleted: true },              // older
+        { id: `${now}-3`, playerId: casaId, points: 55, edited: true, history: [50] },  // newer
+        { id: `${now}-4`, playerId: visitId, points: 30, extra: true },                // newer
+      ];
+      return { ...prev, target: 200, entries: demoEntries };
+    });
   }, [tutorialVisible]);
 
   const tutorialSteps: TutorialStep[] = [
-    { text: t.tutStep0 },
-    { targetRef: targetChip200Ref, text: t.tutStep1, actionDelay: 500 },
-    { targetRef: customTargetRef, text: t.tutStep2, actionDelay: 500 },
-    { targetRef: addBtnCasaRef, text: t.tutStep3, actionDelay: 500 },
-    { targetRef: addModalInputRef, text: t.tutStep4, actionDelay: 500 },
-    { targetRef: addModalAddBtnRef, text: t.tutStep5, actionDelay: 500 },
-    { targetRef: addBtnVisitRef, text: t.tutStep6, actionDelay: 500 },
-    { targetRef: addModalExtraToggleRef, text: t.tutStep7, actionDelay: 500 },
-    { targetRef: addModalInputRef, text: t.tutStep8, actionDelay: 500 },
-    { targetRef: addModalAddBtnRef, text: t.tutStep9, actionDelay: 500 },
-    { targetRef: casaFirstEntryRef, text: t.tutStep10, actionDelay: 500 },
-    { targetRef: casaEyeRef, text: t.tutStep11, actionDelay: 500 },
-    { targetRef: visitDeletedEntryRef, text: t.tutStep12, actionDelay: 500 },
-    { targetRef: addBtnCasaRef, text: t.tutStep13, actionDelay: 500 },
-    { targetRef: addModalTieBtnRef, text: t.tutStep14, actionDelay: 500 },
-    { targetRef: historyBtnRef, text: t.tutStep15 },
-    { targetRef: restartBtnRef, text: t.tutStep16, actionDelay: 500 },
-    { targetRef: settingsBtnRef, text: t.tutStep17 },
-    { targetRef: settingsBtnRef, text: t.tutStep18 },
-    { text: t.tutStep19 },
+    { text: t.tutStep0 },                              // 0: welcome
+    { targetRef: targetChip200Ref, text: t.tutStep1 },  // 1: target
+    { targetRef: customTargetRef, text: t.tutStep2 },  // 2: custom target
+    { targetRef: addBtnCasaRef, text: t.tutStep3 },    // 3: add button casa
+    { targetRef: addBtnVisitRef, text: t.tutStep4 },   // 4: add button visitante
+    { targetRef: casaFirstEntryRef, text: t.tutStep5 },// 5: edit/pencil
+    { targetRef: casaEyeRef, text: t.tutStep6 },        // 6: eye reveal
+    { targetRef: visitDeletedEntryRef, text: t.tutStep7 }, // 7: trash / restore
+    { targetRef: addBtnCasaRef, text: t.tutStep8 },    // 8: tie (via add)
+    { targetRef: historyBtnRef, text: t.tutStep9 },    // 9: history auto-save
+    { targetRef: restartBtnRef, text: t.tutStep10 },   // 10: restart
+    { targetRef: settingsBtnRef, text: t.tutStep11 }, // 11: settings
+    { targetRef: settingsBtnRef, text: t.tutStep12 },  // 12: players/tables/photo
+    { text: t.tutStep13 },                              // 13: done
   ];
 
-  // Execute tutorial actions based on step
-  const executedStepRef = useRef<number>(-1);
-  useEffect(() => {
-    if (!tutorialVisible) { executedStepRef.current = -1; return; }
-    if (executedStepRef.current === tutorialStep) return;
-    executedStepRef.current = tutorialStep;
-
-    const runAction = () => {
-      const casa = players[0];
-      const visit = players[1];
-      switch (tutorialStep) {
-        case 0:
-          break;
-        case 1:
-          setTarget(200);
-          break;
-        case 2:
-          break;
-        case 3:
-          if (casa) { setAddModal({ playerId: casa.id }); setPointsInput(""); setExtraMode(false); setForBoth(false); }
-          break;
-        case 4:
-          setPointsInput("50");
-          break;
-        case 5:
-          if (casa) { addEntry(casa.id, 50, false, false); closeAddModal(); }
-          break;
-        case 6:
-          if (visit) { setAddModal({ playerId: visit.id }); setPointsInput(""); setExtraMode(false); setForBoth(false); }
-          break;
-        case 7:
-          setExtraMode(true);
-          break;
-        case 8:
-          setPointsInput("30");
-          break;
-        case 9:
-          if (visit) { addEntry(visit.id, 30, true, false); closeAddModal(); }
-          break;
-        case 10: {
-          const casaEntries = entries.filter((e) => e.playerId === players[0]?.id && !e.deleted);
-          const lastCasa = casaEntries[casaEntries.length - 1];
-          if (lastCasa) editEntry(lastCasa.id, 55);
-          break;
-        }
-        case 11: {
-          const casaEntries = entries.filter((e) => e.playerId === players[0]?.id && !e.deleted);
-          const lastCasa = casaEntries[casaEntries.length - 1];
-          if (lastCasa) {
-            setRevealedEntry(lastCasa.id);
-            if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
-            revealTimerRef.current = setTimeout(() => { setRevealedEntry(null); revealTimerRef.current = null; }, 10000);
-          }
-          break;
-        }
-        case 12: {
-          const visitEntries = entries.filter((e) => e.playerId === players[1]?.id && !e.deleted);
-          const lastVisit = visitEntries[visitEntries.length - 1];
-          if (lastVisit) deleteEntry(lastVisit.id);
-          break;
-        }
-        case 13:
-          if (casa) { setAddModal({ playerId: casa.id }); setPointsInput(""); setExtraMode(false); setForBoth(false); }
-          break;
-        case 14:
-          if (casa) { addEntry(casa.id, 0, false, true); closeAddModal(); }
-          break;
-      }
-    };
-
-    const step = tutorialSteps[tutorialStep];
-    const actionDelay = step?.actionDelay ?? 500;
-
-    const actionTimer = setTimeout(runAction, actionDelay);
-
-    return () => {
-      clearTimeout(actionTimer);
-    };
-  }, [tutorialVisible, tutorialStep, players, entries, addEntry, editEntry, deleteEntry, setTarget, setRevealedEntry]);
 
   const findMesaForQuery = (query: string): number => {
     const q = query.trim().toLowerCase();
@@ -852,14 +776,13 @@ export default function MainScreen() {
               );
             })()}
             <TextInput
-              ref={addModalInputRef as any}
               style={[styles.modalInput, styles.transparentInput]}
               placeholder="0"
               placeholderTextColor={colors.mutedForeground}
               keyboardType="number-pad"
               value={pointsInput}
               onChangeText={setPointsInput}
-              autoFocus
+              autoFocus={!tutorialVisible}
               selectTextOnFocus
             />
             {addModal && (() => {
@@ -886,7 +809,6 @@ export default function MainScreen() {
               </Pressable>
             )}
             <Pressable
-              ref={addModalExtraToggleRef}
               style={styles.extraToggleRow}
               onPress={() => { setExtraMode((v) => !v); Haptics.selectionAsync(); }}
             >
@@ -895,7 +817,7 @@ export default function MainScreen() {
               </View>
               <Text style={styles.extraToggleText}>{t.extraToggle}</Text>
             </Pressable>
-            <Pressable ref={addModalTieBtnRef} style={styles.tieBtn} onPress={handleTie}>
+            <Pressable style={styles.tieBtn} onPress={handleTie}>
               <Feather name="minus-circle" size={16} color={colors.mutedForeground} />
               <Text style={styles.tieBtnText}>{t.tie}</Text>
             </Pressable>
@@ -904,7 +826,6 @@ export default function MainScreen() {
                 <Text style={styles.modalCancelText}>{t.cancel}</Text>
               </Pressable>
               <Pressable
-                ref={addModalAddBtnRef}
                 style={[styles.modalConfirm, { backgroundColor: players.find((pl) => pl.id === addModal?.playerId)?.color ?? colors.primary }]}
                 onPress={handleAddPoints}
               >
@@ -1437,7 +1358,7 @@ export default function MainScreen() {
         steps={tutorialSteps}
         currentStep={tutorialStep}
         onNext={() => {
-          if (tutorialStep >= 19) {
+          if (tutorialStep >= 13) {
             setTutorialVisible(false);
             setTutorialSeen(true);
             AsyncStorage.setItem("domino_tutorial_seen", "true");
@@ -1450,7 +1371,9 @@ export default function MainScreen() {
           setTutorialSeen(true);
           AsyncStorage.setItem("domino_tutorial_seen", "true");
         }}
-        onBack={() => setTutorialStep(Math.max(0, tutorialStep - 1))}
+        onBack={() => {
+          if (tutorialStep > 0) setTutorialStep(tutorialStep - 1);
+        }}
         t={t}
         colors={colors}
       />
