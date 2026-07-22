@@ -120,6 +120,7 @@ const es = {
   tutorialShowAgain: "Ver tutorial",
   tutorialDone: "Entendido",
   // Spotlight tutorial steps
+  tutStep0: "\u00a1Bienvenido! Este tutorial te muestra c\u00f3mo usar el marcador. Usa Siguiente para avanzar y Atr\u00e1s para retroceder.",
   tutStep1: "Elige la meta de puntos: toca 100 o 200 arriba. Cuando un jugador llega, gana la partida.",
   tutStep1b: "\u00bfQuieres otra meta? Toca los puntitos para escribir cualquier cantidad, como 150 o 300.",
   tutStep2: "\u00a1+50 para Casa! Toca + para abrir el panel, escribe puntos y toca Agregar.",
@@ -255,6 +256,7 @@ const en = {
   tutorialShowAgain: "Show tutorial",
   tutorialDone: "Got it",
   // Spotlight tutorial steps
+  tutStep0: "Welcome! This tutorial shows you how to use the scoreboard. Use Next to advance and Back to go back.",
   tutStep1: "Choose the points target: tap 100 or 200 at the top. When a player reaches it, they win.",
   tutStep1b: "Want a different target? Tap the dots to type any amount, like 150 or 300.",
   tutStep2: "+50 for House! Tap + to open the panel, type points, then tap Add.",

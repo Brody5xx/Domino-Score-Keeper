@@ -154,6 +154,7 @@ export default function MainScreen() {
   }, [tutorialVisible]);
 
   const tutorialSteps: TutorialStep[] = [
+    { text: t.tutStep0 },
     { targetRef: targetChip200Ref, text: t.tutStep1, actionDelay: 500 },
     { targetRef: customTargetRef, text: t.tutStep1b, actionDelay: 500 },
     { targetRef: addBtnCasaRef, text: t.tutStep2, actionDelay: 500 },
@@ -162,8 +163,8 @@ export default function MainScreen() {
     { targetRef: casaFirstEntryRef, text: t.tutStep5, actionDelay: 500 },
     { targetRef: visitFirstEntryRef, text: t.tutStep6, actionDelay: 500 },
     { targetRef: casaFirstEntryRef, text: t.tutStep7, actionDelay: 500 },
+    { targetRef: restartBtnRef, text: t.tutStep9, actionDelay: 500 },
     { targetRef: historyBtnRef, text: t.tutStep8 },
-    { targetRef: restartBtnRef, text: t.tutStep9 },
     { targetRef: settingsBtnRef, text: t.tutStep10 },
     { targetRef: settingsBtnRef, text: t.tutStep11 },
     { text: t.tutStep12 },
@@ -181,21 +182,24 @@ export default function MainScreen() {
       const visit = players[1];
       switch (tutorialStep) {
         case 0:
-          setTarget(200);
+          // Welcome step: no action, just the greeting
           break;
         case 1:
-          if (casa) addEntry(casa.id, 50, false, false);
+          setTarget(200);
           break;
         case 2:
+          if (casa) addEntry(casa.id, 50, false, false);
+          break;
+        case 3:
           if (visit) addEntry(visit.id, 30, true, false);
           break;
-        case 3: {
+        case 4: {
           const casaEntries = entries.filter((e) => e.playerId === players[0]?.id && !e.deleted);
           const lastCasa = casaEntries[casaEntries.length - 1];
           if (lastCasa) editEntry(lastCasa.id, 55);
           break;
         }
-        case 4: {
+        case 5: {
           const casaEntries = entries.filter((e) => e.playerId === players[0]?.id && !e.deleted);
           const lastCasa = casaEntries[casaEntries.length - 1];
           if (lastCasa) {
@@ -205,16 +209,16 @@ export default function MainScreen() {
           }
           break;
         }
-        case 5: {
+        case 6: {
           const visitEntries = entries.filter((e) => e.playerId === players[1]?.id && !e.deleted);
           const lastVisit = visitEntries[visitEntries.length - 1];
           if (lastVisit) deleteEntry(lastVisit.id);
           break;
         }
-        case 6:
+        case 7:
           if (casa) addEntry(casa.id, 0, false, true);
           break;
-        case 7:
+        case 8:
           // Archive current game so the History button appears for the tutorial
           restart();
           break;
@@ -1401,7 +1405,7 @@ export default function MainScreen() {
         steps={tutorialSteps}
         currentStep={tutorialStep}
         onNext={() => {
-          if (tutorialStep >= 12) {
+          if (tutorialStep >= 13) {
             setTutorialVisible(false);
             setTutorialSeen(true);
             AsyncStorage.setItem("domino_tutorial_seen", "true");
