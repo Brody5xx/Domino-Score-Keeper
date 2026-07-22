@@ -711,23 +711,36 @@ export default function MainScreen() {
       </ScrollView>
 
       {/* ── Bottom buttons row ── */}
-      <View style={styles.bottomRow}>
-        {previousGames.length > 0 && (
-          <Pressable ref={historyBtnRef} style={styles.historyBtn} onPress={() => setHistoryModal(true)}>
-            <Feather name="archive" size={15} color={colors.mutedForeground} />
-            <Text style={styles.historyBtnText}>{t.previous}</Text>
-            <View style={styles.historyBadge}>
-              <Text style={styles.historyBadgeText}>{previousGames.length}</Text>
-            </View>
+      <View style={{ gap: 10 }}>
+        <View style={styles.bottomRow}>
+          {previousGames.length > 0 && (
+            <Pressable ref={historyBtnRef} style={styles.historyBtn} onPress={() => setHistoryModal(true)}>
+              <Feather name="archive" size={15} color={colors.mutedForeground} />
+              <Text style={styles.historyBtnText}>{t.previous}</Text>
+              <View style={styles.historyBadge}>
+                <Text style={styles.historyBadgeText}>{previousGames.length}</Text>
+              </View>
+            </Pressable>
+          )}
+          <Pressable
+            ref={restartBtnRef}
+            style={[styles.restartBtn, previousGames.length > 0 && { flex: 1 }]}
+            onPress={() => setRestartModal(true)}
+          >
+            <Feather name="rotate-ccw" size={15} color={colors.destructive} />
+            <Text style={styles.restartText}>{t.restart}</Text>
           </Pressable>
-        )}
+        </View>
         <Pressable
-          ref={restartBtnRef}
-          style={[styles.restartBtn, previousGames.length > 0 && { flex: 1 }]}
-          onPress={() => setRestartModal(true)}
+          style={[styles.showTutorialBtn, { borderColor: colors.border }]}
+          onPress={() => {
+            setSettingsModal(false);
+            setTutorialStep(0);
+            setTutorialVisible(true);
+          }}
         >
-          <Feather name="rotate-ccw" size={15} color={colors.destructive} />
-          <Text style={styles.restartText}>{t.restart}</Text>
+          <Feather name="help-circle" size={16} color={colors.mutedForeground} />
+          <Text style={[styles.showTutorialText, { color: colors.mutedForeground }]}>{t.tutorialShowAgain}</Text>
         </Pressable>
       </View>
       </>
@@ -1368,19 +1381,6 @@ export default function MainScreen() {
                 <Text style={styles.playerCountHint}>{t.playerCount(players.length, 8)}</Text>
               </Pressable>
             )}
-
-            {/* Show tutorial button */}
-            <Pressable
-              style={[styles.showTutorialBtn, { borderColor: colors.border }]}
-              onPress={() => {
-                setSettingsModal(false);
-                setTutorialStep(0);
-                setTutorialVisible(true);
-              }}
-            >
-              <Feather name="help-circle" size={16} color={colors.mutedForeground} />
-              <Text style={[styles.showTutorialText, { color: colors.mutedForeground }]}>{t.tutorialShowAgain}</Text>
-            </Pressable>
 
             <Pressable
               style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 14, paddingTop: 13, paddingBottom: 19, alignSelf: "center", paddingHorizontal: 56 }]}
