@@ -1,9 +1,11 @@
+"use no memo";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import { File, Paths } from "expo-file-system";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Easing,
@@ -19,7 +21,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import TutorialOverlay from "@/components/TutorialOverlay";
+import TutorialOverlay, { TutorialStep } from "@/components/TutorialOverlay";
 import Tournament from "@/components/Tournament";
 import { PLAYER_COLORS, type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
 import { useLang } from "@/context/LangContext";
@@ -158,7 +160,22 @@ export default function MainScreen() {
     addCasaTie: () => void;
   }>({ addCasa50: () => {}, addVisitExtra30: () => {}, editCasaTo55: () => {}, revealEye: () => {}, deleteVisitEntry: () => {}, addCasaTie: () => {} }).current;
 
-  // Wire tutorial actions to current context/functions
+  const tutorialStepsRef = useRef<TutorialStep[]>([
+    { targetRef: targetChip200Ref, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1200 },
+    { targetRef: addBtnCasaRef, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: addBtnVisitRef, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: addBtnCasaRef, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: addBtnCasaRef, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: addBtnVisitRef, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: addBtnCasaRef, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: historyBtnRef, text: "" },
+    { targetRef: restartBtnRef, text: "" },
+    { targetRef: settingsBtnRef, text: "" },
+    { targetRef: settingsBtnRef, text: "" },
+    { text: "" },
+  ]);
+
+  // Wire tutorial actions + text to current context and language
   useEffect(() => {
     tutorialActions.addCasa50 = () => {
       const casa = players[0];
@@ -194,7 +211,28 @@ export default function MainScreen() {
       if (!casa) return;
       addEntry(casa.id, 0, false, true);
     };
-  }, [players, entries, addEntry, editEntry, deleteEntry]);
+    // Sync tutorial step text + actions from mutable refs
+    const s = tutorialStepsRef.current;
+    s[0].text = t.tutStep1;
+    s[0].action = () => setTarget(200);
+    s[1].text = t.tutStep2;
+    s[1].action = () => tutorialActions.addCasa50();
+    s[2].text = t.tutStep3;
+    s[2].action = () => tutorialActions.addVisitExtra30();
+    s[3].text = t.tutStep4;
+    s[3].action = () => tutorialActions.editCasaTo55();
+    s[4].text = t.tutStep5;
+    s[4].action = () => tutorialActions.revealEye();
+    s[5].text = t.tutStep6;
+    s[5].action = () => tutorialActions.deleteVisitEntry();
+    s[6].text = t.tutStep7;
+    s[6].action = () => tutorialActions.addCasaTie();
+    s[7].text = t.tutStep8;
+    s[8].text = t.tutStep9;
+    s[9].text = t.tutStep10;
+    s[10].text = t.tutStep11;
+    s[11].text = t.tutStep12;
+  }, [players, entries, addEntry, editEntry, deleteEntry, t, tutorialActions]);
 
   const findMesaForQuery = (query: string): number => {
     const q = query.trim().toLowerCase();
@@ -1429,32 +1467,7 @@ export default function MainScreen() {
       {/* Tutorial overlay */}
       <TutorialOverlay
         visible={tutorialVisible}
-        steps={useMemo(() => [
-          // Step 0: Meta de puntos
-          { targetRef: targetChip200Ref, text: t.tutStep1, action: () => { setTarget(200); }, actionDelay: 500, autoAdvanceDelay: 1200 },
-          // Step 1: +50 para Casa
-          { targetRef: addBtnCasaRef, text: t.tutStep2, action: () => { tutorialActions.addCasa50(); }, actionDelay: 500, autoAdvanceDelay: 1500 },
-          // Step 2: +30 Extra para Visitante
-          { targetRef: addBtnVisitRef, text: t.tutStep3, action: () => { tutorialActions.addVisitExtra30(); }, actionDelay: 500, autoAdvanceDelay: 1500 },
-          // Step 3: Editar Casa 50→55
-          { targetRef: addBtnCasaRef, text: t.tutStep4, action: () => { tutorialActions.editCasaTo55(); }, actionDelay: 500, autoAdvanceDelay: 1500 },
-          // Step 4: Mostrar ojito/historial
-          { targetRef: addBtnCasaRef, text: t.tutStep5, action: () => { tutorialActions.revealEye(); }, actionDelay: 500, autoAdvanceDelay: 1500 },
-          // Step 5: Borrar anotación de Visitante
-          { targetRef: addBtnVisitRef, text: t.tutStep6, action: () => { tutorialActions.deleteVisitEntry(); }, actionDelay: 500, autoAdvanceDelay: 1500 },
-          // Step 6: Empate para Casa
-          { targetRef: addBtnCasaRef, text: t.tutStep7, action: () => { tutorialActions.addCasaTie(); }, actionDelay: 500, autoAdvanceDelay: 1500 },
-          // Step 7: Historial
-          { targetRef: historyBtnRef, text: t.tutStep8 },
-          // Step 8: Reiniciar
-          { targetRef: restartBtnRef, text: t.tutStep9 },
-          // Step 9: Ajustes
-          { targetRef: settingsBtnRef, text: t.tutStep10 },
-          // Step 10: Configuración
-          { targetRef: settingsBtnRef, text: t.tutStep11 },
-          // Step 11: Done
-          { text: t.tutStep12, actionDelay: 0 },
-        ], [t, tutorialActions])}
+        steps={tutorialStepsRef.current}
         currentStep={tutorialStep}
         onNext={() => {
           if (tutorialStep >= 11) {
