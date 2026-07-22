@@ -1,5 +1,3 @@
-"use no memo";
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import { File, Paths } from "expo-file-system";
@@ -21,7 +19,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import TutorialOverlay, { TutorialStep } from "@/components/TutorialOverlay";
 import Tournament from "@/components/Tournament";
 import { PLAYER_COLORS, type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
 import { useLang } from "@/context/LangContext";
@@ -89,30 +86,6 @@ export default function MainScreen() {
 
   const [settingsModal, setSettingsModal] = useState(false);
   const [editingName, setEditingName] = useState<{ id: string; value: string } | null>(null);
-  const [tutorialVisible, setTutorialVisible] = useState(false);
-  const [tutorialStep, setTutorialStep] = useState(0);
-  const [tutorialSeen, setTutorialSeen] = useState(true);
-
-  // Load tutorial seen state on mount
-  useEffect(() => {
-    AsyncStorage.getItem("domino_tutorial_seen").then((val) => {
-      if (val === null) {
-        setTutorialSeen(false);
-        setTutorialVisible(true);
-      }
-    });
-  }, []);
-
-  // Close any modals when tutorial finishes
-  useEffect(() => {
-    if (!tutorialVisible) {
-      setAddModal(null);
-      setEditModal(null);
-      setSettingsModal(false);
-      setRevealedEntry(null);
-    }
-  }, [tutorialVisible]);
-
   const [renameModal, setRenameModal] = useState<{ playerId: string; value: string; color: string } | null>(null);
   const [restartModal, setRestartModal] = useState(false);
   const [historyModal, setHistoryModal] = useState(false);
@@ -129,110 +102,6 @@ export default function MainScreen() {
   const mesaPositions = useRef<Record<number, number>>({});
   const highlightAnim = useRef(new Animated.Value(0)).current;
 
-  // Tutorial spotlight refs
-  const targetChip200Ref = useRef<View>(null);
-  const addBtnCasaRef = useRef<View>(null);
-  const addBtnVisitRef = useRef<View>(null);
-  const settingsBtnRef = useRef<View>(null);
-  const historyBtnRef = useRef<View>(null);
-  const restartBtnRef = useRef<View>(null);
-
-  // Tutorial interactive actions: clear on mount so user sees fresh state
-  useEffect(() => {
-    if (!tutorialVisible) return;
-    setSettingsModal(false);
-    setHistoryModal(false);
-    setRestartModal(false);
-    setAddModal(null);
-    setEditModal(null);
-    setRevealedEntry(null);
-    if (entries.length > 0) {
-      restart(); // clears entries, archives old game if any
-    }
-  }, [tutorialVisible]);
-
-  const tutorialActions = useRef<{
-    addCasa50: () => void;
-    addVisitExtra30: () => void;
-    editCasaTo55: () => void;
-    revealEye: () => void;
-    deleteVisitEntry: () => void;
-    addCasaTie: () => void;
-  }>({ addCasa50: () => {}, addVisitExtra30: () => {}, editCasaTo55: () => {}, revealEye: () => {}, deleteVisitEntry: () => {}, addCasaTie: () => {} }).current;
-
-  const tutorialStepsRef = useRef<TutorialStep[]>([
-    { targetRef: targetChip200Ref, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1200 },
-    { targetRef: addBtnCasaRef, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: addBtnVisitRef, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: addBtnCasaRef, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: addBtnCasaRef, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: addBtnVisitRef, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: addBtnCasaRef, text: "", action: () => { /* filled below */ }, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: historyBtnRef, text: "" },
-    { targetRef: restartBtnRef, text: "" },
-    { targetRef: settingsBtnRef, text: "" },
-    { targetRef: settingsBtnRef, text: "" },
-    { text: "" },
-  ]);
-
-  // Wire tutorial actions + text to current context and language
-  useEffect(() => {
-    tutorialActions.addCasa50 = () => {
-      const casa = players[0];
-      if (!casa) return;
-      addEntry(casa.id, 50, false, false);
-    };
-    tutorialActions.addVisitExtra30 = () => {
-      const visit = players[1];
-      if (!visit) return;
-      addEntry(visit.id, 30, true, false);
-    };
-    tutorialActions.editCasaTo55 = () => {
-      const casaEntries = entries.filter((e) => e.playerId === players[0]?.id && !e.deleted);
-      const lastCasa = casaEntries[casaEntries.length - 1];
-      if (lastCasa) editEntry(lastCasa.id, 55);
-    };
-    tutorialActions.revealEye = () => {
-      const casaEntries = entries.filter((e) => e.playerId === players[0]?.id && !e.deleted);
-      const lastCasa = casaEntries[casaEntries.length - 1];
-      if (lastCasa) {
-        setRevealedEntry(lastCasa.id);
-        if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
-        revealTimerRef.current = setTimeout(() => { setRevealedEntry(null); revealTimerRef.current = null; }, 10000);
-      }
-    };
-    tutorialActions.deleteVisitEntry = () => {
-      const visitEntries = entries.filter((e) => e.playerId === players[1]?.id && !e.deleted);
-      const lastVisit = visitEntries[visitEntries.length - 1];
-      if (lastVisit) deleteEntry(lastVisit.id);
-    };
-    tutorialActions.addCasaTie = () => {
-      const casa = players[0];
-      if (!casa) return;
-      addEntry(casa.id, 0, false, true);
-    };
-    // Sync tutorial step text + actions from mutable refs
-    const s = tutorialStepsRef.current;
-    s[0].text = t.tutStep1;
-    s[0].action = () => setTarget(200);
-    s[1].text = t.tutStep2;
-    s[1].action = () => tutorialActions.addCasa50();
-    s[2].text = t.tutStep3;
-    s[2].action = () => tutorialActions.addVisitExtra30();
-    s[3].text = t.tutStep4;
-    s[3].action = () => tutorialActions.editCasaTo55();
-    s[4].text = t.tutStep5;
-    s[4].action = () => tutorialActions.revealEye();
-    s[5].text = t.tutStep6;
-    s[5].action = () => tutorialActions.deleteVisitEntry();
-    s[6].text = t.tutStep7;
-    s[6].action = () => tutorialActions.addCasaTie();
-    s[7].text = t.tutStep8;
-    s[8].text = t.tutStep9;
-    s[9].text = t.tutStep10;
-    s[10].text = t.tutStep11;
-    s[11].text = t.tutStep12;
-  }, [players, entries, addEntry, editEntry, deleteEntry, t, tutorialActions]);
 
   const findMesaForQuery = (query: string): number => {
     const q = query.trim().toLowerCase();
@@ -467,7 +336,6 @@ export default function MainScreen() {
   function renderPlayerCard(
     player: (typeof players)[number],
     fullWidth = false,
-    addBtnRef?: React.RefObject<View | null>,
   ) {
     const total = totals[player.id] ?? 0;
     const remaining = Math.max(0, target - total);
@@ -503,7 +371,6 @@ export default function MainScreen() {
           {won ? t.victory : t.remaining(remaining)}
         </Text>
         <Pressable
-          ref={addBtnRef}
           style={[styles.addBtn, { borderColor: player.color }]}
           onPress={() => { setAddModal({ playerId: player.id }); setPointsInput(""); setExtraMode(false); setForBoth(false); }}
         >
@@ -632,7 +499,6 @@ export default function MainScreen() {
             {TARGET_PRESETS.map((tv) => (
               <Pressable
                 key={tv}
-                ref={tv === 200 ? targetChip200Ref : undefined}
                 style={[styles.targetChip, target === tv && styles.targetChipActive]}
                 onPress={() => { setTarget(tv); Haptics.selectionAsync(); }}
               >
@@ -664,7 +530,7 @@ export default function MainScreen() {
               <FontAwesome5 name="trophy" size={18} color={tournamentActive ? colors.primary : colors.mutedForeground} />
             </Pressable>
           </View>
-          <Pressable ref={settingsBtnRef} style={styles.settingsBtn} onPress={() => setSettingsModal(true)}>
+          <Pressable style={styles.settingsBtn} onPress={() => setSettingsModal(true)}>
             <Feather name="settings" size={20} color={colors.mutedForeground} />
           </Pressable>
         </View>
@@ -728,10 +594,9 @@ export default function MainScreen() {
                 </View>
               );
             })
-          : players.map((player, pi) => renderPlayerCard(
+          : players.map((player) => renderPlayerCard(
               player,
               players.length === 1,
-              pi === 0 ? addBtnCasaRef : pi === 1 ? addBtnVisitRef : undefined,
             ))}
         <View style={styles.addBoxRow}>
           {mesas === 0 && (
@@ -785,7 +650,7 @@ export default function MainScreen() {
       {/* ── Bottom buttons row ── */}
       <View style={styles.bottomRow}>
         {previousGames.length > 0 && (
-          <Pressable ref={historyBtnRef} style={styles.historyBtn} onPress={() => setHistoryModal(true)}>
+          <Pressable style={styles.historyBtn} onPress={() => setHistoryModal(true)}>
             <Feather name="archive" size={15} color={colors.mutedForeground} />
             <Text style={styles.historyBtnText}>{t.previous}</Text>
             <View style={styles.historyBadge}>
@@ -794,7 +659,6 @@ export default function MainScreen() {
           </Pressable>
         )}
         <Pressable
-          ref={restartBtnRef}
           style={[styles.restartBtn, previousGames.length > 0 && { flex: 1 }]}
           onPress={() => setRestartModal(true)}
         >
@@ -1441,19 +1305,6 @@ export default function MainScreen() {
               </Pressable>
             )}
 
-            {/* Show tutorial button */}
-            <Pressable
-              style={[styles.showTutorialBtn, { borderColor: colors.border }]}
-              onPress={() => {
-                setSettingsModal(false);
-                setTutorialStep(0);
-                setTutorialVisible(true);
-              }}
-            >
-              <Feather name="help-circle" size={16} color={colors.mutedForeground} />
-              <Text style={[styles.showTutorialText, { color: colors.mutedForeground }]}>{t.tutorialShowAgain}</Text>
-            </Pressable>
-
             <Pressable
               style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 14, paddingTop: 13, paddingBottom: 19, alignSelf: "center", paddingHorizontal: 56 }]}
               onPress={() => setSettingsModal(false)}
@@ -1464,28 +1315,6 @@ export default function MainScreen() {
         </View>
       </Modal>
 
-      {/* Tutorial overlay */}
-      <TutorialOverlay
-        visible={tutorialVisible}
-        steps={tutorialStepsRef.current}
-        currentStep={tutorialStep}
-        onNext={() => {
-          if (tutorialStep >= 11) {
-            setTutorialVisible(false);
-            setTutorialSeen(true);
-            AsyncStorage.setItem("domino_tutorial_seen", "true");
-          } else {
-            setTutorialStep(tutorialStep + 1);
-          }
-        }}
-        onSkip={() => {
-          setTutorialVisible(false);
-          setTutorialSeen(true);
-          AsyncStorage.setItem("domino_tutorial_seen", "true");
-        }}
-        t={t}
-        colors={colors}
-      />
     </View>
   );
 }
@@ -2404,20 +2233,6 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontFamily: "Inter_400Regular",
       fontSize: 12,
       color: colors.mutedForeground,
-    },
-    showTutorialBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-      marginTop: 14,
-      paddingVertical: 12,
-      borderRadius: 10,
-      borderWidth: 1.5,
-    },
-    showTutorialText: {
-      fontFamily: "Inter_600SemiBold",
-      fontSize: 14,
     },
     historyPanel: {
       overflow: "hidden",

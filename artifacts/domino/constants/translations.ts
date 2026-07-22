@@ -113,25 +113,6 @@ const es = {
   methodPoints: "Puntos (alcance la meta)",
   tapWinnerHint: "Toca el equipo ganador",
   reachTarget: (n: number) => `Alcanza ${n} puntos`,
-  // Tutorial
-  tutorialSkip: "Omitir",
-  tutorialNext: "Siguiente",
-  tutorialBack: "Atr\u00e1s",
-  tutorialShowAgain: "Ver tutorial",
-  tutorialDone: "Entendido",
-  // Spotlight tutorial steps
-  tutStep1: "Elige la meta de puntos: toca 100 o 200 arriba. Cuando un jugador llega, gana la partida.",
-  tutStep2: "\u00a1+50 para Casa! Toca + para abrir el panel, escribe puntos y toca Agregar.",
-  tutStep3: "\u00a1+30 Extra para Visitante! Activa Extras cuando ganas la mano con piedras sobrantes.",
-  tutStep4: "\u00a1Editado! La app cambi\u00f3 50 por 55. El historial de valores anteriores se guarda autom\u00e1ticamente.",
-  tutStep5: "El ojito muestra el historial: antes era 50, ahora es 55. Se cierra solo en 10 segundos.",
-  tutStep6: "\u00a1Borrado! La app tach\u00f3 la anotaci\u00f3n de Visitante. Recup\u00e9rala con \u2197.",
-  tutStep7: "\u00a1Empate! La app anot\u00f3 Empate para Casa. Nadie suma puntos y aparece el badge gris.",
-  tutStep8: "Todas las partidas se guardan en el Historial con fecha, jugadores y puntajes.",
-  tutStep9: "Reinicia para comenzar una partida nueva. La anterior se guarda autom\u00e1ticamente.",
-  tutStep10: "La tuerca abre Ajustes: cambia jugadores, mesas, idioma y fondo de pantalla.",
-  tutStep11: "En Ajustes elige de 2 a 8 jugadores y de 0 a 20 mesas. Tambi\u00e9n puedes poner tu foto de fondo.",
-  tutStep12: "\u00a1Listo! Ya sabes usar el marcador. \u00a1A jugar!",
 };
 
 const en = {
@@ -247,25 +228,6 @@ const en = {
   methodPoints: "Points (reach the target)",
   tapWinnerHint: "Tap the winning team",
   reachTarget: (n: number) => `Reach ${n} points`,
-  // Tutorial
-  tutorialSkip: "Skip",
-  tutorialNext: "Next",
-  tutorialBack: "Back",
-  tutorialShowAgain: "Show tutorial",
-  tutorialDone: "Got it",
-  // Spotlight tutorial steps
-  tutStep1: "Choose the points target: tap 100 or 200 at the top. When a player reaches it, they win.",
-  tutStep2: "+50 for House! Tap + to open the panel, type points, then tap Add.",
-  tutStep3: "+30 Extra for Visitors! Enable Extras when you win the hand with leftover stones.",
-  tutStep4: "Edited! The app changed 50 to 55. Previous values are automatically recorded.",
-  tutStep5: "The eye shows the history: it was 50, now it's 55. It auto-closes after 10 seconds.",
-  tutStep6: "Deleted! The app crossed out Visitors' entry. Restore it with \u2197.",
-  tutStep7: "Tie! The app scored a Tie for House. Nobody gets points; the gray badge appears.",
-  tutStep8: "All games are saved in History with date, players and scores.",
-  tutStep9: "Restart to begin a new game. The previous one is automatically saved.",
-  tutStep10: "The gear opens Settings: change players, tables, language and background.",
-  tutStep11: "In Settings choose 2\u20138 players and 0\u201320 tables. You can also set your own photo as background.",
-  tutStep12: "Done! You now know how to use the scoreboard. Let's play!",
 };
 
 export type Translations = typeof es;
