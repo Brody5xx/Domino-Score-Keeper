@@ -3,7 +3,7 @@ import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import { File, Paths } from "expo-file-system";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Easing,
@@ -1429,7 +1429,7 @@ export default function MainScreen() {
       {/* Tutorial overlay */}
       <TutorialOverlay
         visible={tutorialVisible}
-        steps={[
+        steps={useMemo(() => [
           // Step 0: Meta de puntos
           { targetRef: targetChip200Ref, text: t.tutStep1, action: () => { setTarget(200); }, actionDelay: 500, autoAdvanceDelay: 1200 },
           // Step 1: +50 para Casa
@@ -1454,7 +1454,7 @@ export default function MainScreen() {
           { targetRef: settingsBtnRef, text: t.tutStep11 },
           // Step 11: Done
           { text: t.tutStep12, actionDelay: 0 },
-        ]}
+        ], [t, tutorialActions])}
         currentStep={tutorialStep}
         onNext={() => {
           if (tutorialStep >= 11) {

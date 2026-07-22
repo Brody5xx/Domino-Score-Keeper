@@ -102,10 +102,16 @@ export default function TutorialOverlay({
   }, [visible, currentStep, fadeAnim]);
 
   // Execute step action (app presses button automatically) then optionally auto-advance
+  const executedStepRef = useRef<number>(-1);
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) {
+      executedStepRef.current = -1;
+      return;
+    }
     const step = steps[currentStep];
     if (!step?.action) return;
+    if (executedStepRef.current === currentStep) return; // already ran for this step
+    executedStepRef.current = currentStep;
     const delay = step.actionDelay ?? 0;
     const actionTimer = setTimeout(() => {
       step.action?.();
