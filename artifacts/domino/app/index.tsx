@@ -218,10 +218,6 @@ export default function MainScreen() {
         case 7:
           if (casa) addEntry(casa.id, 0, false, true);
           break;
-        case 8:
-          // Archive current game so the History button appears for the tutorial
-          restart();
-          break;
       }
     };
 
@@ -720,18 +716,18 @@ export default function MainScreen() {
       {/* ── Bottom buttons row ── */}
       <View style={{ gap: 10 }}>
         <View style={styles.bottomRow}>
-          {previousGames.length > 0 && (
-            <Pressable ref={historyBtnRef} style={styles.historyBtn} onPress={() => setHistoryModal(true)}>
-              <Feather name="archive" size={15} color={colors.mutedForeground} />
-              <Text style={styles.historyBtnText}>{t.previous}</Text>
+          <Pressable ref={historyBtnRef} style={styles.historyBtn} onPress={() => setHistoryModal(true)}>
+            <Feather name="archive" size={15} color={colors.mutedForeground} />
+            <Text style={styles.historyBtnText}>{t.previous}</Text>
+            {previousGames.length > 0 && (
               <View style={styles.historyBadge}>
                 <Text style={styles.historyBadgeText}>{previousGames.length}</Text>
               </View>
-            </Pressable>
-          )}
+            )}
+          </Pressable>
           <Pressable
             ref={restartBtnRef}
-            style={[styles.restartBtn, previousGames.length > 0 && { flex: 1 }]}
+            style={[styles.restartBtn, { flex: 1 }]}
             onPress={() => setRestartModal(true)}
           >
             <Feather name="rotate-ccw" size={15} color={colors.destructive} />
