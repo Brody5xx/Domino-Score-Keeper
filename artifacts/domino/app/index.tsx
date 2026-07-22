@@ -212,6 +212,10 @@ export default function MainScreen() {
         case 6:
           if (casa) addEntry(casa.id, 0, false, true);
           break;
+        case 7:
+          // Archive current game so the History button appears for the tutorial
+          restart();
+          break;
       }
     };
 
