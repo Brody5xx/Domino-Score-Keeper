@@ -380,13 +380,14 @@ export default function MainScreen() {
 
         {playerEntries.length > 0 && (
           <View style={styles.cardHistory}>
-            {playerEntries.slice().reverse().map((entry, idx) => (
+            {playerEntries.slice().reverse().map((entry, idx, arr) => (
               <HistoryEntryItem
                 key={entry.id}
                 entry={entry}
                 num={playerEntries.length - idx}
                 playerColor={player.color}
                 isOpen={revealedEntry === entry.id}
+                isLast={idx === arr.length - 1}
                 onToggleReveal={() => {
                   if (revealTimerRef.current) {
                     clearTimeout(revealTimerRef.current);

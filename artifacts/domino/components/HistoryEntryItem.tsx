@@ -16,6 +16,7 @@ interface Props {
   num: number;
   playerColor: string;
   isOpen: boolean;
+  isLast?: boolean;
   onToggleReveal: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -32,6 +33,7 @@ export default function HistoryEntryItem({
   num,
   playerColor,
   isOpen,
+  isLast,
   onToggleReveal,
   onEdit,
   onDelete,
@@ -59,7 +61,7 @@ export default function HistoryEntryItem({
   });
 
   return (
-    <View>
+    <View style={[styles.entryContainer, !isLast && { borderBottomColor: colors.mutedForeground + "33" }]}>
       <View style={styles.cardEntryRow}>
         <View style={[styles.cardEntryLeft, { flexWrap: "wrap", alignItems: "center" }]}>
           <Text style={styles.cardEntryNum}>{num}</Text>
@@ -126,6 +128,10 @@ export default function HistoryEntryItem({
 }
 
 const styles = {
+  entryContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: "transparent",
+  },
   cardEntryRow: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
