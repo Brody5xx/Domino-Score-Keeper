@@ -22,6 +22,7 @@ interface Props {
   onDelete: () => void;
   t: Translations;
   colors: {
+    primary: string;
     mutedForeground: string;
     destructive: string;
     foreground: string;
@@ -160,7 +161,7 @@ const styles = {
     opacity: 0.4,
   },
   extraBadge: {
-    backgroundColor: "#eab30820",
+    backgroundColor: "#22c55e20",
     paddingHorizontal: 5,
     paddingVertical: 1,
     borderRadius: 4,
@@ -168,7 +169,7 @@ const styles = {
   extraBadgeText: {
     fontFamily: "Inter_500Medium",
     fontSize: 9,
-    color: "#eab308",
+    color: "#22c55e",
   },
   tieBadge: {
     backgroundColor: "#6b728020",

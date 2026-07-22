@@ -407,7 +407,7 @@ export default function MainScreen() {
                 onEdit={() => { setEditModal({ entryId: entry.id, currentPoints: entry.points }); setEditInput(String(entry.points)); }}
                 onDelete={() => { deleteEntry(entry.id); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
                 t={t}
-                colors={{ mutedForeground: colors.mutedForeground, destructive: colors.destructive, foreground: colors.foreground }}
+                colors={{ primary: colors.primary, mutedForeground: colors.mutedForeground, destructive: colors.destructive, foreground: colors.foreground }}
               />
             ))}
           </View>
