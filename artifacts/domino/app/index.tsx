@@ -119,6 +119,7 @@ export default function MainScreen() {
   const casaFirstEntryRef = useRef<View>(null);
   const visitFirstEntryRef = useRef<View>(null);
   const visitDeletedEntryRef = useRef<View>(null);
+  const casaEyeRef = useRef<View>(null);
 
   // Load tutorial seen state on mount
   useEffect(() => {
@@ -161,7 +162,7 @@ export default function MainScreen() {
     { targetRef: addBtnCasaRef, text: t.tutStep2, actionDelay: 500 },
     { targetRef: visitFirstEntryRef, text: t.tutStep3, actionDelay: 500 },
     { targetRef: casaFirstEntryRef, text: t.tutStep4, actionDelay: 500 },
-    { targetRef: casaFirstEntryRef, text: t.tutStep5, actionDelay: 500 },
+    { targetRef: casaEyeRef, text: t.tutStep5, actionDelay: 500 },
     { targetRef: visitDeletedEntryRef, text: t.tutStep6, actionDelay: 500 },
     { targetRef: casaFirstEntryRef, text: t.tutStep7, actionDelay: 500 },
     { targetRef: restartBtnRef, text: t.tutStep9, actionDelay: 500 },
@@ -519,6 +520,7 @@ export default function MainScreen() {
                 isOpen={revealedEntry === entry.id}
                 isLast={idx === arr.length - 1}
                 rowRef={entry.deleted && player.id === players[1]?.id ? visitDeletedEntryRef : (idx === 0 ? (player.id === players[0]?.id ? casaFirstEntryRef : player.id === players[1]?.id ? visitFirstEntryRef : undefined) : undefined)}
+                eyeRef={player.id === players[0]?.id && entry.edited ? casaEyeRef : undefined}
                 onToggleReveal={() => {
                   if (revealTimerRef.current) {
                     clearTimeout(revealTimerRef.current);

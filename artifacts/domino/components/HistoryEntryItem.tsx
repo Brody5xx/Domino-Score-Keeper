@@ -18,6 +18,7 @@ interface Props {
   isOpen: boolean;
   isLast?: boolean;
   rowRef?: React.RefObject<View | null>;
+  eyeRef?: React.RefObject<View | null>;
   onToggleReveal: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -37,6 +38,7 @@ export default function HistoryEntryItem({
   isOpen,
   isLast,
   rowRef,
+  eyeRef,
   onToggleReveal,
   onEdit,
   onDelete,
@@ -80,6 +82,7 @@ export default function HistoryEntryItem({
           ) : null}
           {entry.edited ? (
             <Pressable
+              ref={eyeRef}
               style={styles.editedBadge}
               onPress={() => {
                 onToggleReveal();
