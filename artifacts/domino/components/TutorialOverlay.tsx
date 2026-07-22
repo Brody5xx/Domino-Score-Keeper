@@ -170,6 +170,11 @@ export default function TutorialOverlay({
                 <Text style={[styles.btnText, { color: colors.mutedForeground }]}>{t.tutorialBack}</Text>
               </Pressable>
             )}
+            {!isLast && (
+              <Pressable style={[styles.btn, styles.btnOutline, { borderColor: colors.border }]} onPress={onSkip}>
+                <Text style={[styles.btnText, { color: colors.mutedForeground }]}>{t.tutorialSkip}</Text>
+              </Pressable>
+            )}
             <Pressable
               style={[
                 styles.btn,
@@ -181,9 +186,6 @@ export default function TutorialOverlay({
               <Text style={[styles.btnText, { color: isLast ? "#fff" : colors.foreground }]}>
                 {isLast ? t.tutorialDone : t.tutorialNext}
               </Text>
-            </Pressable>
-            <Pressable style={[styles.btn, styles.btnOutline, { borderColor: colors.border }]} onPress={onSkip}>
-              <Text style={[styles.btnText, { color: colors.mutedForeground }]}>{t.tutorialSkip}</Text>
             </Pressable>
           </View>
 
