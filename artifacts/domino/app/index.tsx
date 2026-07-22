@@ -110,6 +110,7 @@ export default function MainScreen() {
 
   // Tutorial spotlight refs
   const targetChip200Ref = useRef<View>(null);
+  const customTargetRef = useRef<View>(null);
   const addBtnCasaRef = useRef<View>(null);
   const addBtnVisitRef = useRef<View>(null);
   const settingsBtnRef = useRef<View>(null);
@@ -154,6 +155,7 @@ export default function MainScreen() {
 
   const tutorialSteps: TutorialStep[] = [
     { targetRef: targetChip200Ref, text: t.tutStep1, actionDelay: 500 },
+    { targetRef: customTargetRef, text: t.tutStep1b, actionDelay: 500 },
     { targetRef: addBtnCasaRef, text: t.tutStep2, actionDelay: 500 },
     { targetRef: addBtnVisitRef, text: t.tutStep3, actionDelay: 500 },
     { targetRef: casaFirstEntryRef, text: t.tutStep4, actionDelay: 500 },
@@ -570,6 +572,7 @@ export default function MainScreen() {
               </Pressable>
             ))}
             <Pressable
+              ref={customTargetRef}
               style={[styles.targetChip, !TARGET_PRESETS.includes(target) && styles.targetChipActive]}
               onPress={() => {
                 setCustomModal(true);
@@ -1398,7 +1401,7 @@ export default function MainScreen() {
         steps={tutorialSteps}
         currentStep={tutorialStep}
         onNext={() => {
-          if (tutorialStep >= 11) {
+          if (tutorialStep >= 12) {
             setTutorialVisible(false);
             setTutorialSeen(true);
             AsyncStorage.setItem("domino_tutorial_seen", "true");

@@ -121,6 +121,7 @@ const es = {
   tutorialDone: "Entendido",
   // Spotlight tutorial steps
   tutStep1: "Elige la meta de puntos: toca 100 o 200 arriba. Cuando un jugador llega, gana la partida.",
+  tutStep1b: "\u00bfQuieres otra meta? Toca los puntitos para escribir cualquier cantidad, como 150 o 300.",
   tutStep2: "\u00a1+50 para Casa! Toca + para abrir el panel, escribe puntos y toca Agregar.",
   tutStep3: "\u00a1+30 Extra para Visitante! Activa Extras para sumar puntos adicionales durante la partida.",
   tutStep4: "\u00a1Editado! La app cambi\u00f3 50 por 55. El historial de valores anteriores se guarda autom\u00e1ticamente.",
@@ -255,6 +256,7 @@ const en = {
   tutorialDone: "Got it",
   // Spotlight tutorial steps
   tutStep1: "Choose the points target: tap 100 or 200 at the top. When a player reaches it, they win.",
+  tutStep1b: "Want a different target? Tap the dots to type any amount, like 150 or 300.",
   tutStep2: "+50 for House! Tap + to open the panel, type points, then tap Add.",
   tutStep3: "+30 Extra for Visitors! Enable Extras to add bonus points during the match.",
   tutStep4: "Edited! The app changed 50 to 55. Previous values are automatically recorded.",
