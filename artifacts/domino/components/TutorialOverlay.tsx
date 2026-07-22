@@ -103,7 +103,7 @@ export default function TutorialOverlay({
 
   if (!visible || !step) return null;
 
-  const showNav = currentStep >= 7;
+  const showNav = currentStep >= 0;
   const isLast = currentStep >= steps.length - 1;
 
   return (

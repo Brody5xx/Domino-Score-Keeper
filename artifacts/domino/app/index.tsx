@@ -153,13 +153,13 @@ export default function MainScreen() {
   }, [tutorialVisible]);
 
   const tutorialSteps: TutorialStep[] = [
-    { targetRef: targetChip200Ref, text: t.tutStep1, actionDelay: 500, autoAdvanceDelay: 1200 },
-    { targetRef: addBtnCasaRef, text: t.tutStep2, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: addBtnVisitRef, text: t.tutStep3, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: casaFirstEntryRef, text: t.tutStep4, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: casaFirstEntryRef, text: t.tutStep5, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: visitFirstEntryRef, text: t.tutStep6, actionDelay: 500, autoAdvanceDelay: 1500 },
-    { targetRef: casaFirstEntryRef, text: t.tutStep7, actionDelay: 500, autoAdvanceDelay: 1500 },
+    { targetRef: targetChip200Ref, text: t.tutStep1, actionDelay: 500 },
+    { targetRef: addBtnCasaRef, text: t.tutStep2, actionDelay: 500 },
+    { targetRef: addBtnVisitRef, text: t.tutStep3, actionDelay: 500 },
+    { targetRef: casaFirstEntryRef, text: t.tutStep4, actionDelay: 500 },
+    { targetRef: casaFirstEntryRef, text: t.tutStep5, actionDelay: 500 },
+    { targetRef: visitFirstEntryRef, text: t.tutStep6, actionDelay: 500 },
+    { targetRef: casaFirstEntryRef, text: t.tutStep7, actionDelay: 500 },
     { targetRef: historyBtnRef, text: t.tutStep8 },
     { targetRef: restartBtnRef, text: t.tutStep9 },
     { targetRef: settingsBtnRef, text: t.tutStep10 },
@@ -221,18 +221,11 @@ export default function MainScreen() {
 
     const step = tutorialSteps[tutorialStep];
     const actionDelay = step?.actionDelay ?? 500;
-    const autoAdvanceDelay = step?.autoAdvanceDelay ?? 0;
 
     const actionTimer = setTimeout(runAction, actionDelay);
-    const advanceTimer = autoAdvanceDelay > 0
-      ? setTimeout(() => {
-          if (tutorialStep < 11) setTutorialStep(tutorialStep + 1);
-        }, actionDelay + autoAdvanceDelay)
-      : null;
 
     return () => {
       clearTimeout(actionTimer);
-      if (advanceTimer) clearTimeout(advanceTimer);
     };
   }, [tutorialVisible, tutorialStep, players, entries, addEntry, editEntry, deleteEntry, setTarget, setRevealedEntry]);
 
