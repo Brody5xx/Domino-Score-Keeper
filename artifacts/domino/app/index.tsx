@@ -109,7 +109,7 @@ export default function MainScreen() {
   const mesaPositions = useRef<Record<number, number>>({});
   const highlightAnim = useRef(new Animated.Value(0)).current;
 
-  // Tutorial spotlight refs (main screen only — no modal interior refs to avoid crash)
+  // Tutorial spotlight refs — main screen
   const targetChip200Ref = useRef<View>(null);
   const customTargetRef = useRef<View>(null);
   const addBtnCasaRef = useRef<View>(null);
@@ -121,6 +121,11 @@ export default function MainScreen() {
   const visitFirstEntryRef = useRef<View>(null);
   const visitDeletedEntryRef = useRef<View>(null);
   const casaEyeRef = useRef<View>(null);
+  // Tutorial spotlight refs — inside Add Modal
+  const addModalInputRef = useRef<View>(null);
+  const addModalExtraToggleRef = useRef<View>(null);
+  const addModalTieBtnRef = useRef<View>(null);
+  const addModalAddBtnRef = useRef<View>(null);
 
   // Load tutorial seen state on mount
   useEffect(() => {
@@ -141,6 +146,28 @@ export default function MainScreen() {
       setRevealedEntry(null);
     }
   }, [tutorialVisible]);
+
+  // Open/close Add Modal automatically during tutorial steps 4-7 (input, extras, tie, add)
+  useEffect(() => {
+    if (!tutorialVisible) return;
+    const casaId = players[0]?.id;
+    if (!casaId) return;
+    if (tutorialStep >= 4 && tutorialStep <= 7) {
+      if (!addModal || addModal.playerId !== casaId) {
+        setAddModal({ playerId: casaId });
+        setPointsInput("");
+        setExtraMode(false);
+        setForBoth(false);
+      }
+    } else if (tutorialStep >= 8) {
+      if (addModal !== null) {
+        setAddModal(null);
+        setPointsInput("");
+        setExtraMode(false);
+        setForBoth(false);
+      }
+    }
+  }, [tutorialVisible, tutorialStep, players, addModal]);
 
   // Pre-load demo data when tutorial starts; keep it fully manual (no auto actions)
   useEffect(() => {
@@ -170,20 +197,22 @@ export default function MainScreen() {
   }, [tutorialVisible]);
 
   const tutorialSteps: TutorialStep[] = [
-    { text: t.tutStep0 },                              // 0: welcome
-    { targetRef: targetChip200Ref, text: t.tutStep1 },  // 1: target
+    { text: t.tutStep0 },                             // 0: welcome
+    { targetRef: targetChip200Ref, text: t.tutStep1 }, // 1: target
     { targetRef: customTargetRef, text: t.tutStep2 },  // 2: custom target
-    { targetRef: addBtnCasaRef, text: t.tutStep3 },    // 3: add button casa
-    { targetRef: addBtnVisitRef, text: t.tutStep4 },   // 4: add button visitante
-    { targetRef: casaFirstEntryRef, text: t.tutStep5 },// 5: edit/pencil
-    { targetRef: casaEyeRef, text: t.tutStep6 },        // 6: eye reveal
-    { targetRef: visitDeletedEntryRef, text: t.tutStep7 }, // 7: trash / restore
-    { targetRef: addBtnCasaRef, text: t.tutStep8 },    // 8: tie (via add)
-    { targetRef: historyBtnRef, text: t.tutStep9 },    // 9: history auto-save
-    { targetRef: restartBtnRef, text: t.tutStep10 },   // 10: restart
-    { targetRef: settingsBtnRef, text: t.tutStep11 }, // 11: settings
-    { targetRef: settingsBtnRef, text: t.tutStep12 },  // 12: players/tables/photo
-    { text: t.tutStep13 },                              // 13: done
+    { targetRef: addBtnCasaRef, text: t.tutStep3 },    // 3: add button (open modal)
+    { targetRef: addModalInputRef, text: t.tutStep4 }, // 4: input field
+    { targetRef: addModalExtraToggleRef, text: t.tutStep5 }, // 5: extras toggle
+    { targetRef: addModalTieBtnRef, text: t.tutStep6 }, // 6: tie button
+    { targetRef: addModalAddBtnRef, text: t.tutStep7 }, // 7: add button
+    { targetRef: casaFirstEntryRef, text: t.tutStep8 }, // 8: edit/pencil (close modal)
+    { targetRef: casaEyeRef, text: t.tutStep9 },        // 9: eye reveal
+    { targetRef: visitDeletedEntryRef, text: t.tutStep10 }, // 10: trash / restore
+    { targetRef: historyBtnRef, text: t.tutStep11 }, // 11: history auto-save
+    { targetRef: restartBtnRef, text: t.tutStep12 }, // 12: restart
+    { targetRef: settingsBtnRef, text: t.tutStep13 }, // 13: settings
+    { targetRef: settingsBtnRef, text: t.tutStep14 },  // 14: players/tables/photo
+    { text: t.tutStep15 },                             // 15: done
   ];
 
 
@@ -765,7 +794,13 @@ export default function MainScreen() {
 
       {/* Add points */}
       <Modal visible={addModal !== null} transparent animationType="fade" onRequestClose={closeAddModal}>
-        <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <KeyboardAvoidingView
+          style={[
+            styles.overlay,
+            tutorialVisible && tutorialStep >= 4 && tutorialStep <= 7 && { backgroundColor: "transparent" },
+          ]}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
           <View style={styles.modalCard}>
             {(() => {
               const p = players.find((pl) => pl.id === addModal?.playerId);
@@ -775,16 +810,18 @@ export default function MainScreen() {
                 </Text>
               );
             })()}
-            <TextInput
-              style={[styles.modalInput, styles.transparentInput]}
-              placeholder="0"
-              placeholderTextColor={colors.mutedForeground}
-              keyboardType="number-pad"
-              value={pointsInput}
-              onChangeText={setPointsInput}
-              autoFocus={!tutorialVisible}
-              selectTextOnFocus
-            />
+            <View ref={addModalInputRef} collapsable={false}>
+              <TextInput
+                style={[styles.modalInput, styles.transparentInput]}
+                placeholder="0"
+                placeholderTextColor={colors.mutedForeground}
+                keyboardType="number-pad"
+                value={pointsInput}
+                onChangeText={setPointsInput}
+                autoFocus={!tutorialVisible}
+                selectTextOnFocus
+              />
+            </View>
             {addModal && (() => {
               const parsed = parseInt(pointsInput, 10);
               const pts = !isNaN(parsed) && parsed > 0 ? parsed : 0;
@@ -809,6 +846,7 @@ export default function MainScreen() {
               </Pressable>
             )}
             <Pressable
+              ref={addModalExtraToggleRef}
               style={styles.extraToggleRow}
               onPress={() => { setExtraMode((v) => !v); Haptics.selectionAsync(); }}
             >
@@ -817,7 +855,7 @@ export default function MainScreen() {
               </View>
               <Text style={styles.extraToggleText}>{t.extraToggle}</Text>
             </Pressable>
-            <Pressable style={styles.tieBtn} onPress={handleTie}>
+            <Pressable ref={addModalTieBtnRef} style={styles.tieBtn} onPress={handleTie}>
               <Feather name="minus-circle" size={16} color={colors.mutedForeground} />
               <Text style={styles.tieBtnText}>{t.tie}</Text>
             </Pressable>
@@ -826,6 +864,7 @@ export default function MainScreen() {
                 <Text style={styles.modalCancelText}>{t.cancel}</Text>
               </Pressable>
               <Pressable
+                ref={addModalAddBtnRef}
                 style={[styles.modalConfirm, { backgroundColor: players.find((pl) => pl.id === addModal?.playerId)?.color ?? colors.primary }]}
                 onPress={handleAddPoints}
               >
@@ -1358,7 +1397,7 @@ export default function MainScreen() {
         steps={tutorialSteps}
         currentStep={tutorialStep}
         onNext={() => {
-          if (tutorialStep >= 13) {
+          if (tutorialStep >= 15) {
             setTutorialVisible(false);
             setTutorialSeen(true);
             AsyncStorage.setItem("domino_tutorial_seen", "true");

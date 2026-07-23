@@ -52,7 +52,7 @@ export default function TutorialOverlay({
   const step = steps[currentStep];
 
   useEffect(() => {
-    if (!visible || !step?.targetRef?.current) {
+    if (!visible || !step?.targetRef) {
       setTargetLayout(null);
       return;
     }
@@ -68,6 +68,7 @@ export default function TutorialOverlay({
     const id = setInterval(measure, 300);
     return () => clearInterval(id);
   }, [visible, step, currentStep]);
+
 
   useEffect(() => {
     if (!visible) return;
