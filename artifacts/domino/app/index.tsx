@@ -45,7 +45,7 @@ type EditModalState = { entryId: string; currentPoints: number } | null;
 export default function MainScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { t, lang, setLang } = useLang();
+  const { t, lang, setLang, needsLanguageSelection } = useLang();
   const {
     players,
     entries,
@@ -129,13 +129,14 @@ export default function MainScreen() {
 
   // Load tutorial seen state on mount
   useEffect(() => {
+    if (needsLanguageSelection) return;
     AsyncStorage.getItem("domino_tutorial_seen").then((val) => {
       if (val === null) {
         setTutorialSeen(false);
         setTutorialVisible(true);
       }
     });
-  }, []);
+  }, [needsLanguageSelection]);
 
   // Close any modals when tutorial finishes
   useEffect(() => {
@@ -1420,7 +1421,52 @@ export default function MainScreen() {
         t={t}
         colors={colors}
       />
+      <LanguageSelectionModal
+        visible={needsLanguageSelection}
+        t={t}
+        colors={colors}
+        onSelect={setLang}
+      />
     </View>
+  );
+}
+
+function LanguageSelectionModal({
+  visible,
+  t,
+  colors,
+  onSelect,
+}: {
+  visible: boolean;
+  t: ReturnType<typeof useLang>["t"];
+  colors: ReturnType<typeof import("@/hooks/useColors").useColors>;
+  onSelect: (lang: Lang) => void;
+}) {
+  const styles = makeStyles(colors);
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={() => {}}>
+      <View style={styles.languageWelcomeOverlay}>
+        <View style={styles.languageWelcomeCard}>
+          <Text style={styles.languageWelcomeTitle}>{t.firstLanguageTitle}</Text>
+          <Text style={styles.languageWelcomeSubtitle}>{t.firstLanguageSubtitle}</Text>
+          <View style={styles.languageWelcomeGrid}>
+            {LANGUAGE_OPTIONS.map((option) => (
+              <Pressable
+                key={option.value}
+                style={styles.languageWelcomeOption}
+                onPress={() => onSelect(option.value)}
+                accessibilityRole="button"
+                accessibilityLabel={`${option.flag} ${t[option.labelKey]}`}
+              >
+                <Text style={styles.languageWelcomeFlag}>{option.flag}</Text>
+                <Text style={styles.languageWelcomeName}>{t[option.labelKey]}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -1924,6 +1970,64 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       backgroundColor: "rgba(0,0,0,0.7)",
       justifyContent: "center",
       alignItems: "center",
+    },
+    languageWelcomeOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.78)",
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 18,
+    },
+    languageWelcomeCard: {
+      width: "100%",
+      maxWidth: 420,
+      backgroundColor: colors.card,
+      borderRadius: 24,
+      padding: 24,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    languageWelcomeTitle: {
+      fontFamily: "Inter_700Bold",
+      fontSize: 23,
+      color: colors.foreground,
+      textAlign: "center",
+      marginBottom: 8,
+    },
+    languageWelcomeSubtitle: {
+      fontFamily: "Inter_400Regular",
+      fontSize: 14,
+      lineHeight: 20,
+      color: colors.mutedForeground,
+      textAlign: "center",
+      marginBottom: 22,
+    },
+    languageWelcomeGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "space-between",
+      gap: 10,
+    },
+    languageWelcomeOption: {
+      width: "48%",
+      minHeight: 82,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.background,
+      borderRadius: 15,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingVertical: 10,
+    },
+    languageWelcomeFlag: {
+      fontSize: 29,
+      lineHeight: 34,
+      marginBottom: 4,
+    },
+    languageWelcomeName: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 13,
+      color: colors.foreground,
     },
     modalCard: {
       width: "80%",

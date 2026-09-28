@@ -6,6 +6,7 @@ import { TRANSLATIONS, type Lang, type Translations } from "@/constants/translat
 interface LangContextValue {
   lang: Lang;
   setLang: (lang: Lang) => void;
+  needsLanguageSelection: boolean;
   t: Translations;
 }
 
@@ -16,11 +17,14 @@ const LangContext = createContext<LangContextValue | null>(null);
 export function LangProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>("es");
   const [loaded, setLoaded] = useState(false);
+  const [needsLanguageSelection, setNeedsLanguageSelection] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(LANG_KEY).then((val) => {
       if (val === "es" || val === "en" || val === "pt" || val === "fr" || val === "it") {
         setLangState(val);
+      } else {
+        setNeedsLanguageSelection(true);
       }
       setLoaded(true);
     });
@@ -28,13 +32,14 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
 
   function setLang(l: Lang) {
     setLangState(l);
+    setNeedsLanguageSelection(false);
     AsyncStorage.setItem(LANG_KEY, l);
   }
 
   if (!loaded) return null;
 
   return (
-    <LangContext.Provider value={{ lang, setLang, t: TRANSLATIONS[lang] }}>
+    <LangContext.Provider value={{ lang, setLang, needsLanguageSelection, t: TRANSLATIONS[lang] }}>
       {children}
     </LangContext.Provider>
   );
