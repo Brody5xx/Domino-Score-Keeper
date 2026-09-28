@@ -69,6 +69,45 @@ function hslToHex(h: number, s: number, l: number): string {
     .join("")}`;
 }
 
+function hexToHsl(hex: string): [number, number, number] | null {
+  const normalized = hex.replace("#", "");
+  if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return null;
+
+  const red = parseInt(normalized.slice(0, 2), 16) / 255;
+  const green = parseInt(normalized.slice(2, 4), 16) / 255;
+  const blue = parseInt(normalized.slice(4, 6), 16) / 255;
+  const max = Math.max(red, green, blue);
+  const min = Math.min(red, green, blue);
+  const delta = max - min;
+  const lightness = (max + min) / 2;
+  const saturation = delta === 0
+    ? 0
+    : delta / (1 - Math.abs(2 * lightness - 1));
+  let hue = 0;
+
+  if (delta !== 0) {
+    if (max === red) hue = 60 * (((green - blue) / delta) % 6);
+    else if (max === green) hue = 60 * ((blue - red) / delta + 2);
+    else hue = 60 * ((red - green) / delta + 4);
+  }
+
+  return [hue < 0 ? hue + 360 : hue, saturation * 100, lightness * 100];
+}
+
+function getClosestWheelCell(color: string): { hueIndex: number; ringIndex: number } | null {
+  const hsl = hexToHsl(color);
+  if (!hsl) return null;
+  const hueIndex = Math.min(
+    COLOR_WHEEL_SLICES - 1,
+    Math.floor((hsl[0] / 360) * COLOR_WHEEL_SLICES),
+  );
+  const ringIndex = Math.max(
+    0,
+    Math.min(COLOR_WHEEL_RINGS - 1, Math.round((hsl[1] - 22) / 10)),
+  );
+  return { hueIndex, ringIndex };
+}
+
 function getWheelCellPath(hueIndex: number, ringIndex: number, size: number): string {
   const center = size / 2;
   const outerRadius = center - 4;
@@ -109,6 +148,13 @@ function ColorWheel({
   hint: string;
 }) {
   const size = 190;
+  const [selectedCell, setSelectedCell] = React.useState(
+    getClosestWheelCell(selectedColor),
+  );
+
+  useEffect(() => {
+    setSelectedCell(getClosestWheelCell(selectedColor));
+  }, [selectedColor]);
 
   return (
     <View style={stylesForColorWheel.wrapper}>
@@ -127,11 +173,32 @@ function ColorWheel({
                 stroke="#FFFFFF"
                 strokeOpacity={0.1}
                 strokeWidth={0.5}
-                onPress={() => onSelect(color)}
+                onPress={() => {
+                  setSelectedCell({ hueIndex, ringIndex });
+                  onSelect(color);
+                }}
               />
             );
           }),
         )}
+        {selectedCell ? (
+          <>
+            <Path
+              d={getWheelCellPath(selectedCell.hueIndex, selectedCell.ringIndex, size)}
+              fill="none"
+              stroke="#FFFFFF"
+              strokeWidth={5}
+              strokeLinejoin="round"
+            />
+            <Path
+              d={getWheelCellPath(selectedCell.hueIndex, selectedCell.ringIndex, size)}
+              fill="none"
+              stroke="#111827"
+              strokeWidth={3}
+              strokeLinejoin="round"
+            />
+          </>
+        ) : null}
         <Circle cx={size / 2} cy={size / 2} r={18} fill="#FFFFFF" />
         <Circle cx={size / 2} cy={size / 2} r={10} fill={selectedColor} />
       </Svg>
