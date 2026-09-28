@@ -32,7 +32,8 @@ import DominoBackground from "@/components/DominoBackground";
 
 const TARGET_PRESETS = [100, 200];
 const FAVORITE_COLORS_KEY = "domino_favorite_colors_v1";
-const COLOR_WHEEL_SLICES = 24;
+const COLOR_WHEEL_SLICES = 36;
+const COLOR_WHEEL_RINGS = 8;
 
 const BG_THEMES = [
   { id: "scatter",  icon: "shuffle"    as const, labelKey: "bgScatter"  as const },
@@ -68,43 +69,73 @@ function hslToHex(h: number, s: number, l: number): string {
     .join("")}`;
 }
 
-function getWheelSlicePath(index: number, size: number): string {
+function getWheelCellPath(hueIndex: number, ringIndex: number, size: number): string {
   const center = size / 2;
-  const radius = center - 4;
-  const startAngle = (index / COLOR_WHEEL_SLICES) * Math.PI * 2 - Math.PI / 2;
-  const endAngle = ((index + 1) / COLOR_WHEEL_SLICES) * Math.PI * 2 - Math.PI / 2;
-  const startX = center + radius * Math.cos(startAngle);
-  const startY = center + radius * Math.sin(startAngle);
-  const endX = center + radius * Math.cos(endAngle);
-  const endY = center + radius * Math.sin(endAngle);
+  const outerRadius = center - 4;
+  const innerRadius = (ringIndex / COLOR_WHEEL_RINGS) * outerRadius;
+  const ringOuterRadius = ((ringIndex + 1) / COLOR_WHEEL_RINGS) * outerRadius;
+  const startAngle = (hueIndex / COLOR_WHEEL_SLICES) * Math.PI * 2 - Math.PI / 2;
+  const endAngle = ((hueIndex + 1) / COLOR_WHEEL_SLICES) * Math.PI * 2 - Math.PI / 2;
+  const outerStartX = center + ringOuterRadius * Math.cos(startAngle);
+  const outerStartY = center + ringOuterRadius * Math.sin(startAngle);
+  const outerEndX = center + ringOuterRadius * Math.cos(endAngle);
+  const outerEndY = center + ringOuterRadius * Math.sin(endAngle);
 
-  return `M ${center} ${center} L ${startX} ${startY} A ${radius} ${radius} 0 0 1 ${endX} ${endY} Z`;
+  if (ringIndex === 0) {
+    return `M ${center} ${center} L ${outerStartX} ${outerStartY} A ${ringOuterRadius} ${ringOuterRadius} 0 0 1 ${outerEndX} ${outerEndY} Z`;
+  }
+
+  const innerEndX = center + innerRadius * Math.cos(endAngle);
+  const innerEndY = center + innerRadius * Math.sin(endAngle);
+  const innerStartX = center + innerRadius * Math.cos(startAngle);
+  const innerStartY = center + innerRadius * Math.sin(startAngle);
+
+  return [
+    `M ${outerStartX} ${outerStartY}`,
+    `A ${ringOuterRadius} ${ringOuterRadius} 0 0 1 ${outerEndX} ${outerEndY}`,
+    `L ${innerEndX} ${innerEndY}`,
+    `A ${innerRadius} ${innerRadius} 0 0 0 ${innerStartX} ${innerStartY}`,
+    "Z",
+  ].join(" ");
 }
 
 function ColorWheel({
   selectedColor,
   onSelect,
+  hint,
 }: {
   selectedColor: string;
   onSelect: (color: string) => void;
+  hint: string;
 }) {
-  const size = 176;
+  const size = 190;
 
   return (
     <View style={stylesForColorWheel.wrapper}>
       <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {Array.from({ length: COLOR_WHEEL_SLICES }).map((_, index) => (
-          <Path
-            key={index}
-            d={getWheelSlicePath(index, size)}
-            fill={hslToHex((index / COLOR_WHEEL_SLICES) * 360, 82, 53)}
-            onPress={() => onSelect(hslToHex((index / COLOR_WHEEL_SLICES) * 360, 82, 53))}
-          />
-        ))}
-        <Circle cx={size / 2} cy={size / 2} r={32} fill={selectedColor} />
-        <Circle cx={size / 2} cy={size / 2} r={32} fill="none" stroke="#FFFFFF" strokeWidth={3} />
+        {Array.from({ length: COLOR_WHEEL_RINGS }).flatMap((_, ringIndex) =>
+          Array.from({ length: COLOR_WHEEL_SLICES }).map((__, hueIndex) => {
+            const hue = (hueIndex / COLOR_WHEEL_SLICES) * 360;
+            const saturation = 22 + ringIndex * 10;
+            const lightness = 96 - ringIndex * 6.3;
+            const color = hslToHex(hue, saturation, lightness);
+            return (
+              <Path
+                key={`${ringIndex}-${hueIndex}`}
+                d={getWheelCellPath(hueIndex, ringIndex, size)}
+                fill={color}
+                stroke="#FFFFFF"
+                strokeOpacity={0.1}
+                strokeWidth={0.5}
+                onPress={() => onSelect(color)}
+              />
+            );
+          }),
+        )}
+        <Circle cx={size / 2} cy={size / 2} r={18} fill="#FFFFFF" />
+        <Circle cx={size / 2} cy={size / 2} r={10} fill={selectedColor} />
       </Svg>
-      <Text style={stylesForColorWheel.hint}>Toca un tono</Text>
+      <Text style={stylesForColorWheel.hint}>{hint}</Text>
     </View>
   );
 }
@@ -904,6 +935,7 @@ export default function MainScreen() {
               <Text style={styles.colorPickerLabel}>{t.colorWheelLabel}</Text>
               <ColorWheel
                 selectedColor={renameModal?.color ?? PLAYER_COLORS[0]}
+                hint={t.colorWheelHint}
                 onSelect={(color) => {
                   setRenameModal((prev) => prev ? { ...prev, color } : null);
                   Haptics.selectionAsync();
