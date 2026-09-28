@@ -19,7 +19,9 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     AsyncStorage.getItem(LANG_KEY).then((val) => {
-      if (val === "es" || val === "en") setLangState(val);
+      if (val === "es" || val === "en" || val === "pt" || val === "fr" || val === "it") {
+        setLangState(val);
+      }
       setLoaded(true);
     });
   }, []);

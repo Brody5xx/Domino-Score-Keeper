@@ -539,7 +539,7 @@ function Board() {
                       <Text style={styles.byeRestText} numberOfLines={2}>
                         {t.byeRest(
                           teamPlayerNames(a, tourney.teams.findIndex((tm) => tm.id === a.id), lang)
-                            .join(lang === "en" ? " & " : " y ")
+                            .join(t.pairJoiner)
                         )}
                       </Text>
                     ) : null}
@@ -692,7 +692,7 @@ function PlayModal({ matchId, onClose }: { matchId: string | null; onClose: () =
                   </View>
                   {a ? (
                     <Text style={styles.tapWinPlayers} numberOfLines={1}>
-                      {aPlayers.join(lang === "en" ? " & " : " y ")}
+                      {aPlayers.join(t.pairJoiner)}
                     </Text>
                   ) : null}
                 </View>
@@ -709,7 +709,7 @@ function PlayModal({ matchId, onClose }: { matchId: string | null; onClose: () =
                   </View>
                   {b ? (
                     <Text style={styles.tapWinPlayers} numberOfLines={1}>
-                      {bPlayers.join(lang === "en" ? " & " : " y ")}
+                      {bPlayers.join(t.pairJoiner)}
                     </Text>
                   ) : null}
                 </View>

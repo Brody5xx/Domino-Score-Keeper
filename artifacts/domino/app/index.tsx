@@ -25,7 +25,7 @@ import TutorialOverlay, { type TutorialStep } from "@/components/TutorialOverlay
 import { PLAYER_COLORS, type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
 import { useLang } from "@/context/LangContext";
 import { useTournament } from "@/context/TournamentContext";
-import { translatePlayerName } from "@/constants/translations";
+import { LANGUAGE_OPTIONS, translatePlayerName, type Lang } from "@/constants/translations";
 import { useColors } from "@/hooks/useColors";
 import DominoBackground from "@/components/DominoBackground";
 
@@ -272,10 +272,16 @@ export default function MainScreen() {
   const topPad = Platform.OS === "web" ? 16 : insets.top;
   const bottomPad = Platform.OS === "web" ? 20 : insets.bottom;
 
-  const locale = lang === "es" ? "es-419" : "en-US";
+  const locale: Record<Lang, string> = {
+    es: "es-419",
+    en: "en-US",
+    pt: "pt-BR",
+    fr: "fr-FR",
+    it: "it-IT",
+  };
 
   function formatDate(ts: number) {
-    return new Date(ts).toLocaleString(locale, {
+    return new Date(ts).toLocaleString(locale[lang], {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -1207,22 +1213,20 @@ export default function MainScreen() {
               <View style={styles.langSection}>
                 <Text style={styles.langLabel}>{t.languageTitle}</Text>
                 <View style={styles.langRow}>
-                  <Pressable
-                    style={[styles.langChip, lang === "es" && styles.langChipActive]}
-                    onPress={() => setLang("es")}
-                  >
-                    <Text style={[styles.langChipText, lang === "es" && styles.langChipTextActive]}>
-                      {t.langEs}
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    style={[styles.langChip, lang === "en" && styles.langChipActive]}
-                    onPress={() => setLang("en")}
-                  >
-                    <Text style={[styles.langChipText, lang === "en" && styles.langChipTextActive]}>
-                      {t.langEn}
-                    </Text>
-                  </Pressable>
+                  {LANGUAGE_OPTIONS.map((option) => (
+                    <Pressable
+                      key={option.value}
+                      style={[styles.langChip, lang === option.value && styles.langChipActive]}
+                      onPress={() => setLang(option.value)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${option.flag} ${t[option.labelKey]}`}
+                    >
+                      <Text style={styles.langFlag}>{option.flag}</Text>
+                      <Text style={[styles.langChipText, lang === option.value && styles.langChipTextActive]}>
+                        {t[option.labelKey]}
+                      </Text>
+                    </Pressable>
+                  ))}
                 </View>
               </View>
 
@@ -2052,10 +2056,13 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     langRow: {
       flexDirection: "row",
+      flexWrap: "wrap",
       gap: 8,
     },
     langChip: {
-      flex: 1,
+      width: "31%",
+      flexGrow: 0,
+      flexShrink: 0,
       paddingVertical: 9,
       borderRadius: 10,
       alignItems: "center",
@@ -2071,6 +2078,11 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontFamily: "Inter_600SemiBold",
       fontSize: 13,
       color: colors.mutedForeground,
+    },
+    langFlag: {
+      fontSize: 20,
+      lineHeight: 24,
+      marginBottom: 3,
     },
     langChipTextActive: {
       color: colors.primary,
