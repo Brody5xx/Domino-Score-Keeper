@@ -75,6 +75,14 @@ export const PLAYER_COLORS = [
   "#EC4899",
   "#14B8A6",
   "#F97316",
+  "#0EA5E9",
+  "#6366F1",
+  "#84CC16",
+  "#EAB308",
+  "#DC2626",
+  "#DB2777",
+  "#7C3AED",
+  "#0891B2",
 ];
 
 const defaultPlayers: Player[] = [

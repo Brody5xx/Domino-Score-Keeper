@@ -18,6 +18,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Circle, Path } from "react-native-svg";
 
 import Tournament from "@/components/Tournament";
 import HistoryEntryItem from "@/components/HistoryEntryItem";
@@ -30,6 +31,8 @@ import { useColors } from "@/hooks/useColors";
 import DominoBackground from "@/components/DominoBackground";
 
 const TARGET_PRESETS = [100, 200];
+const FAVORITE_COLORS_KEY = "domino_favorite_colors_v1";
+const COLOR_WHEEL_SLICES = 24;
 
 const BG_THEMES = [
   { id: "scatter",  icon: "shuffle"    as const, labelKey: "bgScatter"  as const },
@@ -41,6 +44,83 @@ const BG_THEMES = [
 
 type AddModalState = { playerId: string } | null;
 type EditModalState = { entryId: string; currentPoints: number } | null;
+
+function hslToHex(h: number, s: number, l: number): string {
+  const saturation = s / 100;
+  const lightness = l / 100;
+  const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+  const segment = h / 60;
+  const x = chroma * (1 - Math.abs((segment % 2) - 1));
+  const match = lightness - chroma / 2;
+  let red = 0;
+  let green = 0;
+  let blue = 0;
+
+  if (segment < 1) [red, green, blue] = [chroma, x, 0];
+  else if (segment < 2) [red, green, blue] = [x, chroma, 0];
+  else if (segment < 3) [red, green, blue] = [0, chroma, x];
+  else if (segment < 4) [red, green, blue] = [0, x, chroma];
+  else if (segment < 5) [red, green, blue] = [x, 0, chroma];
+  else [red, green, blue] = [chroma, 0, x];
+
+  return `#${[red, green, blue]
+    .map((channel) => Math.round((channel + match) * 255).toString(16).padStart(2, "0"))
+    .join("")}`;
+}
+
+function getWheelSlicePath(index: number, size: number): string {
+  const center = size / 2;
+  const radius = center - 4;
+  const startAngle = (index / COLOR_WHEEL_SLICES) * Math.PI * 2 - Math.PI / 2;
+  const endAngle = ((index + 1) / COLOR_WHEEL_SLICES) * Math.PI * 2 - Math.PI / 2;
+  const startX = center + radius * Math.cos(startAngle);
+  const startY = center + radius * Math.sin(startAngle);
+  const endX = center + radius * Math.cos(endAngle);
+  const endY = center + radius * Math.sin(endAngle);
+
+  return `M ${center} ${center} L ${startX} ${startY} A ${radius} ${radius} 0 0 1 ${endX} ${endY} Z`;
+}
+
+function ColorWheel({
+  selectedColor,
+  onSelect,
+}: {
+  selectedColor: string;
+  onSelect: (color: string) => void;
+}) {
+  const size = 176;
+
+  return (
+    <View style={stylesForColorWheel.wrapper}>
+      <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {Array.from({ length: COLOR_WHEEL_SLICES }).map((_, index) => (
+          <Path
+            key={index}
+            d={getWheelSlicePath(index, size)}
+            fill={hslToHex((index / COLOR_WHEEL_SLICES) * 360, 82, 53)}
+            onPress={() => onSelect(hslToHex((index / COLOR_WHEEL_SLICES) * 360, 82, 53))}
+          />
+        ))}
+        <Circle cx={size / 2} cy={size / 2} r={32} fill={selectedColor} />
+        <Circle cx={size / 2} cy={size / 2} r={32} fill="none" stroke="#FFFFFF" strokeWidth={3} />
+      </Svg>
+      <Text style={stylesForColorWheel.hint}>Toca un tono</Text>
+    </View>
+  );
+}
+
+const stylesForColorWheel = {
+  wrapper: {
+    alignItems: "center" as const,
+    marginBottom: 14,
+  },
+  hint: {
+    marginTop: -3,
+    fontFamily: "Inter_500Medium",
+    fontSize: 11,
+    color: "#737373",
+  },
+};
 
 export default function MainScreen() {
   const colors = useColors();
@@ -90,6 +170,7 @@ export default function MainScreen() {
   const [settingsModal, setSettingsModal] = useState(false);
   const [editingName, setEditingName] = useState<{ id: string; value: string } | null>(null);
   const [renameModal, setRenameModal] = useState<{ playerId: string; value: string; color: string } | null>(null);
+  const [favoriteColors, setFavoriteColors] = useState<string[]>([]);
   const [restartModal, setRestartModal] = useState(false);
   const [historyModal, setHistoryModal] = useState(false);
   const [expandedGame, setExpandedGame] = useState<string | null>(null);
@@ -137,6 +218,18 @@ export default function MainScreen() {
       }
     });
   }, [needsLanguageSelection]);
+
+  useEffect(() => {
+    AsyncStorage.getItem(FAVORITE_COLORS_KEY).then((raw) => {
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setFavoriteColors(parsed.filter((color): color is string => typeof color === "string"));
+        }
+      } catch {}
+    });
+  }, []);
 
   // Close any modals when tutorial finishes
   useEffect(() => {
@@ -451,6 +544,21 @@ export default function MainScreen() {
     setRenameModal(null);
   }
 
+  function saveFavoriteColor() {
+    if (!renameModal?.color) return;
+    const next = [renameModal.color, ...favoriteColors.filter((color) => color !== renameModal.color)];
+    setFavoriteColors(next);
+    AsyncStorage.setItem(FAVORITE_COLORS_KEY, JSON.stringify(next));
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }
+
+  function removeFavoriteColor(color: string) {
+    const next = favoriteColors.filter((savedColor) => savedColor !== color);
+    setFavoriteColors(next);
+    AsyncStorage.setItem(FAVORITE_COLORS_KEY, JSON.stringify(next));
+    Haptics.selectionAsync();
+  }
+
   // ── render ─────────────────────────────────────────────────────────────────
 
   function renderPlayerCard(
@@ -747,55 +855,117 @@ export default function MainScreen() {
       {/* Edit player (rename + color) */}
       <Modal visible={renameModal !== null} transparent animationType="fade" onRequestClose={() => setRenameModal(null)}>
         <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{t.renameTitle}</Text>
-            <TextInput
-              style={[styles.modalInput, styles.renameInput, {
-                borderColor: renameModal?.color ?? colors.border,
-              }]}
-              placeholder={t.renamePlaceholder}
-              placeholderTextColor={colors.mutedForeground}
-              value={renameModal?.value ?? ""}
-              onChangeText={(v) => setRenameModal((prev) => prev ? { ...prev, value: v } : null)}
-              onSubmitEditing={confirmRename}
-              autoFocus
-              selectTextOnFocus
-              maxLength={20}
-              returnKeyType="done"
-            />
-            <Text style={styles.colorPickerLabel}>{t.pickColor}</Text>
-            <View style={styles.colorGrid}>
-              {PLAYER_COLORS.map((c) => (
-                <Pressable
-                  key={c}
-                  style={[
-                    styles.colorSwatch,
-                    { backgroundColor: c },
-                    renameModal?.color === c && styles.colorSwatchSelected,
-                  ]}
-                  onPress={() => {
-                    setRenameModal((prev) => prev ? { ...prev, color: c } : null);
-                    Haptics.selectionAsync();
-                  }}
+          <ScrollView
+            style={styles.renameModalScroll}
+            contentContainerStyle={styles.renameModalScrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>{t.renameTitle}</Text>
+              <TextInput
+                style={[styles.modalInput, styles.renameInput, {
+                  borderColor: renameModal?.color ?? colors.border,
+                }]}
+                placeholder={t.renamePlaceholder}
+                placeholderTextColor={colors.mutedForeground}
+                value={renameModal?.value ?? ""}
+                onChangeText={(v) => setRenameModal((prev) => prev ? { ...prev, value: v } : null)}
+                onSubmitEditing={confirmRename}
+                autoFocus
+                selectTextOnFocus
+                maxLength={20}
+                returnKeyType="done"
+              />
+              <Text style={styles.colorPickerLabel}>{t.pickColor}</Text>
+              <View style={styles.colorGrid}>
+                {PLAYER_COLORS.map((c) => (
+                  <Pressable
+                    key={c}
+                    style={[
+                      styles.colorSwatch,
+                      { backgroundColor: c },
+                      renameModal?.color === c && styles.colorSwatchSelected,
+                    ]}
+                    onPress={() => {
+                      setRenameModal((prev) => prev ? { ...prev, color: c } : null);
+                      Haptics.selectionAsync();
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={c}
+                  >
+                    {renameModal?.color === c && (
+                      <Feather name="check" size={14} color="#fff" />
+                    )}
+                  </Pressable>
+                ))}
+              </View>
+
+              <Text style={styles.colorPickerLabel}>{t.colorWheelLabel}</Text>
+              <ColorWheel
+                selectedColor={renameModal?.color ?? PLAYER_COLORS[0]}
+                onSelect={(color) => {
+                  setRenameModal((prev) => prev ? { ...prev, color } : null);
+                  Haptics.selectionAsync();
+                }}
+              />
+
+              <Pressable style={styles.saveFavoriteBtn} onPress={saveFavoriteColor}>
+                <Feather name="star" size={15} color={colors.primary} />
+                <Text style={styles.saveFavoriteText}>{t.saveFavoriteColor}</Text>
+              </Pressable>
+
+              <Text style={[styles.colorPickerLabel, styles.favoriteColorsLabel]}>{t.favoriteColors}</Text>
+              {favoriteColors.length > 0 ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.favoriteColorsRow}
                 >
-                  {renameModal?.color === c && (
-                    <Feather name="check" size={14} color="#fff" />
-                  )}
+                  {favoriteColors.map((color) => (
+                    <View key={color} style={styles.favoriteColorItem}>
+                      <Pressable
+                        style={[
+                          styles.favoriteColorSwatch,
+                          { backgroundColor: color },
+                          renameModal?.color === color && styles.colorSwatchSelected,
+                        ]}
+                        onPress={() => {
+                          setRenameModal((prev) => prev ? { ...prev, color } : null);
+                          Haptics.selectionAsync();
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel={color}
+                      />
+                      <Pressable
+                        style={styles.favoriteColorRemove}
+                        onPress={() => removeFavoriteColor(color)}
+                        hitSlop={6}
+                        accessibilityRole="button"
+                        accessibilityLabel={t.removeFavoriteColor}
+                      >
+                        <Feather name="x" size={9} color={colors.foreground} />
+                      </Pressable>
+                    </View>
+                  ))}
+                </ScrollView>
+              ) : (
+                <Text style={styles.noFavoriteColors}>{t.noFavoriteColors}</Text>
+              )}
+
+              <View style={styles.modalBtns}>
+                <Pressable style={styles.modalCancel} onPress={() => setRenameModal(null)}>
+                  <Text style={styles.modalCancelText}>{t.cancel}</Text>
                 </Pressable>
-              ))}
+                <Pressable
+                  style={[styles.modalConfirm, { backgroundColor: renameModal?.color ?? colors.primary }]}
+                  onPress={confirmRename}
+                >
+                  <Text style={styles.modalConfirmText}>{t.save}</Text>
+                </Pressable>
+              </View>
             </View>
-            <View style={styles.modalBtns}>
-              <Pressable style={styles.modalCancel} onPress={() => setRenameModal(null)}>
-                <Text style={styles.modalCancelText}>{t.cancel}</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.modalConfirm, { backgroundColor: renameModal?.color ?? colors.primary }]}
-                onPress={confirmRename}
-              >
-                <Text style={styles.modalConfirmText}>{t.save}</Text>
-              </Pressable>
-            </View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
 
@@ -2085,6 +2255,15 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       justifyContent: "center",
       marginBottom: 20,
     },
+    renameModalScroll: {
+      width: "100%",
+    },
+    renameModalScrollContent: {
+      flexGrow: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingVertical: 18,
+    },
     colorSwatch: {
       width: 38,
       height: 38,
@@ -2095,6 +2274,62 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     colorSwatchSelected: {
       borderWidth: 3,
       borderColor: "#fff",
+    },
+    saveFavoriteBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 7,
+      borderWidth: 1,
+      borderColor: colors.primary,
+      borderRadius: 11,
+      paddingVertical: 10,
+      marginBottom: 14,
+    },
+    saveFavoriteText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 13,
+      color: colors.primary,
+    },
+    favoriteColorsLabel: {
+      marginBottom: 8,
+    },
+    favoriteColorsRow: {
+      gap: 13,
+      paddingTop: 2,
+      paddingHorizontal: 3,
+      paddingBottom: 16,
+    },
+    favoriteColorItem: {
+      width: 38,
+      height: 43,
+      alignItems: "center",
+      position: "relative",
+    },
+    favoriteColorSwatch: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      borderWidth: 2,
+      borderColor: colors.card,
+    },
+    favoriteColorRemove: {
+      position: "absolute",
+      right: -4,
+      top: -4,
+      width: 16,
+      height: 16,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.border,
+    },
+    noFavoriteColors: {
+      fontFamily: "Inter_400Regular",
+      fontSize: 12,
+      color: colors.mutedForeground,
+      textAlign: "center",
+      marginBottom: 16,
     },
     modalBtns: {
       flexDirection: "row",
