@@ -11,6 +11,7 @@ interface LangContextValue {
 }
 
 const LANG_KEY = "domino_lang";
+const LANGUAGE_SETUP_KEY = "domino_language_setup_done";
 
 const LangContext = createContext<LangContextValue | null>(null);
 
@@ -20,12 +21,11 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
   const [needsLanguageSelection, setNeedsLanguageSelection] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem(LANG_KEY).then((val) => {
+    Promise.all([AsyncStorage.getItem(LANG_KEY), AsyncStorage.getItem(LANGUAGE_SETUP_KEY)]).then(([val, setupDone]) => {
       if (val === "es" || val === "en" || val === "pt" || val === "fr" || val === "it") {
         setLangState(val);
-      } else {
-        setNeedsLanguageSelection(true);
       }
+      setNeedsLanguageSelection(setupDone !== "true");
       setLoaded(true);
     });
   }, []);
@@ -33,7 +33,10 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
   function setLang(l: Lang) {
     setLangState(l);
     setNeedsLanguageSelection(false);
-    AsyncStorage.setItem(LANG_KEY, l);
+    Promise.all([
+      AsyncStorage.setItem(LANG_KEY, l),
+      AsyncStorage.setItem(LANGUAGE_SETUP_KEY, "true"),
+    ]);
   }
 
   if (!loaded) return null;
