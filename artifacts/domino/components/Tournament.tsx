@@ -452,7 +452,7 @@ function Board() {
                 >
                   <Feather name="arrow-left" size={16} color={colors.destructive} />
                 </Pressable>
-                <Text style={[styles.headerActionLabel, { color: colors.destructive }]} numberOfLines={1}>
+                <Text style={[styles.headerActionLabel, { color: colors.destructive }]} numberOfLines={2}>
                   {t.tournamentBack}
                 </Text>
               </View>
@@ -463,7 +463,7 @@ function Board() {
                 >
                   <Feather name={editing ? "check" : "shuffle"} size={16} color={editing ? colors.primary : colors.mutedForeground} />
                 </Pressable>
-                <Text style={[styles.headerActionLabel, editing && { color: colors.primary }]} numberOfLines={1}>
+                <Text style={[styles.headerActionLabel, editing && { color: colors.primary }]} numberOfLines={2}>
                   {editing ? t.doneEditing : t.swapPairs}
                 </Text>
               </View>
@@ -472,7 +472,7 @@ function Board() {
                   <Pressable style={styles.iconBtn} onPress={() => { regenerateRound(); Haptics.selectionAsync(); }}>
                     <Feather name="refresh-cw" size={16} color={colors.mutedForeground} />
                   </Pressable>
-                  <Text style={styles.headerActionLabel} numberOfLines={1}>{t.shuffleTeams}</Text>
+                  <Text style={styles.headerActionLabel} numberOfLines={2}>{t.shuffleTeams}</Text>
                 </View>
               ) : null}
             </>
@@ -996,7 +996,7 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
     boardHeaderBtns: { flexDirection: "row", alignItems: "flex-start", gap: 7 },
     headerAction: { alignItems: "center", minWidth: 40 },
     headerActionLabel: {
-      maxWidth: 58,
+      width: 58,
       marginTop: 3,
       fontFamily: "Inter_500Medium",
       fontSize: 9,
