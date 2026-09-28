@@ -445,22 +445,35 @@ function Board() {
         <View style={styles.boardHeaderBtns}>
           {!anyResolved && !championId ? (
             <>
-              <Pressable
-                style={[styles.iconBtn, styles.backBtn]}
-                onPress={() => { resetTournament(); Haptics.selectionAsync(); }}
-              >
-                <Feather name="arrow-left" size={16} color={colors.destructive} />
-              </Pressable>
-              <Pressable
-                style={[styles.iconBtn, editing && styles.iconBtnActive]}
-                onPress={() => { setEditing((e) => !e); setSwapSel(null); Haptics.selectionAsync(); }}
-              >
-                <Feather name={editing ? "check" : "shuffle"} size={16} color={editing ? colors.primary : colors.mutedForeground} />
-              </Pressable>
-              {!editing ? (
-                <Pressable style={styles.iconBtn} onPress={() => { regenerateRound(); Haptics.selectionAsync(); }}>
-                  <Feather name="refresh-cw" size={16} color={colors.mutedForeground} />
+              <View style={styles.headerAction}>
+                <Pressable
+                  style={[styles.iconBtn, styles.backBtn]}
+                  onPress={() => { resetTournament(); Haptics.selectionAsync(); }}
+                >
+                  <Feather name="arrow-left" size={16} color={colors.destructive} />
                 </Pressable>
+                <Text style={[styles.headerActionLabel, { color: colors.destructive }]} numberOfLines={1}>
+                  {t.tournamentBack}
+                </Text>
+              </View>
+              <View style={styles.headerAction}>
+                <Pressable
+                  style={[styles.iconBtn, editing && styles.iconBtnActive]}
+                  onPress={() => { setEditing((e) => !e); setSwapSel(null); Haptics.selectionAsync(); }}
+                >
+                  <Feather name={editing ? "check" : "shuffle"} size={16} color={editing ? colors.primary : colors.mutedForeground} />
+                </Pressable>
+                <Text style={[styles.headerActionLabel, editing && { color: colors.primary }]} numberOfLines={1}>
+                  {editing ? t.doneEditing : t.swapPairs}
+                </Text>
+              </View>
+              {!editing ? (
+                <View style={styles.headerAction}>
+                  <Pressable style={styles.iconBtn} onPress={() => { regenerateRound(); Haptics.selectionAsync(); }}>
+                    <Feather name="refresh-cw" size={16} color={colors.mutedForeground} />
+                  </Pressable>
+                  <Text style={styles.headerActionLabel} numberOfLines={1}>{t.shuffleTeams}</Text>
+                </View>
               ) : null}
             </>
           ) : null}
@@ -980,7 +993,17 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
     },
     roundTitle: { fontFamily: "Inter_700Bold", fontSize: 20, color: colors.foreground },
     roundProgress: { fontFamily: "Inter_500Medium", fontSize: 13, color: colors.mutedForeground, marginTop: 2 },
-    boardHeaderBtns: { flexDirection: "row", gap: 8 },
+    boardHeaderBtns: { flexDirection: "row", alignItems: "flex-start", gap: 7 },
+    headerAction: { alignItems: "center", minWidth: 40 },
+    headerActionLabel: {
+      maxWidth: 58,
+      marginTop: 3,
+      fontFamily: "Inter_500Medium",
+      fontSize: 9,
+      lineHeight: 11,
+      color: colors.mutedForeground,
+      textAlign: "center",
+    },
     iconBtn: {
       width: 40,
       height: 40,
