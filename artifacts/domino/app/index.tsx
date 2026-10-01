@@ -1123,7 +1123,7 @@ export default function MainScreen() {
             )}
             <Pressable
               ref={addModalExtraToggleRef}
-              style={styles.extraToggleRow}
+              style={[styles.extraToggleRow, styles.extraModeToggleRow]}
               onPress={() => { setExtraMode((v) => !v); Haptics.selectionAsync(); }}
             >
               <View style={[styles.extraCheckbox, extraMode && styles.extraCheckboxOn]}>
@@ -2644,6 +2644,9 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       gap: 10,
       marginTop: 14,
       paddingVertical: 4,
+    },
+    extraModeToggleRow: {
+      transform: [{ translateY: -10 }],
     },
     extraCheckbox: {
       width: 24,
