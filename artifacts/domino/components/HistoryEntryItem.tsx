@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Easing,
@@ -46,6 +46,8 @@ export default function HistoryEntryItem({
   colors,
 }: Props) {
   const animHeight = useRef(new Animated.Value(0)).current;
+  const wasDeleted = useRef(Boolean(entry.deleted));
+  const [showRecovered, setShowRecovered] = useState(false);
 
   useEffect(() => {
     Animated.timing(animHeight, {
@@ -55,6 +57,19 @@ export default function HistoryEntryItem({
       useNativeDriver: false,
     }).start();
   }, [isOpen]);
+
+  useEffect(() => {
+    const restored = wasDeleted.current && !entry.deleted;
+    wasDeleted.current = Boolean(entry.deleted);
+
+    if (restored) {
+      setShowRecovered(true);
+      const timeout = setTimeout(() => setShowRecovered(false), 2800);
+      return () => clearTimeout(timeout);
+    }
+
+    if (entry.deleted) setShowRecovered(false);
+  }, [entry.deleted]);
 
   const panelHeight = animHeight.interpolate({
     inputRange: [0, 1],
@@ -101,6 +116,11 @@ export default function HistoryEntryItem({
           ]}>
             +{entry.points}
           </Text>
+          {showRecovered ? (
+            <View style={[styles.recoveredBadge, { backgroundColor: colors.primary + "20" }]}>
+              <Text style={[styles.recoveredBadgeText, { color: colors.primary }]}>{t.recovered}</Text>
+            </View>
+          ) : null}
         </View>
         <View style={styles.cardEntryRight}>
           <Pressable
@@ -164,6 +184,15 @@ const styles = {
   deletedPoints: {
     textDecorationLine: "line-through" as const,
     opacity: 0.4,
+  },
+  recoveredBadge: {
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  recoveredBadgeText: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 9,
   },
   extraBadge: {
     backgroundColor: "#22c55e20",
