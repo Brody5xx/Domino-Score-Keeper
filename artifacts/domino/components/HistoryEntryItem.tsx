@@ -3,9 +3,9 @@ import {
   Animated,
   Easing,
   Pressable,
-  Text,
   View,
 } from "react-native";
+import { ScaledText as Text } from "@/components/ScaledText";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import type { ScoreEntry } from "@/context/GameContext";

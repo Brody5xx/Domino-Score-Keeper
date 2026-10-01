@@ -7,11 +7,11 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ScaledText as Text } from "@/components/ScaledText";
 import { useColors } from "@/hooks/useColors";
 
 export type ErrorFallbackProps = {

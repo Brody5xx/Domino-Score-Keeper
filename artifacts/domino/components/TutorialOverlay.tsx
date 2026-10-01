@@ -6,9 +6,9 @@ import {
   Modal,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
+import { ScaledText as Text } from "@/components/ScaledText";
 import type { Translations } from "@/constants/translations";
 import { useColors } from "@/hooks/useColors";
 

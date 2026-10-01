@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { ScaledText as Text } from "@/components/ScaledText";
 
 export default function TabOneScreen() {
   return (

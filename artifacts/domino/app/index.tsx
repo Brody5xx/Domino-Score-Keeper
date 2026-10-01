@@ -13,19 +13,19 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Circle, Path } from "react-native-svg";
 
 import Tournament from "@/components/Tournament";
+import { ScaledText as Text, ScaledTextInput as TextInput } from "@/components/ScaledText";
 import HistoryEntryItem from "@/components/HistoryEntryItem";
 import TutorialOverlay, { type TutorialStep } from "@/components/TutorialOverlay";
 import { PLAYER_COLORS, type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
 import { useLang } from "@/context/LangContext";
 import { useTournament } from "@/context/TournamentContext";
+import { TEXT_SIZE_OPTIONS, useTextSize } from "@/context/TextSizeContext";
 import { LANGUAGE_OPTIONS, translatePlayerName, type Lang } from "@/constants/translations";
 import { useColors } from "@/hooks/useColors";
 import DominoBackground from "@/components/DominoBackground";

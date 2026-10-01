@@ -8,11 +8,10 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from "react-native";
 
+import { ScaledText as Text, ScaledTextInput as TextInput } from "@/components/ScaledText";
 import { Lang, translatePlayerName, translateTeamName } from "@/constants/translations";
 import { PLAYER_COLORS } from "@/context/GameContext";
 import { MAX_TEAMS, MIN_TEAMS, TournamentTeam, useTournament } from "@/context/TournamentContext";

@@ -1,6 +1,7 @@
 import { Link, Stack } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
+import { ScaledText as Text } from "@/components/ScaledText";
 import { useColors } from "@/hooks/useColors";
 
 export default function NotFoundScreen() {
