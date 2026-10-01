@@ -2737,7 +2737,7 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       borderColor: colors.border,
       borderRadius: 12,
       paddingVertical: 12,
-      marginTop: 8,
+      marginTop: 0,
     },
     tieBtnText: {
       fontFamily: "Inter_600SemiBold",
