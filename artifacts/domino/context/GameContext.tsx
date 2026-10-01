@@ -21,6 +21,7 @@ export interface ScoreEntry {
   tie?: boolean;
   edited?: boolean;
   deleted?: boolean;
+  recovered?: boolean;
   history?: number[];
 }
 
@@ -181,7 +182,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       const next = {
         ...prev,
         entries: prev.entries.map((e) =>
-          e.id === entryId ? { ...e, deleted: e.deleted ? undefined : true } : e
+          e.id === entryId
+            ? {
+                ...e,
+                deleted: e.deleted ? undefined : true,
+                recovered: e.deleted ? true : undefined,
+              }
+            : e
         ),
       };
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));

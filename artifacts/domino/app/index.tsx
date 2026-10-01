@@ -1363,6 +1363,11 @@ export default function MainScreen() {
                                             </View>
                                           ) : null}
                                           <Text style={[styles.entryPoints, entry.deleted && styles.deletedPoints]}>+{entry.points}</Text>
+                                          {entry.recovered && !entry.deleted ? (
+                                            <View style={[styles.recoveredBadge, { backgroundColor: colors.primary + "20" }]}>
+                                              <Text style={[styles.recoveredBadgeText, { color: colors.primary }]}>{t.recovered}</Text>
+                                            </View>
+                                          ) : null}
                                         </View>
                                       );
                                     })}
@@ -1402,6 +1407,11 @@ export default function MainScreen() {
                                   </View>
                                 ) : null}
                                 <Text style={[styles.entryPoints, entry.deleted && styles.deletedPoints]}>+{entry.points}</Text>
+                                {entry.recovered && !entry.deleted ? (
+                                  <View style={[styles.recoveredBadge, { backgroundColor: colors.primary + "20" }]}>
+                                    <Text style={[styles.recoveredBadgeText, { color: colors.primary }]}>{t.recovered}</Text>
+                                  </View>
+                                ) : null}
                               </View>
                             );
                           })}
@@ -2693,6 +2703,18 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       fontSize: 9,
       fontStyle: "italic",
       color: colors.mutedForeground,
+    },
+    recoveredBadge: {
+      backgroundColor: colors.primary + "20",
+      borderRadius: 4,
+      paddingHorizontal: 5,
+      paddingVertical: 2,
+      marginLeft: 2,
+    },
+    recoveredBadgeText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 9,
+      color: colors.primary,
     },
     deletedPoints: {
       textDecorationLine: "line-through",
