@@ -477,7 +477,7 @@ export default function MainScreen() {
     const previousPoints = entry.history?.length
       ? entry.history[entry.history.length - 1]
       : entry.points;
-    const canRevealPreviousValue = entry.recovered && !entry.deleted;
+    const canRevealPreviousValue = entry.edited && Boolean(entry.history?.length);
 
     return (
       <View key={entry.id} style={styles.entryRow}>
@@ -502,7 +502,7 @@ export default function MainScreen() {
               <Text style={styles.editedBadgeText}>{t.edited}</Text>
             </View>
           ) : null}
-          {canRevealPreviousValue ? (
+          {entry.recovered && !entry.deleted ? (
             <View style={[styles.recoveredBadge, { backgroundColor: colors.primary + "20" }]}>
               <Text style={[styles.recoveredBadgeText, { color: colors.primary }]}>{t.recovered}</Text>
             </View>
@@ -521,7 +521,7 @@ export default function MainScreen() {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }}
                 accessibilityRole="button"
-                accessibilityLabel={`${t.recovered}: ${t.previous} +${previousPoints}`}
+                accessibilityLabel={`${t.edited}: ${t.previous} +${previousPoints}`}
                 accessibilityState={{ expanded: isPreviousValueVisible }}
                 testID={`previous-value-eye-${entry.id}`}
                 hitSlop={6}
