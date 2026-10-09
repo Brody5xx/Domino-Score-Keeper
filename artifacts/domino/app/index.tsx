@@ -296,6 +296,7 @@ export default function MainScreen() {
   const addBtnCasaRef = useRef<View>(null);
   const addBtnVisitRef = useRef<View>(null);
   const settingsBtnRef = useRef<View>(null);
+  const tournamentBtnRef = useRef<View>(null);
   const historyBtnRef = useRef<View>(null);
   const restartBtnRef = useRef<View>(null);
   const casaFirstEntryRef = useRef<View>(null);
@@ -406,7 +407,10 @@ export default function MainScreen() {
     { targetRef: restartBtnRef, text: t.tutStep12 }, // 12: restart
     { targetRef: settingsBtnRef, text: t.tutStep13 }, // 13: settings
     { targetRef: settingsBtnRef, text: t.tutStep14 },  // 14: players/tables/photo
-    { text: t.tutStep15 },                             // 15: done
+    { targetRef: tournamentBtnRef, text: t.tutStep15 }, // 15: tournament purpose
+    { targetRef: tournamentBtnRef, text: t.tutStep16 }, // 16: tournament setup and scoring
+    { targetRef: tournamentBtnRef, text: t.tutStep17 }, // 17: lives and rounds
+    { text: t.tutStep18 },                             // 18: done
   ];
 
 
@@ -865,6 +869,7 @@ export default function MainScreen() {
           <View style={styles.tournamentToggle}>
             <Text style={styles.tournamentHintText}>{t.tournamentShort}</Text>
             <Pressable
+              ref={tournamentBtnRef}
               style={[styles.settingsBtn, tournamentActive && styles.settingsBtnActive]}
               onPress={() => { toggleTournament(); Haptics.selectionAsync(); }}
             >

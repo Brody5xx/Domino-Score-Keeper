@@ -93,17 +93,19 @@ export default function TutorialOverlay({
   }, [visible, currentStep]);
 
   const tooltipLayout = useCallback(() => {
+    const bottomOffset =
+      step.text.length > 150 ? 290 : step.text.length > 110 ? 260 : 210;
     // Fallback when measure fails (e.g. elements inside ScrollView):
     // always place tooltip at bottom since most tutorial targets are upper-screen.
-    if (!targetLayout) return { top: SCREEN.height - 210, arrowAtTop: true };
+    if (!targetLayout) return { top: SCREEN.height - bottomOffset, arrowAtTop: true };
     const targetCenter = targetLayout.y + targetLayout.height / 2;
     // If target is in upper half, place tooltip at bottom so user sees changes
     if (targetCenter < SCREEN.height * 0.5) {
-      return { top: SCREEN.height - 210, arrowAtTop: true };
+      return { top: SCREEN.height - bottomOffset, arrowAtTop: true };
     }
     // Target in lower half: place tooltip at top
     return { top: 20, arrowAtTop: false };
-  }, [targetLayout]);
+  }, [targetLayout, step?.text]);
 
   if (!visible || !step) return null;
 
