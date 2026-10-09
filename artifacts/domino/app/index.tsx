@@ -22,7 +22,7 @@ import Tournament from "@/components/Tournament";
 import { ScaledText as Text, ScaledTextInput as TextInput } from "@/components/ScaledText";
 import HistoryEntryItem from "@/components/HistoryEntryItem";
 import TutorialOverlay, { type TutorialStep } from "@/components/TutorialOverlay";
-import { PLAYER_COLORS, type PreviousGame, computeTotals, useGame } from "@/context/GameContext";
+import { PLAYER_COLORS, type PreviousGame, type ScoreEntry, computeTotals, useGame } from "@/context/GameContext";
 import { useLang } from "@/context/LangContext";
 import { useTournament } from "@/context/TournamentContext";
 import { TEXT_SIZE_OPTIONS, useTextSize } from "@/context/TextSizeContext";
@@ -273,6 +273,7 @@ export default function MainScreen() {
   const [restartModal, setRestartModal] = useState(false);
   const [historyModal, setHistoryModal] = useState(false);
   const [expandedGame, setExpandedGame] = useState<string | null>(null);
+  const [revealedPreviousEntry, setRevealedPreviousEntry] = useState<string | null>(null);
   const [deleteGameModal, setDeleteGameModal] = useState<string | null>(null);
   const [clearHistoryModal, setClearHistoryModal] = useState(false);
 
@@ -464,6 +465,81 @@ export default function MainScreen() {
   const styles = makeStyles(colors);
   const topPad = Platform.OS === "web" ? 16 : insets.top;
   const bottomPad = Platform.OS === "web" ? 20 : insets.bottom;
+
+  const renderPreviousGameEntry = (game: PreviousGame, entry: ScoreEntry, num: number) => {
+    const player = game.players.find((p) => p.id === entry.playerId);
+    const entryKey = `${game.id}:${entry.id}`;
+    const isPreviousValueVisible = revealedPreviousEntry === entryKey;
+    const previousPoints = entry.history?.length
+      ? entry.history[entry.history.length - 1]
+      : entry.points;
+    const canRevealPreviousValue = entry.recovered && !entry.deleted;
+
+    return (
+      <View key={entry.id} style={styles.entryRow}>
+        <View style={styles.entryLabelsWrap}>
+          <Text style={styles.entryNum}>{t.entry(num)}</Text>
+          <View style={[styles.entryColorDot, { backgroundColor: player?.color ?? "#888" }]} />
+          <Text style={[styles.entryPlayerName, { color: player?.color ?? "#888" }]}>
+            {player ? translatePlayerName(player.name, lang) : "—"}
+          </Text>
+          {entry.extra ? (
+            <View style={styles.extraBadge}>
+              <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
+            </View>
+          ) : null}
+          {(entry.tie || entry.points === 0) ? (
+            <View style={styles.tieBadge}>
+              <Text style={styles.tieBadgeText}>{t.tieLabel}</Text>
+            </View>
+          ) : null}
+          {entry.edited ? (
+            <View style={styles.editedBadge}>
+              <Text style={styles.editedBadgeText}>{t.edited}</Text>
+            </View>
+          ) : null}
+          {canRevealPreviousValue ? (
+            <View style={[styles.recoveredBadge, { backgroundColor: colors.primary + "20" }]}>
+              <Text style={[styles.recoveredBadgeText, { color: colors.primary }]}>{t.recovered}</Text>
+            </View>
+          ) : null}
+        </View>
+        <View style={styles.entryAmountColumn}>
+          <View style={styles.entryPointsRow}>
+            <Text style={[styles.entryPoints, entry.deleted && styles.deletedPoints]}>
+              +{entry.points}
+            </Text>
+            {canRevealPreviousValue ? (
+              <Pressable
+                style={styles.recoveredEyeButton}
+                onPress={() => {
+                  setRevealedPreviousEntry(isPreviousValueVisible ? null : entryKey);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={`${t.recovered}: ${t.previous} +${previousPoints}`}
+                accessibilityState={{ expanded: isPreviousValueVisible }}
+                testID={`previous-value-eye-${entry.id}`}
+                hitSlop={6}
+              >
+                <Feather
+                  name={isPreviousValueVisible ? "eye-off" : "eye"}
+                  size={15}
+                  color={isPreviousValueVisible ? colors.primary : colors.mutedForeground}
+                />
+              </Pressable>
+            ) : null}
+          </View>
+          {canRevealPreviousValue && isPreviousValueVisible ? (
+            <View style={styles.entryPreviousValue}>
+              <Text style={styles.entryPreviousLabel}>{t.previous}</Text>
+              <Text style={styles.entryPreviousPoints}>+{previousPoints}</Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
+    );
+  };
 
   const locale: Record<Lang, string> = {
     es: "es-419",
@@ -1339,38 +1415,8 @@ export default function MainScreen() {
                                 {mesaEntries.length > 0 ? (
                                   <View style={styles.prevEntryList}>
                                     {[...mesaEntries].reverse().map((entry, eIdx) => {
-                                      const ep = game.players.find((p) => p.id === entry.playerId);
                                       const num = mesaEntries.length - eIdx;
-                                      return (
-                                        <View key={entry.id} style={styles.entryRow}>
-                                          <Text style={styles.entryNum}>{t.entry(num)}</Text>
-                                          <View style={[styles.entryColorDot, { backgroundColor: ep?.color ?? "#888" }]} />
-                                          <Text style={[styles.entryPlayerName, { color: ep?.color ?? "#888" }]} numberOfLines={1}>
-                                            {ep ? translatePlayerName(ep.name, lang) : "—"}
-                                          </Text>
-                                          {entry.extra ? (
-                                            <View style={styles.extraBadge}>
-                                              <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
-                                            </View>
-                                          ) : null}
-                                          {(entry.tie || entry.points === 0) ? (
-                                            <View style={styles.tieBadge}>
-                                              <Text style={styles.tieBadgeText}>{t.tieLabel}</Text>
-                                            </View>
-                                          ) : null}
-                                          {entry.edited ? (
-                                            <View style={styles.editedBadge}>
-                                              <Text style={styles.editedBadgeText}>{t.edited}</Text>
-                                            </View>
-                                          ) : null}
-                                          <Text style={[styles.entryPoints, entry.deleted && styles.deletedPoints]}>+{entry.points}</Text>
-                                          {entry.recovered && !entry.deleted ? (
-                                            <View style={[styles.recoveredBadge, { backgroundColor: colors.primary + "20" }]}>
-                                              <Text style={[styles.recoveredBadgeText, { color: colors.primary }]}>{t.recovered}</Text>
-                                            </View>
-                                          ) : null}
-                                        </View>
-                                      );
+                                      return renderPreviousGameEntry(game, entry, num);
                                     })}
                                   </View>
                                 ) : (
@@ -1383,38 +1429,8 @@ export default function MainScreen() {
                       ) : (
                         <View style={styles.prevEntryList}>
                           {[...game.entries].reverse().map((entry, eIdx) => {
-                            const ep = game.players.find((p) => p.id === entry.playerId);
                             const num = game.entries.length - eIdx;
-                            return (
-                              <View key={entry.id} style={styles.entryRow}>
-                                <Text style={styles.entryNum}>{t.entry(num)}</Text>
-                                <View style={[styles.entryColorDot, { backgroundColor: ep?.color ?? "#888" }]} />
-                                <Text style={[styles.entryPlayerName, { color: ep?.color ?? "#888" }]} numberOfLines={1}>
-                                  {ep ? translatePlayerName(ep.name, lang) : "—"}
-                                </Text>
-                                {entry.extra ? (
-                                  <View style={styles.extraBadge}>
-                                    <Text style={styles.extraBadgeText}>{t.extraLabel}</Text>
-                                  </View>
-                                ) : null}
-                                {(entry.tie || entry.points === 0) ? (
-                                  <View style={styles.tieBadge}>
-                                    <Text style={styles.tieBadgeText}>{t.tieLabel}</Text>
-                                  </View>
-                                ) : null}
-                                {entry.edited ? (
-                                  <View style={styles.editedBadge}>
-                                    <Text style={styles.editedBadgeText}>{t.edited}</Text>
-                                  </View>
-                                ) : null}
-                                <Text style={[styles.entryPoints, entry.deleted && styles.deletedPoints]}>+{entry.points}</Text>
-                                {entry.recovered && !entry.deleted ? (
-                                  <View style={[styles.recoveredBadge, { backgroundColor: colors.primary + "20" }]}>
-                                    <Text style={[styles.recoveredBadgeText, { color: colors.primary }]}>{t.recovered}</Text>
-                                  </View>
-                                ) : null}
-                              </View>
-                            );
+                            return renderPreviousGameEntry(game, entry, num);
                           })}
                         </View>
                       )
@@ -2102,10 +2118,18 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     },
     entryRow: {
       flexDirection: "row",
-      alignItems: "center",
+      alignItems: "flex-start",
       paddingVertical: 6,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
+      gap: 6,
+    },
+    entryLabelsWrap: {
+      flex: 1,
+      minWidth: 0,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
       gap: 6,
     },
     entryNum: {
@@ -2122,7 +2146,17 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     entryPlayerName: {
       fontFamily: "Inter_600SemiBold",
       fontSize: 13,
-      flex: 1,
+      flexShrink: 1,
+      minWidth: 40,
+    },
+    entryAmountColumn: {
+      alignItems: "flex-end",
+      flexShrink: 0,
+    },
+    entryPointsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 2,
     },
     entryPoints: {
       fontFamily: "Inter_700Bold",
@@ -2130,6 +2164,30 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       color: colors.foreground,
       minWidth: 36,
       textAlign: "right",
+    },
+    recoveredEyeButton: {
+      minWidth: 24,
+      minHeight: 24,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: 6,
+    },
+    entryPreviousValue: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "flex-end",
+      gap: 4,
+      paddingTop: 1,
+    },
+    entryPreviousLabel: {
+      color: colors.mutedForeground,
+      fontFamily: "Inter_400Regular",
+      fontSize: 10,
+    },
+    entryPreviousPoints: {
+      color: colors.mutedForeground,
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 11,
     },
     entryActionBtn: {
       padding: 4,
