@@ -814,8 +814,9 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
     },
     stepperInput: {
       minWidth: 64,
-      height: 44,
+      minHeight: 44,
       paddingHorizontal: 12,
+      paddingVertical: 8,
       borderRadius: 12,
       borderWidth: 1.5,
       borderColor: colors.border,
@@ -861,8 +862,9 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
     addGroupText: { fontFamily: "Inter_700Bold", fontSize: 15, color: colors.primaryForeground },
     numChip: {
       minWidth: 40,
-      height: 40,
+      minHeight: 40,
       paddingHorizontal: 10,
+      paddingVertical: 7,
       borderRadius: 12,
       borderWidth: 1.5,
       borderColor: colors.mutedForeground,
@@ -877,8 +879,9 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
     numChipTextActive: { color: colors.primary },
     targetInput: {
       minWidth: 64,
-      height: 40,
+      minHeight: 40,
       paddingHorizontal: 12,
+      paddingVertical: 7,
       borderRadius: 12,
       borderWidth: 1.5,
       borderColor: colors.border,

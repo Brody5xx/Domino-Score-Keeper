@@ -7,6 +7,7 @@ import {
   Text as NativeText,
   TextInput as NativeTextInput,
   StyleSheet,
+  type StyleProp,
   type TextInputProps,
   type TextProps,
   type TextStyle,
@@ -16,7 +17,7 @@ import { useTextSize } from "@/context/TextSizeContext";
 const InheritedFontSizeContext = createContext<number | null>(null);
 
 function scaledTextStyle(
-  style: TextStyle | TextStyle[] | undefined,
+  style: StyleProp<TextStyle> | undefined,
   scale: number,
   inheritedFontSize: number | null,
 ) {

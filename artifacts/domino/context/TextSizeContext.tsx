@@ -5,6 +5,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -32,12 +33,15 @@ function isTextSize(value: string | null): value is TextSize {
 
 export function TextSizeProvider({ children }: { children: React.ReactNode }) {
   const [textSize, setTextSizeState] = useState<TextSize>("medium");
+  const userChangedSize = useRef(false);
 
   useEffect(() => {
     let mounted = true;
     AsyncStorage.getItem(STORAGE_KEY)
       .then((storedSize) => {
-        if (mounted && isTextSize(storedSize)) setTextSizeState(storedSize);
+        if (mounted && !userChangedSize.current && isTextSize(storedSize)) {
+          setTextSizeState(storedSize);
+        }
       })
       .catch((error) => {
         console.warn("Unable to load the saved text size preference.", error);
@@ -48,6 +52,7 @@ export function TextSizeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setTextSize = useCallback((size: TextSize) => {
+    userChangedSize.current = true;
     setTextSizeState(size);
     AsyncStorage.setItem(STORAGE_KEY, size).catch((error) => {
       console.warn("Unable to save the text size preference.", error);

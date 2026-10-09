@@ -19,8 +19,20 @@ reuse the regular game (Casa/Visitante) state.
 with lives/rounds/byes) and must persist independently so toggling never clobbers
 an in-progress game on either side.
 
-**How to apply:** when adding cross-cutting features (themes, search, history),
-wire them into both contexts separately rather than trying to unify the state.
+**How to apply:** keep mode-specific game data and histories separate. A genuinely
+app-wide presentation preference should instead live in its own shared root-level
+context, not be duplicated in either game context.
+
+## App-wide presentation preferences
+
+Text size and similar display preferences are shared across regular scoring and
+tournament mode through a separate root-level preferences context.
+
+**Why:** the preference affects the same interface in both modes but is not part
+of either mode's game data, so duplicating it risks inconsistent settings.
+
+**How to apply:** use the shared preference context for true app-wide display
+controls; continue keeping regular-game and tournament records isolated.
 
 ## Allied-team matchmaking rule
 

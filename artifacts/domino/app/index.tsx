@@ -224,6 +224,7 @@ export default function MainScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t, lang, setLang, needsLanguageSelection } = useLang();
+  const { textSize, setTextSize } = useTextSize();
   const {
     players,
     entries,
@@ -1510,6 +1511,49 @@ export default function MainScreen() {
                 </View>
               </View>
 
+              {/* App-wide text size */}
+              <View style={styles.langSection}>
+                <Text style={styles.langLabel}>{t.textSizeTitle}</Text>
+                <View style={styles.textSizeRow}>
+                  {TEXT_SIZE_OPTIONS.map(({ value }) => {
+                    const selected = textSize === value;
+                    const label =
+                      value === "small"
+                        ? t.textSizeSmall
+                        : value === "medium"
+                          ? t.textSizeMedium
+                          : t.textSizeLarge;
+                    return (
+                      <Pressable
+                        key={value}
+                        style={[
+                          styles.textSizeChip,
+                          selected && styles.textSizeChipActive,
+                        ]}
+                        onPress={() => {
+                          setTextSize(value);
+                          Haptics.selectionAsync();
+                        }}
+                        accessibilityRole="radio"
+                        accessibilityState={{ selected }}
+                        accessibilityLabel={label}
+                        testID={`text-size-${value}`}
+                      >
+                        <Text
+                          style={[
+                            styles.textSizeChipText,
+                            selected && styles.textSizeChipTextActive,
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+
               {/* Background theme picker */}
               <View style={styles.langSection}>
                 <Text style={styles.langLabel}>{t.bgTitle}</Text>
@@ -1777,7 +1821,8 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       borderColor: colors.border,
       borderRadius: 12,
       paddingHorizontal: 12,
-      height: 42,
+      minHeight: 42,
+      paddingVertical: 4,
       marginBottom: 10,
     },
     searchBarError: {
@@ -2535,6 +2580,35 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
     langChipTextActive: {
       color: colors.primary,
     },
+    textSizeRow: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    textSizeChip: {
+      flex: 1,
+      minWidth: 0,
+      paddingHorizontal: 4,
+      paddingVertical: 9,
+      borderRadius: 10,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.background,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+    },
+    textSizeChipActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + "22",
+    },
+    textSizeChipText: {
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 13,
+      color: colors.mutedForeground,
+      textAlign: "center",
+    },
+    textSizeChipTextActive: {
+      color: colors.primary,
+    },
     bgThemeRow: {
       flexDirection: "row",
       gap: 8,
@@ -2617,8 +2691,10 @@ function makeStyles(colors: ReturnType<typeof import("@/hooks/useColors").useCol
       gap: 8,
     },
     countChip: {
-      width: 40,
-      height: 40,
+      minWidth: 40,
+      minHeight: 40,
+      paddingHorizontal: 8,
+      paddingVertical: 7,
       borderRadius: 10,
       alignItems: "center",
       justifyContent: "center",
