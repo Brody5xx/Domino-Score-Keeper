@@ -4,3 +4,4 @@
 - [Domino player name translation](domino-player-names.md) — default casilla names stored as ES literals, translated at display via translatePlayerName; wrap every new name render site.
 - [Domino tournament mode](domino-tournament.md) — tournament state is isolated from GameContext (own context + AsyncStorage key); keep the two modes' persistence separate.
 - [Domino eye reveal](domino-eye-reveal.md) — keep reveal animation and eye/eye-off feedback consistent in live annotations and saved-game history.
+- [Domino branding](domino-branding.md) — app name is “DOMINO #1”; use the user's supplied wood domino badge as the brand logo.

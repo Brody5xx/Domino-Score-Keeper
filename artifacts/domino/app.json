@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Dominó - Marcador",
+    "name": "DOMINO #1",
     "slug": "domino",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -34,7 +34,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Permite a Dominó usar una foto de tu galería como fondo de la app."
+          "photosPermission": "Permite a DOMINO #1 usar una foto de tu galería como fondo de la app."
         }
       ]
     ],
