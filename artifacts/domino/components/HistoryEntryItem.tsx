@@ -46,6 +46,8 @@ export default function HistoryEntryItem({
   colors,
 }: Props) {
   const animHeight = useRef(new Animated.Value(0)).current;
+  const eyeScale = useRef(new Animated.Value(1)).current;
+  const eyeHasMounted = useRef(false);
 
   useEffect(() => {
     Animated.timing(animHeight, {
@@ -55,6 +57,21 @@ export default function HistoryEntryItem({
       useNativeDriver: false,
     }).start();
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!eyeHasMounted.current) {
+      eyeHasMounted.current = true;
+      return;
+    }
+    eyeScale.stopAnimation();
+    eyeScale.setValue(0.72);
+    Animated.spring(eyeScale, {
+      toValue: 1,
+      speed: 20,
+      bounciness: 7,
+      useNativeDriver: true,
+    }).start();
+  }, [isOpen, eyeScale]);
 
   const panelHeight = animHeight.interpolate({
     inputRange: [0, 1],
@@ -88,9 +105,17 @@ export default function HistoryEntryItem({
                 onToggleReveal();
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               }}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: isOpen }}
               hitSlop={4}
             >
-              <Feather name="eye" size={10} color={colors.mutedForeground} />
+              <Animated.View style={{ transform: [{ scale: eyeScale }] }}>
+                <Feather
+                  name={isOpen ? "eye-off" : "eye"}
+                  size={10}
+                  color={isOpen ? colors.primary : colors.mutedForeground}
+                />
+              </Animated.View>
               <Text style={styles.editedBadgeText}>{t.edited}</Text>
             </Pressable>
           ) : null}
