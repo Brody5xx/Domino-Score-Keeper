@@ -17,6 +17,7 @@
       "supportsTablet": false
     },
     "android": {
+      "package": "com.domino1.marcador",
       "backgroundColor": "#0F0F14"
     },
     "web": {
