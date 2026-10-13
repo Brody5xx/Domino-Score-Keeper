@@ -280,6 +280,9 @@ export default function MainScreen() {
   const [tutorialVisible, setTutorialVisible] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [tutorialSeen, setTutorialSeen] = useState(true);
+  // En Android, la ventana (Modal) abierta mas tarde queda encima y se come los toques.
+  // Al cambiar esta llave, el tutorial se vuelve a montar y queda arriba de todo.
+  const [tutorialLayerKey, setTutorialLayerKey] = useState(0);
 
   const [mesaSearch, setMesaSearch] = useState("");
   const [searchNotFound, setSearchNotFound] = useState(false);
@@ -308,6 +311,13 @@ export default function MainScreen() {
   const addModalExtraToggleRef = useRef<View>(null);
   const addModalTieBtnRef = useRef<View>(null);
   const addModalAddBtnRef = useRef<View>(null);
+
+  const addModalOpen = addModal !== null;
+  useEffect(() => {
+    if (!tutorialVisible) return;
+    const id = setTimeout(() => setTutorialLayerKey((k) => k + 1), 350);
+    return () => clearTimeout(id);
+  }, [tutorialVisible, addModalOpen]);
 
   // Load tutorial seen state on mount
   useEffect(() => {
@@ -1177,7 +1187,7 @@ export default function MainScreen() {
                 value={pointsInput}
                 onChangeText={setPointsInput}
                 autoFocus={!tutorialVisible}
-                selectTextOnFocus
+                selectTextOnFocus={!tutorialVisible}
               />
             </View>
             {addModal && (() => {
@@ -1253,7 +1263,7 @@ export default function MainScreen() {
                 <Text style={styles.modalCancelText}>{t.cancel}</Text>
               </Pressable>
               <Pressable style={[styles.modalConfirm, { backgroundColor: colors.primary }]} onPress={handleEditPoints}>
-                <Text style={styles.modalConfirmText}>{t.save}</Text>
+                <Text style={[styles.modalConfirmText, { color: colors.primaryForeground }]}>{t.save}</Text>
               </Pressable>
             </View>
           </View>
@@ -1280,7 +1290,7 @@ export default function MainScreen() {
                 <Text style={styles.modalCancelText}>{t.cancel}</Text>
               </Pressable>
               <Pressable style={[styles.modalConfirm, { backgroundColor: colors.primary }]} onPress={handleSetCustomTarget}>
-                <Text style={styles.modalConfirmText}>{t.save}</Text>
+                <Text style={[styles.modalConfirmText, { color: colors.primaryForeground }]}>{t.save}</Text>
               </Pressable>
             </View>
           </View>
@@ -1457,7 +1467,7 @@ export default function MainScreen() {
               style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 10 }]}
               onPress={() => setHistoryModal(false)}
             >
-              <Text style={styles.modalConfirmText}>{t.close}</Text>
+              <Text style={[styles.modalConfirmText, { color: colors.primaryForeground }]}>{t.close}</Text>
             </Pressable>
           </View>
         </View>
@@ -1734,7 +1744,7 @@ export default function MainScreen() {
               style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 14, paddingTop: 13, paddingBottom: 19, alignSelf: "center", paddingHorizontal: 56 }]}
               onPress={() => setSettingsModal(false)}
             >
-              <Text style={[styles.modalConfirmText, { fontSize: 16, lineHeight: 16, includeFontPadding: false }]}>{t.done}</Text>
+              <Text style={[styles.modalConfirmText, { color: colors.primaryForeground, fontSize: 16, lineHeight: 16, includeFontPadding: false }]}>{t.done}</Text>
             </Pressable>
           </View>
         </View>
@@ -1742,11 +1752,12 @@ export default function MainScreen() {
 
       {/* Tutorial overlay */}
       <TutorialOverlay
+        key={tutorialLayerKey}
         visible={tutorialVisible}
         steps={tutorialSteps}
         currentStep={tutorialStep}
         onNext={() => {
-          if (tutorialStep >= 15) {
+          if (tutorialStep >= tutorialSteps.length - 1) {
             setTutorialVisible(false);
             setTutorialSeen(true);
             AsyncStorage.setItem("domino_tutorial_seen", "true");

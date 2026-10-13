@@ -1,0 +1,2 @@
+app/index.tsx
+components/TutorialOverlay.tsx

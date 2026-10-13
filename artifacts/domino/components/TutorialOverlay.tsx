@@ -4,7 +4,9 @@ import {
   Dimensions,
   Easing,
   Modal,
+  Platform,
   Pressable,
+  StatusBar,
   StyleSheet,
   View,
 } from "react-native";
@@ -49,6 +51,7 @@ export default function TutorialOverlay({
     height: number;
   } | null>(null);
   const pulse = useRef(new Animated.Value(1)).current;
+  const containerRef = useRef<View>(null);
   const step = steps[currentStep];
 
   useEffect(() => {
@@ -59,8 +62,23 @@ export default function TutorialOverlay({
     const measure = () => {
       if (!step.targetRef?.current) return;
       step.targetRef.current.measureInWindow((x, y, width, height) => {
-        if (width > 0 && height > 0) {
-          setTargetLayout({ x, y, width, height });
+        if (width <= 0 || height <= 0) return;
+        // En Android, measureInWindow no cuenta la barra de estado (hora/bateria)
+        // pero la capa del tutorial si empieza en el borde de la pantalla.
+        // Sumamos esa altura para que el recuadro caiga encima del boton.
+        const statusBar =
+          Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) : 0;
+        const apply = (ox: number, oy: number) =>
+          setTargetLayout({
+            x: x - ox,
+            y: y - oy + statusBar,
+            width,
+            height,
+          });
+        if (containerRef.current) {
+          containerRef.current.measureInWindow((cx, cy) => apply(cx, cy));
+        } else {
+          apply(0, 0);
         }
       });
     };
@@ -68,7 +86,6 @@ export default function TutorialOverlay({
     const id = setInterval(measure, 300);
     return () => clearInterval(id);
   }, [visible, step, currentStep]);
-
 
   useEffect(() => {
     if (!visible) return;
@@ -114,7 +131,7 @@ export default function TutorialOverlay({
 
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.container} pointerEvents="box-none">
+      <View ref={containerRef} collapsable={false} style={styles.container} pointerEvents="box-none">
         {/* Dark overlay with spotlight cutout */}
         <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
           <View style={StyleSheet.absoluteFill}>
