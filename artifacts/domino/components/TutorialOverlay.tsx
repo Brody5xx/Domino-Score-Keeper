@@ -18,6 +18,7 @@ const SCREEN = Dimensions.get("window");
 
 export interface TutorialStep {
   targetRef?: React.RefObject<View | null>;
+  insideModal?: boolean;
   text: string;
   actionDelay?: number;
   autoAdvanceDelay?: number;
@@ -66,8 +67,11 @@ export default function TutorialOverlay({
         // En Android, measureInWindow no cuenta la barra de estado (hora/bateria)
         // pero la capa del tutorial si empieza en el borde de la pantalla.
         // Sumamos esa altura para que el recuadro caiga encima del boton.
+        // Los elementos dentro de una ventana (Modal) ya incluyen esa altura.
         const statusBar =
-          Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) : 0;
+          Platform.OS === "android" && !step.insideModal
+            ? (StatusBar.currentHeight ?? 0)
+            : 0;
         const apply = (ox: number, oy: number) =>
           setTargetLayout({
             x: x - ox,

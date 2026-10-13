@@ -406,10 +406,10 @@ export default function MainScreen() {
     { targetRef: targetChip200Ref, text: t.tutStep1 }, // 1: target
     { targetRef: customTargetRef, text: t.tutStep2 },  // 2: custom target
     { targetRef: addBtnCasaRef, text: t.tutStep3 },    // 3: add button (open modal)
-    { targetRef: addModalInputRef, text: t.tutStep4 }, // 4: input field
-    { targetRef: addModalExtraToggleRef, text: t.tutStep5 }, // 5: extras toggle
-    { targetRef: addModalTieBtnRef, text: t.tutStep6 }, // 6: tie button
-    { targetRef: addModalAddBtnRef, text: t.tutStep7 }, // 7: add button
+    { targetRef: addModalInputRef, insideModal: true, text: t.tutStep4 }, // 4: input field
+    { targetRef: addModalExtraToggleRef, insideModal: true, text: t.tutStep5 }, // 5: extras toggle
+    { targetRef: addModalTieBtnRef, insideModal: true, text: t.tutStep6 }, // 6: tie button
+    { targetRef: addModalAddBtnRef, insideModal: true, text: t.tutStep7 }, // 7: add button
     { targetRef: casaFirstEntryRef, text: t.tutStep8 }, // 8: edit/pencil (close modal)
     { targetRef: casaEyeRef, text: t.tutStep9 },        // 9: eye reveal
     { targetRef: visitDeletedEntryRef, text: t.tutStep10 }, // 10: trash / restore
