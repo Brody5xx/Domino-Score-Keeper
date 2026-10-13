@@ -1464,7 +1464,7 @@ export default function MainScreen() {
               </Pressable>
             )}
             <Pressable
-              style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 10 }]}
+              style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 10, flex: 0, flexGrow: 0, flexShrink: 0, minHeight: 46, justifyContent: "center" }]}
               onPress={() => setHistoryModal(false)}
             >
               <Text style={[styles.modalConfirmText, { color: colors.primaryForeground }]}>{t.close}</Text>
@@ -1741,7 +1741,7 @@ export default function MainScreen() {
             )}
 
             <Pressable
-              style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 14, paddingTop: 13, paddingBottom: 19, alignSelf: "center", paddingHorizontal: 56 }]}
+              style={[styles.modalConfirm, { backgroundColor: colors.primary, marginTop: 14, flex: 0, flexGrow: 0, flexShrink: 0, minHeight: 48, justifyContent: "center", alignSelf: "center", paddingHorizontal: 56 }]}
               onPress={() => setSettingsModal(false)}
             >
               <Text style={[styles.modalConfirmText, { color: colors.primaryForeground, fontSize: 16, lineHeight: 16, includeFontPadding: false }]}>{t.done}</Text>
