@@ -72,13 +72,28 @@ export default function TutorialOverlay({
           Platform.OS === "android" && !step.insideModal
             ? (StatusBar.currentHeight ?? 0)
             : 0;
-        const apply = (ox: number, oy: number) =>
-          setTargetLayout({
-            x: x - ox,
-            y: y - oy + statusBar,
-            width,
-            height,
-          });
+        const apply = (ox: number, oy: number) => {
+          // Margen extra: si algun telefono se corre unos pixeles,
+          // el cuadro verde igual cubre el boton.
+          const PAD = 6;
+          const lx = x - ox - PAD;
+          const ly = y - oy + statusBar - PAD;
+          const lw = width + PAD * 2;
+          const lh = height + PAD * 2;
+          const cx = lx + lw / 2;
+          const cy = ly + lh / 2;
+          // Seguridad: si el cuadro cae fuera de la pantalla o es enorme,
+          // no lo mostramos (se ve solo el mensaje, sin senalar mal).
+          const fueraDePantalla =
+            cx < 0 || cx > SCREEN.width || cy < 0 || cy > SCREEN.height;
+          const demasiadoGrande =
+            lw > SCREEN.width * 1.05 || lh > SCREEN.height * 0.8;
+          if (fueraDePantalla || demasiadoGrande) {
+            setTargetLayout(null);
+            return;
+          }
+          setTargetLayout({ x: lx, y: ly, width: lw, height: lh });
+        };
         if (containerRef.current) {
           containerRef.current.measureInWindow((cx, cy) => apply(cx, cy));
         } else {
@@ -156,10 +171,10 @@ export default function TutorialOverlay({
               style={[
                 styles.spotlightBorder,
                 {
-                  left: targetLayout.x - 4,
-                  top: targetLayout.y - 4,
-                  width: targetLayout.width + 8,
-                  height: targetLayout.height + 8,
+                  left: targetLayout.x - 2,
+                  top: targetLayout.y - 2,
+                  width: targetLayout.width + 4,
+                  height: targetLayout.height + 4,
                   borderColor: colors.primary,
                   transform: [{ scale: pulse }],
                 },
