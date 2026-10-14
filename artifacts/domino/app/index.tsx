@@ -1187,7 +1187,8 @@ export default function MainScreen() {
                 value={pointsInput}
                 onChangeText={setPointsInput}
                 autoFocus={!tutorialVisible}
-                selectTextOnFocus={!tutorialVisible}
+                selectTextOnFocus={false}
+                contextMenuHidden
               />
             </View>
             {addModal && (() => {
